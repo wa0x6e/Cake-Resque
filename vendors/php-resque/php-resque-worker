@@ -1,0 +1,39 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          php-resque-worker
+# Required-Start:    $all
+# Required-Stop:     $network $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the php-resque-worker at boot
+# Description:       Enable php-resque-worker at boot time.
+### END INIT INFO
+
+stopit () {
+  echo "stopping php-resque-worker..."
+  ps aux | grep resque\\.php | awk '{print$2}' | sort -rn | grep . | xargs kill -s 9
+}
+
+startit() {
+  echo "starting php-resque-worker..."
+  cd=$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")") # follow symlink to install dir
+  nohup su - www-data -c "cd $cd && ENV=local VVERBOSE=true QUEUE=default APP_INCLUDE=../../../../config/resque_bootstrap.php php resque.php" >/var/log/php-resque-worker.log 2>&1 &
+  sleep 3
+}
+
+case ${1-help} in
+  start)
+    startit
+    ;;
+  restart|reload)
+    stopit
+    startit
+    ;;
+  stop)
+    stopit
+    ;;
+  *)
+    echo >&2 "Usage: $0 <start|stop|restart>"
+    exit 1
+    ;;
+esac
