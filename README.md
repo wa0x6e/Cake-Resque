@@ -1,7 +1,7 @@
 CakePHP PHP-Resque Plugin by Mike Smullin <mike@smullindesign.com>
 ============
 
-** Lets you use Resque within the CakePHP environment, complete with init script. **
+** Lets you use Resque within the CakePHP environment, complete with cake shell and init script. **
 
 Installation & Usage
 ------------
@@ -44,6 +44,11 @@ a new fork polling the master Resque server for new jobs to run locally:
     sudo /etc/init.d/php-resque-worker start
     sudo tail -f /var/log/php-resque-worker.log
 
+or you can now use the new CakePHP Shell:
+
+    cake resque start
+    cake resque tail
+
 Executing this bash script will first bootstrap the CakePHP environment,
 then query the Resque server for jobs, and execute them as a PHP-Resque
 worker, one-at-a-time.
@@ -56,6 +61,10 @@ How to Queue a Job
     function action() {
       Resque::enqueue('default', 'YourJobClass1', array($any, $params)); // queue it up
     }
+
+or you can now use the new CakePHP Shell:
+
+    cake resque enqueue YourJobClass1 any params
 
 How to Write a Job
 ------------
