@@ -1,7 +1,7 @@
 CakePHP PHP-Resque Plugin by Mike Smullin <mike@smullindesign.com>
 ============
 
-** Lets you use Resque within the CakePHP environment, complete with cake shell and init script. **
+** Lets you use Resque within the CakePHP environment, complete with cake shell. **
 
 Installation & Usage
 ------------
@@ -32,26 +32,10 @@ Download the latest version of php-resque to:
 
     ./app/plugins/resque/vendors/php-resque/
 
-Symlink the php-resque-worker bash executable to init.d:
-
-    sudo ln -s /var/www/.../app/plugins/resque/vendors/php-resque/php-resque-worker /etc/init.d/php-resque-worker
-
-Also be sure to edit the file and change `ENV=local` to whatever is appropriate for that server
-
-Then run the bash executable init script for the php-resque-worker, which will launch
-a new fork polling the master Resque server for new jobs to run locally:
-
-    sudo /etc/init.d/php-resque-worker start
-    sudo tail -f /var/log/php-resque-worker.log
-
-or you can now use the new CakePHP Shell:
+Then launch a new php-resque-worker fork, which will begin polling the master
+Resque server for new jobs to run locally:
 
     cake resque start
-    cake resque tail
-
-Executing this bash script will first bootstrap the CakePHP environment,
-then query the Resque server for jobs, and execute them as a PHP-Resque
-worker, one-at-a-time.
 
 How to Queue a Job
 ------------
@@ -62,7 +46,7 @@ How to Queue a Job
       Resque::enqueue('default', 'YourJobClass1', array($any, $params)); // queue it up
     }
 
-or you can now use the new CakePHP Shell:
+or you can use the new CakePHP Shell:
 
     cake resque enqueue YourJobClass1 any params
 
@@ -89,7 +73,7 @@ finally, you have to list your new job class under the config beginning on line 
 
     ./app/plugins/resque/config/resque_bootstrap.php
 
-AND make sure to `sudo /etc/init.d/php-resque-worker restart` with each change to any of your job classes.
+AND make sure to `cake resque restart` with each change to any of your job classes.
 
 Future goals
 ------------
