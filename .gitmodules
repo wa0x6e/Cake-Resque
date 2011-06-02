@@ -1,0 +1,3 @@
+[submodule "vendors/php-resque"]
+	path = vendors/php-resque
+	url = git://github.com/mikesmullin/php-resque.git
