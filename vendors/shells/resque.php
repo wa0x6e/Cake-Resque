@@ -12,6 +12,10 @@ try one of the following:
 NOTE: need to be able to use passwordless sudo for:
 
   cake resque start   # start the worker service
+    supports arguments:
+    -env=local
+    -queue=default
+    -user=www-data
   cake resque tail    # tail the worker service log
   cake resque restart # restart the worker service
   cake resque stop    # stop the worker service
@@ -60,7 +64,15 @@ HELP
     return TMP .'logs'. DS .'php-resque-worker.log';
   }
 
-  public function start($env = 'local', $queue = 'default', $user = 'www-data') {
+  /**
+   *
+   */
+  public function start() {
+    $env = orEquals($this->params['env'], 'local');
+    $queue = orEquals($this->params['queue'], 'default');
+    exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
+    $user = orEquals($this->params['user'], $status===0? 'apache' : 'www-data');
+
     $path = App::pluginPath('Resque') . 'vendors'. DS .'php-resque'. DS;
     $log_path = $this->getLogPath();
     $config_path = CONFIGS . 'resque_bootstrap.php';
