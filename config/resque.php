@@ -1,16 +1,26 @@
 <?php
 
-include_once CONFIGS .'yourapp.php';
+$config['Resque']['jobs'] = array(
+  // list your jobs here...
+  'your_job_class1',
+  'your_job_class2',
+  'your_job_class3'
+);
+
 switch (Configure::read('YourApp.environment')) {
   default:
   case 'production':
-    Configure::write('Resque.host', 'localhost'); // replace with outside server for best performance
-    Configure::write('Resque.port', 6379);
+    $config['Resque']['Redis'] = array(
+      'host' => 'localhost', // replace with outside server for best performance
+      'port' => 6379
+    );
     break;
 
   case 'staging':
   case 'local':
-    Configure::write('Resque.host', 'localhost');
-    Configure::write('Resque.port', 6379);
+    $config['Resque']['Redis'] = array(
+      'host' => 'localhost',
+      'port' => 6379
+    );
     break;
 }

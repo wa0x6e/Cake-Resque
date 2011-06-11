@@ -4,10 +4,11 @@
 // see also: http://debuggable.com/posts/the-ultimate-cakephp-bootstrap-technique:480f4dd5-2bcc-40cb-b45f-4b1dcbdd56cb
 global $argv; $argv[] = '-env'; $argv[] = getenv('ENV')? getenv('ENV') : 'local'; // my custom environment argument
 $_GET['url'] = 'favicon.ico';
-require_once(__DIR__ .'/../webroot/index.php');
+require_once getenv('WEBROOT') .'index.php';
 
 // utilize environment-based configuration to set Redis backend
-putenv('REDIS_BACKEND='. Configure::read('Resque.host') .':'. Configure::read('Resque.port'));
+Configure::load('Resque.resque');
+putenv('REDIS_BACKEND='. Configure::read('Resque.Redis.host') .':'. Configure::read('Resque.Redis.port'));
 
 // initialize ResqueShell base class
 class ResqueShell {
@@ -24,11 +25,6 @@ class ResqueShell {
   }
 }
 
-foreach (array(
-  // list your jobs here...
-  'your_job_class1',
-  'your_job_class2',
-  'your_job_class3'
-) as $job) {
+foreach (Configure::read('Resque.jobs') as $job) {
   require_once APP .'vendors'. DS .'shells'. DS .'jobs'. DS . $job .'.php';
 }

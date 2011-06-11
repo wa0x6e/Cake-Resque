@@ -4,7 +4,7 @@ App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque'. DS .'lib'. 
 
 class ResqueComponent extends Object {
   function initialize(&$controller, $settings = array()) {
-    // Required if redis is located elsewhere
-    Resque::setBackend(Configure::read('Resque.host') .':'. Configure::read('Resque.port'), Configure::read('Resque.port'));
+    Configure::load('Resque.resque');
+    Resque::setBackend(Configure::read('Resque.Redis.host') .':'. Configure::read('Resque.Redis.port'), Configure::read('Resque.Redis.port'));
   }
 }

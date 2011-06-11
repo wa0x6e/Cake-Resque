@@ -8,33 +8,26 @@ Installation & Usage
 
 Place this directory in your plugins dir:
 
-    ./app/plugins/resque/
+    git submodule add git://github.com/mikesmullin/CakePHP-PHP-Resque-Plugin.git ./app/plugins/resque/
 
-Move the configuration directory files to your app's config directory,
-and make sure to set the environment to whatever is appropriate:
+Download the latest version of Chris Boulton's php-resque into `./app/plugins/resque/vendors/php-resque/`, as well:
 
-    mv ./app/plugins/resque/config/* ./app/config/
-    rm -rf ./app/plugins/resque/config/
+    git submodule update --init --recursive
 
-    Configure::write('YourApp.environment', 'local');
+Edit the file `./app/plugins/resque/config/resque.php` and remember to
+configure whatever Resque.Redis.host and port are appropriate for your environment:
 
-    Configure::write('Resque.host', 'localhost');
-    Configure::write('Resque.port', 6379);
+    switch (Configure::read('YourApp.environment')) {
 
-Also add a reference to this configuration fromi the bottom of your ./app/config/core.php:
-
-    /**
-     * Include custom configuration files below.
-     */
-    include_once CONFIGS .'resque.php';
-
-Download the latest version of php-resque to:
-
-    ./app/plugins/resque/vendors/php-resque/
+    $config['Resque']['Redis'] = array(
+      'host' => 'localhost',
+      'port' => 6379
+    );
 
 Then launch a new php-resque-worker fork, which will begin polling the master
 Resque server for new jobs to run locally:
 
+    cake resque help # to see available options
     cake resque start
 
 How to Queue a Job
@@ -46,9 +39,10 @@ How to Queue a Job
       Resque::enqueue('default', 'YourJobClass1', array($any, $params)); // queue it up
     }
 
-or you can use the new CakePHP Shell:
+or you can use the CakePHP Shell:
 
-    cake resque enqueue YourJobClass1 any params
+    cake resque jobs # to see a list of available jobs
+    cake resque enqueue YourJobClass1 any other params
 
 How to Write a Job
 ------------
@@ -69,17 +63,11 @@ and the code would look like:
       }
     }
 
-finally, you have to list your new job class under the config beginning on line 13 of:
+finally, you have to list your new job class under the config beginning on line 5 of:
 
-    ./app/plugins/resque/config/resque_bootstrap.php
+    ./app/plugins/resque/config/resque.php
 
 AND make sure to `cake resque restart` with each change to any of your job classes.
-
-Future goals
-------------
-
-It would be nice to clean this up a bit so the install is easier. I think the
-files are currently kind of scattered around but it works.
 
 Credits
 ------------
