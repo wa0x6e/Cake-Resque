@@ -121,11 +121,11 @@ HELP
    * List available jobs to enqueue.
    */
   public function jobs() {
-    Configure::load('Resque.resque');
+    App::import('Lib', 'Resque.ResqueUtility');
     $this->out("List of jobs currently available for enqueue:\n\n", false);
-    foreach ((array) Configure::read('Resque.jobs') as $job) {
-      $this->out("  - " . Inflector::camelize($job) ."\n", false);
+    foreach (ResqueUtility::getJobs() as $job) {
+      $this->out("  - " . Inflector::camelize(substr(basename($job), 0, -4)) ."\n", false);
     }
-    $this->out("\nDon't see your job listed? Add it in ./app/config/resque.php\n\n", false);
+    $this->out("\n", false);
   }
 }

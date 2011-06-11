@@ -10,21 +10,11 @@ require_once getenv('WEBROOT') .'index.php';
 Configure::load('Resque.resque');
 putenv('REDIS_BACKEND='. Configure::read('Resque.Redis.host') .':'. Configure::read('Resque.Redis.port'));
 
-// initialize ResqueShell base class
-class ResqueShell {
-  protected function loadModel($modelName) {
-    if (App::import('Model', $modelName)) {
-      $this->$modelName = new $modelName;
-      return true;
-    }
-    return false;
-  }
+// include ResqueShell base class
+App::import('Lib', 'Resque.ResqueShell');
 
-  protected function out($s, $line_break = true) {
-    echo $s . ($line_break? "\n" : '');
-  }
-}
-
-foreach (Configure::read('Resque.jobs') as $job) {
-  require_once APP .'vendors'. DS .'shells'. DS .'jobs'. DS . $job .'.php';
+// include job class
+App::import('Lib', 'Resque.ResqueUtility');
+foreach (ResqueUtility::getJobs() as $job) {
+  require_once $job;
 }

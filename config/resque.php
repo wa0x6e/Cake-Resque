@@ -1,12 +1,5 @@
 <?php
 
-$config['Resque']['jobs'] = array(
-  // list your jobs here...
-  'your_job_class1',
-  'your_job_class2',
-  'your_job_class3'
-);
-
 switch (Configure::read('YourApp.environment')) {
   default:
   case 'production':

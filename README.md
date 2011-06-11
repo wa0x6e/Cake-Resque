@@ -63,10 +63,6 @@ and the code would look like:
       }
     }
 
-finally, you have to list your new job class under the config beginning on line 5 of:
-
-    ./app/plugins/resque/config/resque.php
-
 AND make sure to `cake resque restart` with each change to any of your job classes.
 
 Credits
