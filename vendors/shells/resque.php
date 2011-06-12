@@ -10,7 +10,7 @@ class ResqueShell extends Shell {
    * Initializes defaults.
    */
   public function startup() {
-    $this->log_path = TMP .'logs'. DS .'php-resque-worker.log';
+    $this->log_path = TMP .'logs'. DS .'php-resque-worker.log.html';
   }
 
   /**
@@ -25,7 +25,7 @@ try one of the following:
 
 NOTE: need to be able to use passwordless sudo for:
 
-  cake resque start   # start the worker service
+  cake resque start   # start the worker service, and tail
     supports arguments:
     -env=local
     -queue=default
@@ -53,10 +53,16 @@ HELP
       return false;
     }
 
-    $job_class = array_shift($this->args);
+    $job_class = &$this->args[0];
     App::import('Component', 'Resque.Resque');
-    Resque::enqueue($job_queue = 'default', $job_class, $this->args);
-    $this->out("Enqueued new job '{$job_class}'...");
+    $params = array_diff_key($this->params, array_flip(array('working', 'app', 'root', 'webroot')));
+    $paramstr = '';
+    foreach ($params as $key => &$value) {
+      $paramstr .= ($paramstr? ', ' : '') . $key .':'. $value;
+    }
+
+    Resque::enqueue($job_queue = 'default', $job_class, $params);
+    $this->out('Enqueued new job "'. $job_class .'"'. ($paramstr? ' with params ('. $paramstr .')' : '') .'...');
   }
 
   /**
@@ -77,6 +83,17 @@ HELP
    * and tail the log.
    */
   public function start() {
+    $this->start_only();
+
+    sleep(3); // give it time to output to the log for the first time
+
+    $this->tail();
+  }
+
+  /**
+   * Fork a new php resque worker service.
+   */
+  public function start_only() {
     $env = orEquals($this->params['env'], 'local');
     $queue = orEquals($this->params['queue'], 'default');
     exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
@@ -97,8 +114,6 @@ HELP
       escapeshellarg(APP .'webroot'. DS) .' '.
       escapeshellarg($php) .' ./resque.php > '.
       escapeshellarg($log_path) .' 2>&1" >/dev/null 2>&1 &');
-
-    $this->tail();
   }
 
   /**
@@ -114,7 +129,7 @@ HELP
    */
   public function restart() {
     $this->stop();
-    $this->start();
+    $this->start_only();
   }
 
   /**
