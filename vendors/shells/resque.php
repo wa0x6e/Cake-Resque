@@ -17,7 +17,20 @@ class ResqueShell extends Shell {
    * Provides end-user with helpful instructions.
    */
   public function help() {
-    echo <<<HELP
+    if (count($this->args) == 1) {
+      // render output of Job::help()
+      App::import('Lib', 'Resque.ResqueUtility');
+      foreach (ResqueUtility::getJobs() as $job) {
+        if ($this->args[0] == Inflector::camelize(substr(basename($job), 0, -4))) {
+          include_once $job;
+          $Job = new $this->args[0]($x = null);
+          $this->out("\n". $Job->help() ."\n\n");
+          return;
+        }
+      }
+    }
+    else {
+      echo <<<HELP
 try one of the following:
 
   cake resque jobs # list all known jobs
@@ -36,7 +49,8 @@ NOTE: need to be able to use passwordless sudo for:
 
 
 HELP
-    ;
+      ;
+    }
   }
 
   /**
