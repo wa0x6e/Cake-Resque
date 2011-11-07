@@ -1,4 +1,4 @@
-CakePHP-Resque Plugin Kamisama<kami@kamisama.me>
+Cake-Resque Plugin Kamisama <kami@kamisama.me>
 ============
 Forked from [CakePHP-PHP-Resque-Plugin](https://github.com/mikesmullin/CakePHP-PHP-Resque-Plugin) by Mike Smullin <mike@smullindesign.com>, this is a more advanced plugin, compatible with Cakephp 2
 
