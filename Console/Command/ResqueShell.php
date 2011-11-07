@@ -159,7 +159,7 @@ class ResqueShell extends Shell
 		$bootstrap_path = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
 		$count = 1;
 
-		$this->out("Forking new PHP Resque worker service (<info>queue:</info>{$queue} <info>user:</info>{$user})");
+		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 		$cmd = 'nohup sudo -u '.$user.' bash -c "cd ' .
 		escapeshellarg($path) . '; VVERBOSE=true QUEUE=' .
 		escapeshellarg($queue) . ' APP_INCLUDE=' .
@@ -184,11 +184,11 @@ class ResqueShell extends Shell
 	 */
 	public function stop()
 	{
-		$this->out('Shutting down Resque Worker complete');
+		$this->out('<warning>Shutting down Resque Worker complete</warning>');
 		$workers = Resque_Worker::all();
 		if (empty($workers))
 		{
-			$this->out('There were no active workers to kill ...');
+			$this->out('   There were no active workers to kill ...');
 		}
 		else
 		{
@@ -232,6 +232,7 @@ class ResqueShell extends Shell
 			}
 			else
 			{
+				$jobs = array_keys($jobs);
 				foreach ($jobs as $job)
 				{
 					$this->out("  - " . substr(basename($job), 0, -5));
