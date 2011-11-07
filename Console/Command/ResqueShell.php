@@ -2,7 +2,8 @@
 
 class ResqueShell extends Shell
 {
-	var $uses = array(), $log_path = null;
+	public $uses = array();
+	public $log_path = null;
 
 	/**
 	 * Startup callback.
@@ -12,6 +13,7 @@ class ResqueShell extends Shell
 	public function startup()
 	{
 		$this->log_path = TMP . 'logs' . DS . 'php-resque-worker.log';
+		Configure::load('Resque.resque');
 		
 		App::import('Lib', 'Resque.ResqueUtility');
 		App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque.php'));
@@ -40,7 +42,7 @@ class ResqueShell extends Shell
     						'short' => 'i',
     						'help' => __d('resque_console', 'Pause time is seconds beween each works')
 	    				),
-	  					  'interval' => array(
+	  					'number' => array(
 	        				'short' => 'n',
 	        				'help' => __d('resque_console', 'Number of workers to fork')
 	    				)
@@ -147,9 +149,10 @@ class ResqueShell extends Shell
 	 */
 	public function start()
 	{
-		$queue = isset($this->params['queue']) ? $this->params['queue'] : 'default';
+		$queue = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.queue');
 		$user = isset($this->params['user']) ? $this->params['user'] : 'www-data';
-		$interval = isset($this->params['interval']) ? $this->params['interval'] : 5;
+		$interval = isset($this->params['interval']) ? $this->params['interval'] : Configure::read('Resque.interval');
+		$count = isset($this->params['number']) ? $this->params['number'] : Configure::read('Resque.count');
 		
 		//exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
 		//$user = $status === 0 ? 'apache' : 'www-data';
@@ -157,7 +160,6 @@ class ResqueShell extends Shell
 		$path = App::pluginPath('Resque') . 'Vendor' . DS . 'php-resque' . DS;
 		$log_path = $this->log_path;
 		$bootstrap_path = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
-		$count = 1;
 
 		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 		$cmd = 'nohup sudo -u '.$user.' bash -c "cd ' .
@@ -188,7 +190,7 @@ class ResqueShell extends Shell
 		$workers = Resque_Worker::all();
 		if (empty($workers))
 		{
-			$this->out('   There were no active workers to kill ...');
+			$this->out('   There is no active worker to kill ...');
 		}
 		else
 		{
