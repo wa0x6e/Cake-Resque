@@ -2,8 +2,7 @@
 
 class ResqueShell extends Shell
 {
-	public $uses = array();
-	public $log_path = null;
+	var $uses = array(), $log_path = null;
 
 	/**
 	 * Startup callback.
@@ -13,8 +12,7 @@ class ResqueShell extends Shell
 	public function startup()
 	{
 		$this->log_path = TMP . 'logs' . DS . 'php-resque-worker.log';
-		Configure::load('Resque.resque');
-		
+		 
 		App::import('Lib', 'Resque.ResqueUtility');
 		App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque.php'));
 		App::import('Vendor', 'Resque.Resque_Stat', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Stat.php'));
@@ -40,9 +38,9 @@ class ResqueShell extends Shell
 						),
 	    				'interval' => array(
     						'short' => 'i',
-    						'help' => __d('resque_console', 'Pause time is seconds beween each works')
+    						'help' => __d('resque_console', 'Pause time in seconds between each works')
 	    				),
-	  					'number' => array(
+	  					 'number' => array(
 	        				'short' => 'n',
 	        				'help' => __d('resque_console', 'Number of workers to fork')
 	    				)
@@ -105,9 +103,6 @@ class ResqueShell extends Shell
 	 */
 	public function enqueue()
 	{
-		$parser = parent::getOptionParser();
-		$parser->description('Add a job to a queue');
-
 		if (count($this->args) < 1)
 		{
 			$this->out('Which job class would you like to enqueue?');
@@ -123,7 +118,7 @@ class ResqueShell extends Shell
 			$paramstr .= ($paramstr ? ', ' : '') . $key . ':' . $value;
 		}
 
-		Resque::enqueue($job_queue = 'default', $job_class, $params);
+		Resque::enqueue($job_queue, $job_class, $params);
 		$this->out('Enqueued new job "' . $job_class . '"' . ($paramstr ? ' with params (' . $paramstr . ')' : '') . '...');
 	}
 
@@ -190,7 +185,7 @@ class ResqueShell extends Shell
 		$workers = Resque_Worker::all();
 		if (empty($workers))
 		{
-			$this->out('   There is no active worker to kill ...');
+			$this->out('   There were no active workers to kill ...');
 		}
 		else
 		{
