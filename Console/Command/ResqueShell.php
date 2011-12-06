@@ -109,7 +109,8 @@ class ResqueShell extends Shell
 			return false;
 		}
 
-		$job_class = &$this->args[0];
+		$job_queue = &$this->args[0];
+		$job_class = &$this->args[1];
 		
 		$params = array_diff_key($this->params, array_flip(array('working', 'app', 'root', 'webroot')));
 		$paramstr = '';
