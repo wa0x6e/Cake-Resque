@@ -57,7 +57,7 @@
 	// Include our Job Shell
 	
 	App::uses('ResqueUtility', 'Resque.Lib');
-	$jobs = ResqueUtility::getJobsFile();
+	$jobs = ResqueUtility::getJobs();
 	foreach($jobs as $job)
 	{
 		require_once $job;
