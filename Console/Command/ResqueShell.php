@@ -165,7 +165,7 @@ class ResqueShell extends Shell
 		escapeshellarg($interval) . ' CAKE=' .
 		escapeshellarg(CAKE) . ' COUNT=' . $count .
 		 ' php ./resque.php';
-		$cmd .= ' > '. escapeshellarg($log_path).' 2>&1" >/dev/null 2>&1 &';
+		$cmd .= ' >> '. escapeshellarg($log_path).' 2>&1" >/dev/null 2>&1 &';
 		
 		passthru($cmd);
 		
