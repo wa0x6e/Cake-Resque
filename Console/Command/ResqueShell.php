@@ -2,7 +2,7 @@
 
 class ResqueShell extends Shell
 {
-	var $uses = array(), $log_path = null;
+	public $uses = array(), $log_path = null;
 
 	/**
 	 * Startup callback.
@@ -109,8 +109,7 @@ class ResqueShell extends Shell
 			return false;
 		}
 
-		$job_queue = &$this->args[0];
-		$job_class = &$this->args[1];
+		$job_class = &$this->args[0];
 		
 		$params = array_diff_key($this->params, array_flip(array('working', 'app', 'root', 'webroot')));
 		$paramstr = '';
@@ -143,10 +142,15 @@ class ResqueShell extends Shell
 	/**
 	 * Fork a new php resque worker service.
 	 */
-	public function start()
+	public function start($args = null)
 	{
+		if (!is_null($args))
+		{
+			$this->params = $args;
+		}
+		
 		$queue = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.queue');
-		$user = isset($this->params['user']) ? $this->params['user'] : 'www-data';
+		$user = isset($this->params['user']) ? $this->params['user'] : get_current_user();
 		$interval = isset($this->params['interval']) ? (int) $this->params['interval'] : Configure::read('Resque.interval');
 		$count = isset($this->params['number']) ? (int) $this->params['number'] : Configure::read('Resque.count');
 		
@@ -175,12 +179,14 @@ class ResqueShell extends Shell
 			$this->tail();
 		}
 		
+		$this->__addWorker($this->params);
+		
 	}
 
 	/**
 	 * Kill all php resque worker services.
 	 */
-	public function stop()
+	public function stop($shutdown = true)
 	{
 		$this->out('<warning>Shutting down Resque Worker complete</warning>');
 		$workers = Resque_Worker::all();
@@ -201,49 +207,26 @@ class ResqueShell extends Shell
 			}
 		}
 		
+		if ($shutdown) $this->__clearWorker();
+		
 	}
 
 	/**
-	 * Kill all php resque worker services, then restart a single new one, and tail the log.
+	 * Restart all workers
 	 */
 	public function restart()
 	{
-		$this->stop();
-		$this->start();
-	}
-
-	/**
-	 * List available jobs to enqueue.
-	 */
-	public function jobs()
-	{
-		if (empty($this->args))
+		$this->stop(false);
+		
+		if (false !== $workers = $this->__getWorkers())
 		{
-			$this->out("\n");
-			$this->out('Available Jobs');
-			$this->hr();
-			$jobs = ResqueUtility::getJobs();
-	
-			if (empty($jobs))
-			{
-				$this->out('<info>No jobs found</info>');
-			}
-			else
-			{
-				$jobs = array_keys($jobs);
-				foreach ($jobs as $job)
-				{
-					$this->out("  - " . substr(basename($job), 0, -5));
-				}
-			}
-			$this->out("\n");
+			foreach($workers as $worker)
+				$this->start($worker);
 		}
 		else
-		{
-			$jobName = $this->args[0] . 'Shell';
-			$this->dispatchShell($this->args[0], 'main');
-		}
+			$this->start();
 	}
+
 	
 	
 	public function stats()
@@ -265,7 +248,7 @@ class ResqueShell extends Shell
 			foreach($workers as $worker)
 			{
 				$this->out("\tWorker : " . $worker);
-				$this->out("\t - Started on     : " . Resque::redis()->get('worker:' . $worker . ':started'));
+				$this->out("\t - Started on     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
 				$this->out("\t - Processed Jobs : " . $worker->getStat('processed'));
 				$worker->getStat('failed') == 0
 					? $this->out("\t - Failed Jobs    : " . $worker->getStat('failed'))
@@ -274,5 +257,29 @@ class ResqueShell extends Shell
 		}
 		
 		$this->out("\n");
+	}
+	
+	private function __addWorker($args)
+	{
+		Resque::Redis()->sAdd('ResqueWorker', serialize($args));
+	}
+	
+	private function __getWorkers()
+	{
+		$workers = Resque::Redis()->sMembers('ResqueWorker');
+		if(empty($workers))
+			return false;
+		else
+		{
+			$temp = array();
+			foreach($workers as $worker)
+				$temp[] = unserialize($worker);
+			return $temp;
+		}
+	}
+	
+	private function __clearWorker()
+	{
+		Resque::Redis()->del('ResqueWorker');
 	}
 }
