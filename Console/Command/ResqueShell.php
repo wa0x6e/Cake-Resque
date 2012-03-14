@@ -183,7 +183,7 @@ class ResqueShell extends Shell
 				$this->params['force'] ? $w->shutDownNow() : $w->shutDown();	// Send signal to stop processing jobs
 				$w->unregisterWorker();											// Remove jobs from resque environment
 				list($hostname, $pid, $queue) = explode(':', (string)$w);
-				exec('Kill -9 '.$pid);											// Kill all remaining system process
+				exec('kill -9 '.$pid);											// Kill all remaining system process
 			}
 		}
 		
