@@ -27,7 +27,7 @@ class Resque_Job
 	 * @var object Object containing details of the job.
 	 */
 	public $payload;
-	
+
 	/**
 	 * @var object Instance of the class performing work for this job.
 	 */
@@ -37,7 +37,7 @@ class Resque_Job
 	 * Instantiate a new instance of a job.
 	 *
 	 * @param string $queue The queue that the job belongs to.
-	 * @param object $payload Object containing details of the job.
+	 * @param array $payload array containing details of the job.
 	 */
 	public function __construct($queue, $payload)
 	{
@@ -63,7 +63,7 @@ class Resque_Job
 		$id = md5(uniqid('', true));
 		Resque::push($queue, array(
 			'class'	=> $class,
-			'args'	=> $args,
+			'args'	=> array($args),
 			'id'	=> $id,
 		));
 
@@ -84,7 +84,7 @@ class Resque_Job
 	public static function reserve($queue)
 	{
 		$payload = Resque::pop($queue);
-		if(!$payload) {
+		if(!is_array($payload)) {
 			return false;
 		}
 
@@ -116,7 +116,7 @@ class Resque_Job
 		$status = new Resque_Job_Status($this->payload['id']);
 		return $status->get();
 	}
-	
+
 	/**
 	 * Get the arguments supplied to this job.
 	 *
@@ -127,10 +127,10 @@ class Resque_Job
 		if (!isset($this->payload['args'])) {
 			return array();
 		}
-		
-		return $this->payload['args'];
+
+		return $this->payload['args'][0];
 	}
-	
+
 	/**
 	 * Get the instantiated object for this job that will be performing work.
 	 *
@@ -141,24 +141,33 @@ class Resque_Job
 		if (!is_null($this->instance)) {
 			return $this->instance;
 		}
+		
+		$class = $this->payload['class'];
+		list($plugin, $model) = pluginSplit($this->payload['class']);
+		if (!empty($plugin))
+		{
+			App::uses($model, $plugin . '.Console/Command');
+			$class = $model;
+		}
 
-		if(!class_exists($this->payload['class'])) {
+		if(!class_exists($class)) {
 			throw new Resque_Exception(
 				'Could not find job class ' . $this->payload['class'] . '.'
 			);
 		}
 
-		if(!method_exists($this->payload['class'], 'perform')) {
+		if(!method_exists($class, 'perform')) {
 			throw new Resque_Exception(
 				'Job class ' . $this->payload['class'] . ' does not contain a perform method.'
 			);
 		}
 
-		$this->instance = new $this->payload['class'];
+		$this->instance = new $class;
 		$this->instance->job = $this;
 		$this->instance->args = $this->getArguments();
 		return $this->instance;
 	}
+	
 
 	/**
 	 * Actually execute a job by calling the perform method on the class
@@ -171,7 +180,7 @@ class Resque_Job
 		$instance = $this->getInstance();
 		try {
 			Resque_Event::trigger('beforePerform', $this);
-	
+
 			if(method_exists($instance, 'setUp')) {
 				$instance->setUp();
 			}
@@ -188,7 +197,7 @@ class Resque_Job
 		catch(Resque_Job_DontPerform $e) {
 			return false;
 		}
-		
+
 		return true;
 	}
 

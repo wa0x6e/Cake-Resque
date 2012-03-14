@@ -56,7 +56,7 @@ class Resque_Job_Status
 			'updated' => time(),
 			'started' => time(),
 		);
-		Resque::redis()->set('job:' . $id . ':status', json_encode($statusPacket));
+		Resque::Redis()->set('job:' . $id . ':status', json_encode($statusPacket));
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Resque_Job_Status
 			return false;
 		}
 
-		if(!Resque::redis()->exists((string)$this)) {
+		if(!Resque::Redis()->exists((string)$this)) {
 			$this->isTracking = false;
 			return false;
 		}
@@ -95,11 +95,11 @@ class Resque_Job_Status
 			'status' => $status,
 			'updated' => time(),
 		);
-		Resque::redis()->set((string)$this, json_encode($statusPacket));
+		Resque::Redis()->set((string)$this, json_encode($statusPacket));
 
 		// Expire the status for completed jobs after 24 hours
 		if(in_array($status, self::$completeStatuses)) {
-			Resque::redis()->expire((string)$this, 86400);
+			Resque::Redis()->expire((string)$this, 86400);
 		}
 	}
 
@@ -115,7 +115,7 @@ class Resque_Job_Status
 			return false;
 		}
 
-		$statusPacket = json_decode(Resque::redis()->get((string)$this), true);
+		$statusPacket = json_decode(Resque::Redis()->get((string)$this), true);
 		if(!$statusPacket) {
 			return false;
 		}
@@ -128,7 +128,7 @@ class Resque_Job_Status
 	 */
 	public function stop()
 	{
-		Resque::redis()->del((string)$this);
+		Resque::Redis()->del((string)$this);
 	}
 
 	/**

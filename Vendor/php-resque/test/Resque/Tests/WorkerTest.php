@@ -17,7 +17,7 @@ class Resque_Tests_WorkerTest extends Resque_Tests_TestCase
 		$worker->registerWorker();
 
 		// Make sure the worker is in the list
-		$this->assertTrue((bool)$this->redis->sismember('resque:workers', (string)$worker));
+		$this->assertTrue((bool)$this->redis->sismember('workers', (string)$worker));
 	}
 
 	public function testGetAllWorkers()
@@ -55,7 +55,7 @@ class Resque_Tests_WorkerTest extends Resque_Tests_TestCase
 
 		$this->assertFalse(Resque_Worker::exists((string)$worker));
 		$this->assertEquals(array(), Resque_Worker::all());
-		$this->assertEquals(array(), $this->redis->smembers('resque:workers'));
+		$this->assertEquals(array(), $this->redis->smembers('workers'));
 	}
 
 	public function testPausedWorkerDoesNotPickUpJobs()

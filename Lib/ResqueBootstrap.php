@@ -53,12 +53,3 @@
 	// End ShellDispatcher
 	
 	App::uses('Shell', 'Console');
-	
-	// Include our Job Shell
-	
-	App::uses('ResqueUtility', 'Resque.Lib');
-	$jobs = ResqueUtility::getJobs();
-	foreach($jobs as $job)
-	{
-		require_once $job;
-	}

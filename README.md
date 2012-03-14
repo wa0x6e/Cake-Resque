@@ -34,7 +34,7 @@ To use the plugin, you will need :
 * [Redis](http://www.redis.io) 2.2 (or higher) (to store the jobs list)
 * [PHPRedis extension for PHP](https://github.com/nicolasff/phpredis) (PHP API for communicating with redis)
 
-Installation of Redis and PhpRedis are detailed in their own homepage.
+Installation of Redis and PhpRedis are detailed in their own homepage. If you can't install PHPRedis, it will fallback to Redisent, another Redis API, included in the plugin. It's not as performant as PHPRedis though.
 
 ##Installation
 
@@ -50,7 +50,7 @@ Installation of Redis and PhpRedis are detailed in their own homepage.
 	
 		public $components = array('Resque.Resque');
 
-4. Create the **AppShell.php** file in *app/Console/Command*, if not exists
+4. Create the **AppShell.php** file in *app/Console/Command*, if it doesn't exist
 
 5. Add the following method to AppShell.php
 
@@ -92,7 +92,7 @@ Available sub-commands are :
 
 To start a new resque worker. Be default, it will use the default configuration defined in the bootstrap, and create a queue named default (`queue`), and a worker that will be pooling this queue each 5 seconds (`interval`). When the queue contains some jobs, `count` workers will be forked to process the jobs. Starts does takes options :
 
-**-u** User running the php process. Default is `www-data`. Must be defined if your php is running under a different user, or it will not have the permission to shutdown the workers.
+**-u** User running the php process. Default is the current user running the command. Must be defined if your php is running under a different user, or it will not have the permission to shutdown the workers.
 
 **-q** A list of queues, separated with a comma : to create multiple queues at the same time. eg : `-q 5squeue,10squeue, 15squeue`, or it will fallback to the queue defined in the bootstrap.
 
@@ -109,7 +109,7 @@ To shutdown all resque workers.
 
 * **restart**
 
-To restart the workers.
+To restart the workers, with their previous settings
 
 * **stats**
 
@@ -129,7 +129,7 @@ Today main goal is to enqueue jobs, and have a worker process it later. To enque
 This will add the job `Friend` with arguments `array('findNewFriends' 'John Doe', 'Ghana')` to the `default` queue.
 
 * First argument is the name of the queue to add the job to (you can create as many queue as you like, with a different interval time between each pooling).
-* Second argument is the name of the Shell (more details below)
+* Second argument is the name of the Shell. You can also use the plugin syntax to reference a plugin Shell : `Pluginname.Modelnane` (more details below)
 * Third argument is an array of arguments. First index is the name of the function to call, within the Shell, other indices are passed to the function called
 
 As you know, we can't call directly a method within CakePHP. You **can not** just do that
@@ -142,7 +142,7 @@ As you know, we can't call directly a method within CakePHP. You **can not** jus
 	?>
 For a model to work, you have to also load the Router, the associated models, behaviors, database configuration, the cakephp core etc … All of these tasks are done automatically when calling something via the Cake Dispatcher. There is two ways of calling the dispatcher : the web front (http), and the cli (cake shell). We will use the cake shell, for obvious reasons (lightweight, no views rendering, helpers etc …).
 
-To process a job, just create a Shell :
+To process a job, just create the Shell class `app/Console/Command/FriendShell.php`
 	
 	<?php
 
@@ -156,11 +156,30 @@ To process a job, just create a Shell :
 			$this->Friend->findNewFriends($this->args[0], $this->args[1]);
 		}
 	}
+	
+Put the Shell class in `app/Console/Command`, or if you're using a plugin shell, in `YourPlugin/Console/Command`.
+All Shell class must extends `AppShell` in order to be visible by Resque.
 
 **You have to restart the workers when you make any changes to your jobs classes**
 
 Using the shell is not hard, and if you're not familiar with it, read the [official documentation](http://book.cakephp.org/2.0/en/console-and-shells.html).
 If you read until here, I assume that you have more than basic knowledge about cakePHP. You must have a pretty big application to seek delayed jobs :)
+
+##Changelog
+
+###**v.0.6** [2012-03-14] 
+ 
+* Removed jobs command
+* Added CakePHP plugin syntax (*Plugin.Model*) when referencing classname: job classes doesn't have to be located in `app/Console/Command ` anymore, you can leave them in `PluginName/Console/Command`, as long as you extends the `AppShell` class, that contains a `perform` method
+* Updated php-resque to latest version
+* Added Redisent support: php-resque fallback to Redisent if phpRedis is not installed
+* Enabled namespace for all resque keys in redis
+* Changed cli `enqueue` command to accept the same arguments as the php one
+
+###**v.0.5** [2012-02-19] 
+
+* `restart` now restore all workers with their options
+
 
 
 ##Credits

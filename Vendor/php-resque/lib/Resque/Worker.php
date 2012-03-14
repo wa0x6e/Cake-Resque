@@ -53,7 +53,7 @@ class Resque_Worker
 	 * @var Resque_Job Current job, if any, being processed by this worker.
 	 */
 	private $currentJob = null;
-	
+
 	/**
 	 * @var int Process ID of child worker processes.
 	 */
@@ -64,7 +64,7 @@ class Resque_Worker
 	 */
 	public static function all()
 	{
-		$workers = Resque::redis()->smembers('workers');
+		$workers = Resque::Redis()->smembers('workers');
 		if(!is_array($workers)) {
 			$workers = array();
 		}
@@ -84,7 +84,7 @@ class Resque_Worker
 	 */
 	public static function exists($workerId)
 	{
-		return (bool)Resque::redis()->sismember('workers', $workerId);
+		return (bool)Resque::Redis()->sismember('workers', $workerId);
 	}
 
 	/**
@@ -95,7 +95,7 @@ class Resque_Worker
 	 */
 	public static function find($workerId)
 	{
-		if(!self::exists($workerId)) {
+	  if(!self::exists($workerId) || false === strpos($workerId, ":")) {
 			return false;
 		}
 
@@ -358,6 +358,7 @@ class Resque_Worker
 		pcntl_signal(SIGUSR1, array($this, 'killChild'));
 		pcntl_signal(SIGUSR2, array($this, 'pauseProcessing'));
 		pcntl_signal(SIGCONT, array($this, 'unPauseProcessing'));
+		pcntl_signal(SIGPIPE, array($this, 'reestablishRedisConnection'));
 		$this->log('Registered signals', self::LOG_VERBOSE);
 	}
 
@@ -378,6 +379,16 @@ class Resque_Worker
 	{
 		$this->log('CONT received; resuming job processing');
 		$this->paused = false;
+	}
+
+	/**
+	 * Signal handler for SIGPIPE, in the event the redis connection has gone away.
+	 * Attempts to reconnect to redis, or raises an Exception.
+	 */
+	public function reestablishRedisConnection()
+	{
+		$this->log('SIGPIPE received; attempting to reconnect');
+		Resque::Redis()->establishConnection();
 	}
 
 	/**
@@ -436,12 +447,14 @@ class Resque_Worker
 		$workerPids = $this->workerPids();
 		$workers = self::all();
 		foreach($workers as $worker) {
-			list($host, $pid, $queues) = explode(':', (string)$worker, 3);
-			if($host != $this->hostname || in_array($pid, $workerPids) || $pid == getmypid()) {
-				continue;
-			}
-			$this->log('Pruning dead worker: ' . (string)$worker, self::LOG_VERBOSE);
-			$worker->unregisterWorker();
+		  if (is_object($worker)) {
+  			list($host, $pid, $queues) = explode(':', (string)$worker, 3);
+  			if($host != $this->hostname || in_array($pid, $workerPids) || $pid == getmypid()) {
+  				continue;
+  			}
+  			$this->log('Pruning dead worker: ' . (string)$worker, self::LOG_VERBOSE);
+  			$worker->unregisterWorker();
+		  }
 		}
 	}
 
@@ -466,8 +479,8 @@ class Resque_Worker
 	 */
 	public function registerWorker()
 	{
-		Resque::redis()->sadd('workers', $this);
-		Resque::redis()->set('worker:' . (string)$this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
+		Resque::Redis()->sadd('workers', (string)$this);
+		Resque::Redis()->set('worker:' . (string)$this . ':started', strftime('%a %b %d %H:%M:%S %Z %Y'));
 	}
 
 	/**
@@ -480,9 +493,9 @@ class Resque_Worker
 		}
 
 		$id = (string)$this;
-		Resque::redis()->srem('workers', $id);
-		Resque::redis()->del('worker:' . $id);
-		Resque::redis()->del('worker:' . $id . ':started');
+		Resque::Redis()->srem('workers', $id);
+		Resque::Redis()->del('worker:' . $id);
+		Resque::Redis()->del('worker:' . $id . ':started');
 		Resque_Stat::clear('processed:' . $id);
 		Resque_Stat::clear('failed:' . $id);
 	}
@@ -502,7 +515,7 @@ class Resque_Worker
 			'run_at' => strftime('%a %b %d %H:%M:%S %Z %Y'),
 			'payload' => $job->payload
 		));
-		Resque::redis()->set('worker:' . $job->worker, $data);
+		Resque::Redis()->set('worker:' . $job->worker, $data);
 	}
 
 	/**
@@ -514,7 +527,7 @@ class Resque_Worker
 		$this->currentJob = null;
 		Resque_Stat::incr('processed');
 		Resque_Stat::incr('processed:' . (string)$this);
-		Resque::redis()->del('worker:' . (string)$this);
+		Resque::Redis()->del('worker:' . (string)$this);
 	}
 
 	/**
@@ -549,7 +562,7 @@ class Resque_Worker
 	 */
 	public function job()
 	{
-		$job = Resque::redis()->get('worker:' . $this);
+		$job = Resque::Redis()->get('worker:' . $this);
 		if(!$job) {
 			return array();
 		}

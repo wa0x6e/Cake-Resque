@@ -1,9 +1,33 @@
 <?php
 // Third- party apps may have already loaded Resident from elsewhere
 // so lets be careful.
-if(!class_exists('Redisent')) {
+if(!class_exists('Redisent', false)) {
 	require_once dirname(__FILE__) . '/../Redisent/Redisent.php';
 }
+	
+
+	
+class PhpRedisApi extends Redis
+{
+	private static $defaultNamespace = 'resque2:';
+	
+	public function __construct($host, $port, $timeout = 0)
+	{
+		parent::__construct();
+		$this->pconnect($host, $port, $timeout);
+		$this->setOption(Redis::OPT_PREFIX, self::$defaultNamespace);
+	}
+	
+	public static function prefix($namespace)
+	{
+		self::$defaultNamespace = $namespace;
+		if (strpos($namespace, ':') === false) {
+			$namespace .= ':';
+		}
+		$this->setOption(Redis::OPT_PREFIX, self::$defaultNamespace);
+	}
+}
+
 
 /**
  * Extended Redisent class used by Resque for all communication with
@@ -14,8 +38,13 @@ if(!class_exists('Redisent')) {
  * @copyright	(c) 2010 Chris Boulton
  * @license		http://www.opensource.org/licenses/mit-license.php
  */
-class Resque_Redis extends Redisent
+class RedisentApi extends Redisent
 {
+    /**
+     * Redis namespace
+     * @var string
+     */
+    private static $defaultNamespace = 'resque:';
 	/**
 	 * @var array List of all commands in Redis that supply a key as their
 	 *	first argument. Used to prefix keys with the Resque namespace.
@@ -34,7 +63,7 @@ class Resque_Redis extends Redisent
 		'setnx',
 		'incr',
 		'incrby',
-		'decrby',
+		'decr',
 		'decrby',
 		'rpush',
 		'lpush',
@@ -76,10 +105,22 @@ class Resque_Redis extends Redisent
 	// msetnx
 	// mset
 	// renamenx
-
+	
+	/**
+	 * Set Redis namespace (prefix) default: resque
+	 * @param string $namespace
+	 */
+	public static function prefix($namespace)
+	{
+	    if (strpos($namespace, ':') === false) {
+	        $namespace .= ':';
+	    }
+	    self::$defaultNamespace = $namespace;
+	}
+	
 	/**
 	 * Magic method to handle all function requests and prefix key based
-	 * operations with the 'resque:' key prefix.
+	 * operations with the {self::$defaultNamespace} key prefix.
 	 *
 	 * @param string $name The name of the method called.
 	 * @param array $args Array of supplied arguments to the method.
@@ -88,7 +129,7 @@ class Resque_Redis extends Redisent
 	public function __call($name, $args) {
 		$args = func_get_args();
 		if(in_array($name, $this->keyCommands)) {
-			$args[1][0] = 'resque:' . $args[1][0];
+		    $args[1][0] = self::$defaultNamespace . $args[1][0];
 		}
 		try {
 			return parent::__call($name, $args[1]);
@@ -98,4 +139,13 @@ class Resque_Redis extends Redisent
 		}
 	}
 }
-?>
+
+if (class_exists('Redis'))
+{
+	class Resque_Redis extends PhpRedisApi {}
+}
+else
+{
+	class Resque_Redis extends RedisentApi {}
+}
+

@@ -77,16 +77,7 @@ class ResqueShell extends Shell
 	   		->addSubcommand('tail', array(
     			'help' => __d('resque_console', 'View tail of the workers logs.')
 	    	))
-			->addSubcommand('jobs', array(
-				'help' => __d('resque_console', 'Display a list of all available jobs.'),
-				'parser' => array(
-					'arguments' => array(
-						'jobname' => array(
-							'help' => __d('resque_console', 'Name of the job to get description')
-						)
-					)
-				)
-			));
+		);
 	    	
 
 	}
@@ -95,11 +86,6 @@ class ResqueShell extends Shell
 
 	/**
 	 * Manually enqueue a job via CLI.
-	 *
-	 * @param $job_class
-	 *   Camelized job class name
-	 * @param $args ...
-	 *   (optional) one or more arguments to pass to job.
 	 */
 	public function enqueue()
 	{
@@ -109,17 +95,12 @@ class ResqueShell extends Shell
 			return false;
 		}
 
-		$job_class = &$this->args[0];
-		
-		$params = array_diff_key($this->params, array_flip(array('working', 'app', 'root', 'webroot')));
-		$paramstr = '';
-		foreach ($params as $key => &$value)
-		{
-			$paramstr .= ($paramstr ? ', ' : '') . $key . ':' . $value;
-		}
+		$job_queue = $this->args[0];
+		$job_class = $this->args[1];
+		$params = explode(',', $this->args[2]);
 
 		Resque::enqueue($job_queue, $job_class, $params);
-		$this->out('Enqueued new job "' . $job_class . '"' . ($paramstr ? ' with params (' . $paramstr . ')' : '') . '...');
+		$this->out('Enqueued new job "' . $job_class . '"' . ($this->args[2] ? ' with params (' . $this->args[2] . ')' : '') . '...');
 	}
 
 	/**
@@ -199,10 +180,9 @@ class ResqueShell extends Shell
 			$this->out('Killing '.count($workers).' workers ...');
 			foreach($workers as $w)
 			{
-				list($hostname, $pid, $queues) = explode(':', $w, 3);
-				
 				$this->params['force'] ? $w->shutDownNow() : $w->shutDown();	// Send signal to stop processing jobs
 				$w->unregisterWorker();											// Remove jobs from resque environment
+				list($hostname, $pid, $queue) = explode(':', (string)$w);
 				exec('Kill -9 '.$pid);											// Kill all remaining system process
 			}
 		}
