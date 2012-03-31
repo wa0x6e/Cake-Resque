@@ -52,4 +52,13 @@
 	
 	// End ShellDispatcher
 	
+	// Get Redis config from plugin configuration and set environment variable for PHP-Resque
+	$resqueSettings = Configure::read('Resque');
+
+	$redisHost = $resqueSettings['Redis']['host'];
+	$redisPort = $resqueSettings['Redis']['port'];
+
+	putenv('REDIS_BACKEND=' . $redisHost . ':' . $redisPort);
+	// End Redis environment variable config
+	
 	App::uses('Shell', 'Console');

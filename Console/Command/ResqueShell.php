@@ -17,6 +17,15 @@ class ResqueShell extends Shell
 		App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque.php'));
 		App::import('Vendor', 'Resque.Resque_Stat', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Stat.php'));
 		App::import('Vendor', 'Resque.Resque_Worker', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php'));
+
+		// Get CakeResque plugin configuration and set backend settings
+		$resqueSettings = Configure::read('Resque');
+
+		$redisHost = $resqueSettings['Redis']['host'];
+		$redisPort = $resqueSettings['Redis']['port'];
+
+		Resque::setBackend($redisHost . ':' . $redisPort);
+		// End CakeResque plugin configuration handling
 	}
 		
 	public function getOptionParser()
