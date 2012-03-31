@@ -147,7 +147,8 @@ class ResqueShell extends Shell
 		escapeshellarg($path) . '; VVERBOSE=true QUEUE=' .
 		escapeshellarg($queue) . ' APP_INCLUDE=' .
 		escapeshellarg($bootstrap_path) . ' INTERVAL=' .
-		escapeshellarg($interval) . ' CAKE=' .
+		escapeshellarg($interval) . ' REDIS_BACKEND=' .
+		escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port')) . ' CAKE=' .
 		escapeshellarg(CAKE) . ' COUNT=' . $count .
 		 ' php ./resque.php';
 		$cmd .= ' >> '. escapeshellarg($log_path).' 2>&1" >/dev/null 2>&1 &';

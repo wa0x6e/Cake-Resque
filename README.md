@@ -167,6 +167,11 @@ If you read until here, I assume that you have more than basic knowledge about c
 
 ##Changelog
 
+###**v.0.7** [2012-03-31] 
+
+* [fix] Use user defined redis server configuration for resque
+
+
 ###**v.0.6** [2012-03-14] 
  
 * Removed jobs command
