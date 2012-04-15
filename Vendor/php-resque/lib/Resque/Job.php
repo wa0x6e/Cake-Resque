@@ -149,6 +149,7 @@ class Resque_Job
 			App::uses($model, $plugin . '.Console/Command');
 			$class = $model;
 		}
+		else App::uses($model, 'Console/Command');
 
 		if(!class_exists($class)) {
 			throw new Resque_Exception(

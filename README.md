@@ -167,6 +167,10 @@ If you read until here, I assume that you have more than basic knowledge about c
 
 ##Changelog
 
+###**v.0.71** [2012-03-31] 
+
+* [fix] Shell outside Plugin folder where not found
+
 ###**v.0.7** [2012-03-31] 
 
 * [fix] Use user defined redis server configuration for resque
