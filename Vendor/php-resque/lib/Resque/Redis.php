@@ -7,7 +7,7 @@ if(!class_exists('Redisent', false)) {
 	
 
 	
-class PhpRedisApi extends Redis
+class PhpRedisApi extends Redisent
 {
 	private static $defaultNamespace = 'resque:';
 	
