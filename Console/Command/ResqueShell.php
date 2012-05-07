@@ -13,7 +13,6 @@ class ResqueShell extends Shell
 	{
 		$this->log_path = TMP . 'logs' . DS . 'php-resque-worker.log';
 		 
-		App::import('Lib', 'Resque.ResqueUtility');
 		App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque.php'));
 		App::import('Vendor', 'Resque.Resque_Stat', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Stat.php'));
 		App::import('Vendor', 'Resque.Resque_Worker', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php'));
@@ -77,7 +76,7 @@ class ResqueShell extends Shell
 	   		->addSubcommand('tail', array(
     			'help' => __d('resque_console', 'View tail of the workers logs.')
 	    	))
-		);
+		;
 	    	
 
 	}
