@@ -1,0 +1,286 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Cake-resque by kamisama</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Cake-resque</h1>
+        <p>CakePHP Plugin for Resque</p>
+        <p class="view"><a href="https://github.com/kamisama/Cake-Resque">View the Project on GitHub <small>kamisama/Cake-Resque</small></a></p>
+        <ul>
+          <li><a href="https://github.com/kamisama/Cake-Resque/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/kamisama/Cake-Resque/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/kamisama/Cake-Resque">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>CakeResque</h1>
+
+<p>CakeResque is a CakePHP plugin for creating background jobs that can be processed offline later.</p>
+
+<h2>What you can do with cakeResque</h2>
+
+<p>The main goal is to delay some non-essential tasks to later, reducing the waiting time for the user.</p>
+
+<h3>Example</h3>
+
+<p>Let's say a lambda user want to update his location, and your website has a lot of social features centered around the user. Updating the location will :</p>
+
+<ul>
+<li>Update the user's location in the users table (or whatever, depending on your structure) [takes 0.2s]</li>
+<li>Find some new friends around the user's new location [takes 0.8s]</li>
+<li>Update user's activity stream (<em>eg. Lamdba is now living in Ghana</em>) [takes 0.3s]</li>
+<li>… and a lot of other stuff like sending emails, refreshing cache etc … [takes 1s]</li>
+</ul><p>But the user doesn't care about all of these, and just wanted to update his location. You should return a response immediatly after the first point, and delay the other tasks for later. These tasks should be processed offline, in a separate process, and shouldn't affect the user experience. User should just wait 0.2s instead of 2.3s </p>
+
+<h2>How it works</h2>
+
+<p>Instead of calling for example <code>findNewFriends($userId)</code> in your <code>afterSave()</code> callback, you call <code>Resque::enqueue('default', 'findNewFriends', $userId)</code>. The function will not be called, it will just be added in a temporary list, as a <strong>job</strong>. Later (each x seconds), another process (the <strong>worker</strong>) in the background will read that list, and execute each jobs.</p>
+
+<p>CakeResque is just a tool for using Resque within you CakePHP application. The heart of the plugin is Resque, or precisely PHP-Resque, a php port of Resque, originally written in Ruby and developed by the folks at github.</p>
+
+<blockquote>
+<p>Resque (pronounced like "rescue") is a Redis-backed library for creating background jobs, placing those jobs on multiple queues, and processing them later.</p>
+</blockquote>
+
+<p>Read the <a href="https://github.com/defunkt/resque">Resque</a> official page for more details on how background jobs, workers and jobs if these terms doesn't sound familiar to you.</p>
+
+<h2>Requirements</h2>
+
+<p>To use the plugin, you will need :</p>
+
+<ul>
+<li>
+<a href="http://cakephp.org/">CakePHP 2.0</a> (or higher)</li>
+<li>
+<a href="http://www.redis.io">Redis</a> 2.2 (or higher) (to store the jobs list)</li>
+<li>
+<a href="https://github.com/nicolasff/phpredis">PHPRedis extension for PHP</a> (PHP API for communicating with redis)</li>
+</ul><p>Installation of Redis and PhpRedis are detailed in their own homepage. If you can't install PHPRedis, it will fallback to Redisent, another Redis API, included in the plugin. It's not as performant as PHPRedis though.</p>
+
+<h2>Installation</h2>
+
+<ol>
+<li><p>Drop the folder in app/Plugin directory</p></li>
+<li>
+<p>Load the Plugin in your <em>app/Config/bootstrap.php</em></p>
+
+<pre><code>CakePlugin::loadAll(array(
+    'Resque' =&gt; array('bootstrap' =&gt; true)
+));
+</code></pre>
+</li>
+<li>
+<p>Load the component in your <em>app/Controller/AppController.php</em></p>
+
+<pre><code>public $components = array('Resque.Resque');
+</code></pre>
+</li>
+<li><p>Create the <strong>AppShell.php</strong> file in <em>app/Console/Command</em>, if it doesn't exist</p></li>
+<li>
+<p>Add the following method to AppShell.php</p>
+
+<pre><code>public function perform()
+{
+    $this-&gt;initialize();
+    $this-&gt;{array_shift($this-&gt;args)}();
+}
+</code></pre>
+</li>
+</ol><h2>Configuration</h2>
+
+<p>I should assume that at this point, you have redis installed and running. We just have to let the plugin know how to connect to your redis server, and do some basic configuration.<br>
+Replace <strong>host</strong> and <strong>port</strong> in <em>app/Plugin/Resque/Config/bootstrap.php</em> with yours</p>
+
+<pre><code>&lt;?php
+
+ Configure::write('Resque', array(
+    'Redis' =&gt; array('host' =&gt; 'localhost', 'port' =&gt; 6379),    // Redis server location
+    'default' =&gt; array(
+        'queue' =&gt; 'default',                                       // Name of the default queue
+        'interval' =&gt; 5,                                            // Number of second between each works
+        'count' =&gt; 1                                                // Number of forks for each workers
+        ),
+    'queues' =&gt; array(
+            array(
+                'queue' =&gt; 'default',   // Use default values from above for missing interval and count indexes
+                //'user' =&gt; 'www-data'  // If PHP is running as a different user on you webserver
+                ),
+            array(
+                'queue' =&gt; 'achievement',
+                'interval' =&gt; 10
+                )
+            )
+));
+</code></pre>
+
+<p><strong>queues</strong> index is optional, and become handy only when you have multiple queues. It lets you defined a list of queues and their parameters, and start all of them at once with the <code>load</code> command.</p>
+
+<h2>Usage</h2>
+
+<p>In order to process the background jobs, at least one worker have to be running, and pooling a jobs' list.</p>
+
+<p>There's two step : start the workers, and send the jobs to the workers</p>
+
+<h3>Manage the workers</h3>
+
+<p>A shell is available to manage the workers, just call </p>
+
+<pre><code>cake Resque.resque
+</code></pre>
+
+<p>Available sub-commands are :</p>
+
+<ul>
+<li><strong>start</strong></li>
+</ul><p>To start a new resque worker. Be default, it will use the default configuration defined in the bootstrap, and create a queue named default (<code>queue</code>), and a worker that will be pooling this queue each 5 seconds (<code>interval</code>). When the queue contains some jobs, <code>count</code> workers will be forked to process the jobs. Starts does takes options :</p>
+
+<blockquote>
+<p><strong>-u</strong> User running the php process. Default is the current user running the command. Must be defined if your php is running under a different user, or it will not have the permission to shutdown the workers.</p>
+
+<p><strong>-q</strong> A list of queues, separated with a comma : to create multiple queues at the same time. eg : <code>-q 5squeue,10squeue, 15squeue</code>, or it will fallback to the queue defined in the bootstrap.</p>
+
+<p><strong>-i</strong> Number of seconds between pooling each queues. Default to the bootstrap one.</p>
+
+<p><strong>-n</strong> Number of workers working on the same queue. Uses pcntl to fork the process, ensure that you PHP is compiled with it.</p>
+</blockquote>
+
+<p>For creating multiple queues with different options, just run start again.</p>
+
+<ul>
+<li><strong>stop</strong></li>
+</ul><p>To shutdown all resque workers.</p>
+
+<ul>
+<li><strong>restart</strong></li>
+</ul><p>To restart the workers, with their previous settings</p>
+
+<ul>
+<li><strong>load</strong></li>
+</ul><p>To start a batch of pre-defined queues (in your bootstrap)</p>
+
+<ul>
+<li><strong>stats</strong></li>
+</ul><p>Display total number of failed/processed jobs, as well as stats for each workers.</p>
+
+<ul>
+<li><strong>tail</strong></li>
+</ul><p>Tail the workers' logs. Each workers activity are logged in <code>app/temp/logs/php-resque-worker.log</code>
+You should also see the workers activity via <code>redis-cli monitor</code>.</p>
+
+<h3>Enqueue jobs</h3>
+
+<p>Today main goal is to enqueue jobs, and have a worker process it later. To enqueue a job :</p>
+
+<pre><code>Resque::enqueue('default', 'Friend', array('findNewFriends' 'John Doe', 'Ghana'));
+</code></pre>
+
+<p>This will add the job <code>Friend</code> with arguments <code>array('findNewFriends' 'John Doe', 'Ghana')</code> to the <code>default</code> queue.</p>
+
+<ul>
+<li>First argument is the name of the queue to add the job to (you can create as many queue as you like, with a different interval time between each pooling).</li>
+<li>Second argument is the name of the Shell. You can also use the plugin syntax to reference a plugin Shell : <code>Pluginname.Modelnane</code> (more details below)</li>
+<li>Third argument is an array of arguments. First index is the name of the function to call, within the Shell, other indices are passed to the function called</li>
+</ul><p>As you know, we can't call directly a method within CakePHP. You <strong>can not</strong> just do that</p>
+
+<pre><code>&lt;?php
+    include('app/Model/Friend.php');
+
+    $friend = new Friend();
+    $friend-&gt;findNewFriend('John Dow', 'Ghana');
+?&gt;
+</code></pre>
+
+<p>For a model to work, you have to also load the Router, the associated models, behaviors, database configuration, the cakephp core etc … All of these tasks are done automatically when calling something via the Cake Dispatcher. There is two ways of calling the dispatcher : the web front (http), and the cli (cake shell). We will use the cake shell, for obvious reasons (lightweight, no views rendering, helpers etc …).</p>
+
+<p>To process a job, just create the Shell class <code>app/Console/Command/FriendShell.php</code></p>
+
+<pre><code>&lt;?php
+
+class FriendShell extends AppShell
+{
+    public $uses = array('Friend');
+
+    public function findNewFriend()
+    {
+        // $this-&gt;args == array('John Doe', 'Ghana')
+        $this-&gt;Friend-&gt;findNewFriends($this-&gt;args[0], $this-&gt;args[1]);
+    }
+}
+</code></pre>
+
+<p>Put the Shell class in <code>app/Console/Command</code>, or if you're using a plugin shell, in <code>YourPlugin/Console/Command</code>.
+All Shell class must extends <code>AppShell</code> in order to be visible by Resque.</p>
+
+<p><strong>You have to restart the workers when you make any changes to your jobs classes</strong></p>
+
+<p>Using the shell is not hard, and if you're not familiar with it, read the <a href="http://book.cakephp.org/2.0/en/console-and-shells.html">official documentation</a>.
+If you read until here, I assume that you have more than basic knowledge about cakePHP. You must have a pretty big application to seek delayed jobs :)</p>
+
+<h2>Changelog</h2>
+
+<h3>
+<strong>v.0.8</strong> [2012-05-08]</h3>
+
+<ul>
+<li>[new] <code>Load</code> Command to start a batch of queues defined in you bootstrap, at once</li>
+</ul><h3>
+<strong>v.0.72</strong> [2012-05-07]</h3>
+
+<ul>
+<li>[fix] Fallback to Redisent when PhpRedis is not installed was broken</li>
+</ul><h3>
+<strong>v.0.71</strong> [2012-03-31]</h3>
+
+<ul>
+<li>[fix] Shell outside Plugin folder where not found</li>
+</ul><h3>
+<strong>v.0.7</strong> [2012-03-31]</h3>
+
+<ul>
+<li>[fix] Use user defined redis server configuration for resque</li>
+</ul><h3>
+<strong>v.0.6</strong> [2012-03-14]</h3>
+
+<ul>
+<li>Removed jobs command</li>
+<li>Added CakePHP plugin syntax (<em>Plugin.Model</em>) when referencing classname: job classes doesn't have to be located in <code>app/Console/Command</code> anymore, you can leave them in <code>PluginName/Console/Command</code>, as long as you extends the <code>AppShell</code> class, that contains a <code>perform</code> method</li>
+<li>Updated php-resque to latest version</li>
+<li>Added Redisent support: php-resque fallback to Redisent if phpRedis is not installed</li>
+<li>Enabled namespace for all resque keys in redis</li>
+<li>Changed cli <code>enqueue</code> command to accept the same arguments as the php one</li>
+</ul><h3>
+<strong>v.0.5</strong> [2012-02-19]</h3>
+
+<ul>
+<li>
+<code>restart</code> now restore all workers with their options</li>
+</ul><h2>Credits</h2>
+
+<ul>
+<li>CakeResque is a fork of <a href="https://github.com/mikesmullin/CakePHP-PHP-Resque-Plugin">CakePHP-PHP-Resque</a> by Mike Smullin</li>
+<li>
+<a href="https://github.com/chrisboulton/php-resque">PHP-Resque</a> is written by Chris Boulton </li>
+<li>Based on <a href="https://github.com/defunkt/resque">Resque</a> by defunkt</li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/kamisama">kamisama</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
