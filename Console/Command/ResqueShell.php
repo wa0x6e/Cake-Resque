@@ -13,6 +13,7 @@ class ResqueShell extends Shell
 	{
 		$this->log_path = TMP . 'logs' . DS . 'php-resque-worker.log';
 		 
+		App::import('Lib', 'Resque.ResqueUtility');
 		App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque.php'));
 		App::import('Vendor', 'Resque.Resque_Stat', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Stat.php'));
 		App::import('Vendor', 'Resque.Resque_Worker', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php'));
@@ -76,7 +77,16 @@ class ResqueShell extends Shell
 	   		->addSubcommand('tail', array(
     			'help' => __d('resque_console', 'View tail of the workers logs.')
 	    	))
-		;
+			->addSubcommand('jobs', array(
+				'help' => __d('resque_console', 'Display a list of all available jobs.'),
+				'parser' => array(
+					'arguments' => array(
+						'jobname' => array(
+							'help' => __d('resque_console', 'Name of the job to get description')
+						)
+					)
+				)
+			));
 	    	
 
 	}
@@ -129,10 +139,10 @@ class ResqueShell extends Shell
 			$this->params = $args;
 		}
 		
-		$queue = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.queue');
+		$queue = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
 		$user = isset($this->params['user']) ? $this->params['user'] : get_current_user();
-		$interval = isset($this->params['interval']) ? (int) $this->params['interval'] : Configure::read('Resque.interval');
-		$count = isset($this->params['number']) ? (int) $this->params['number'] : Configure::read('Resque.count');
+		$interval = isset($this->params['interval']) ? (int) $this->params['interval'] : Configure::read('Resque.default.interval');
+		$count = isset($this->params['number']) ? (int) $this->params['number'] : Configure::read('Resque.default.count');
 		
 		//exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
 		//$user = $status === 0 ? 'apache' : 'www-data';
@@ -154,7 +164,7 @@ class ResqueShell extends Shell
 		
 		passthru($cmd);
 		
-		if ($this->params['tail'])
+		if (isset($this->params['tail']) && $this->params['tail'])
 		{
 			sleep(3); // give it time to output to the log for the first time
 			$this->tail();
@@ -183,12 +193,32 @@ class ResqueShell extends Shell
 				$this->params['force'] ? $w->shutDownNow() : $w->shutDown();	// Send signal to stop processing jobs
 				$w->unregisterWorker();											// Remove jobs from resque environment
 				list($hostname, $pid, $queue) = explode(':', (string)$w);
+				$this->out('Killing ' . $pid);
 				exec('kill -9 '.$pid);											// Kill all remaining system process
 			}
 		}
 		
 		if ($shutdown) $this->__clearWorker();
 		
+	}
+	
+	
+	/**
+	 * Start a list of predefined queues
+	 */
+	public function load()
+	{
+		if (Configure::read('Resque.queues') == null)
+		{
+			$this->out('   You have no configured queues to load.');
+		}
+		else
+		{
+			foreach(Configure::read('Resque.queues') as $queue)
+			{
+				$this->start($queue);
+			}
+		}
 	}
 
 	/**

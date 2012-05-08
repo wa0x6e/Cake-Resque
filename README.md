@@ -64,14 +64,29 @@ Installation of Redis and PhpRedis are detailed in their own homepage. If you ca
 
 I should assume that at this point, you have redis installed and running. We just have to let the plugin know how to connect to your redis server, and do some basic configuration.  
 Replace **host** and **port** in *app/Plugin/Resque/Config/bootstrap.php* with yours
+	
 	<?php
 
 	 Configure::write('Resque', array(
 		'Redis' => array('host' => 'localhost', 'port' => 6379),	// Redis server location
-		'queue' => 'default',										// Name of the default queue
-		'interval' => 5,											// Number of second between each works
-		'count' => 1												// Number of forks for each workers
+		'default' => array(
+			'queue' => 'default',										// Name of the default queue
+			'interval' => 5,											// Number of second between each works
+			'count' => 1												// Number of forks for each workers
+			),
+		'queues' => array(
+	 			array(
+		 			'queue' => 'default',	// Use default values from above for missing interval and count indexes
+		 			//'user' => 'www-data'	// If PHP is running as a different user on you webserver
+	 				),
+	 			array(
+ 					'queue' => 'achievement',
+ 					'interval' => 10
+	 				)
+	 			)
 	));
+	
+**queues** index is optional, and become handy only when you have multiple queues. It lets you defined a list of queues and their parameters, and start all of them at once with the `load` command.
  
 
 ##Usage
@@ -92,13 +107,13 @@ Available sub-commands are :
 
 To start a new resque worker. Be default, it will use the default configuration defined in the bootstrap, and create a queue named default (`queue`), and a worker that will be pooling this queue each 5 seconds (`interval`). When the queue contains some jobs, `count` workers will be forked to process the jobs. Starts does takes options :
 
-**-u** User running the php process. Default is the current user running the command. Must be defined if your php is running under a different user, or it will not have the permission to shutdown the workers.
+> **-u** User running the php process. Default is the current user running the command. Must be defined if your php is running under a different user, or it will not have the permission to shutdown the workers.
 
-**-q** A list of queues, separated with a comma : to create multiple queues at the same time. eg : `-q 5squeue,10squeue, 15squeue`, or it will fallback to the queue defined in the bootstrap.
+> **-q** A list of queues, separated with a comma : to create multiple queues at the same time. eg : `-q 5squeue,10squeue, 15squeue`, or it will fallback to the queue defined in the bootstrap.
 
-**-i** Number of seconds between pooling each queues. Default to the bootstrap one.
+> **-i** Number of seconds between pooling each queues. Default to the bootstrap one.
 
-**-n** Number of workers working on the same queue. Uses pcntl to fork the process, ensure that you PHP is compiled with it.
+> **-n** Number of workers working on the same queue. Uses pcntl to fork the process, ensure that you PHP is compiled with it.
 
 For creating multiple queues with different options, just run start again.
 
@@ -110,6 +125,10 @@ To shutdown all resque workers.
 * **restart**
 
 To restart the workers, with their previous settings
+
+* **load**
+
+To start a batch of pre-defined queues (in your bootstrap)
 
 * **stats**
 
@@ -166,6 +185,14 @@ Using the shell is not hard, and if you're not familiar with it, read the [offic
 If you read until here, I assume that you have more than basic knowledge about cakePHP. You must have a pretty big application to seek delayed jobs :)
 
 ##Changelog
+
+###**v.0.8** [2012-05-08] 
+
+* [new] `Load` Command to start a batch of queues defined in you bootstrap, at once
+
+###**v.0.72** [2012-05-07] 
+
+* [fix] Fallback to Redisent when PhpRedis is not installed was broken
 
 ###**v.0.71** [2012-03-31] 
 
