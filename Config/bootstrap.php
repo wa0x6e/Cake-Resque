@@ -22,7 +22,7 @@
 		'default' => array(
 				'queue' => 'default',		// Name of the default queue
 				'interval' => 5,			// Number of second between each works
-				'count' => 1 				// Number of forks for each workers
+				'workers' => 1 				// Number of forks for each workers
 				),
 	 /*	'queues' => array(
 	 			array(

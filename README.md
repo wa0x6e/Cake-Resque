@@ -72,7 +72,7 @@ Replace **host** and **port** in *app/Plugin/Resque/Config/bootstrap.php* with y
 		'default' => array(
 			'queue' => 'default',										// Name of the default queue
 			'interval' => 5,											// Number of second between each works
-			'count' => 1												// Number of forks for each workers
+			'workers' => 1												// Number of forks for each workers
 			),
 		'queues' => array(
 	 			array(
@@ -185,6 +185,10 @@ Using the shell is not hard, and if you're not familiar with it, read the [offic
 If you read until here, I assume that you have more than basic knowledge about cakePHP. You must have a pretty big application to seek delayed jobs :)
 
 ##Changelog
+
+###**v.0.81** [2012-05-09] 
+
+* [fix] Give the same name for workers count variable in all files
 
 ###**v.0.8** [2012-05-08] 
 

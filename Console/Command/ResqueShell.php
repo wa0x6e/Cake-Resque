@@ -40,7 +40,7 @@ class ResqueShell extends Shell
     						'short' => 'i',
     						'help' => __d('resque_console', 'Pause time in seconds between each works')
 	    				),
-	  					 'number' => array(
+	  					 'workers' => array(
 	        				'short' => 'n',
 	        				'help' => __d('resque_console', 'Number of workers to fork')
 	    				)
@@ -142,7 +142,7 @@ class ResqueShell extends Shell
 		$queue = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
 		$user = isset($this->params['user']) ? $this->params['user'] : get_current_user();
 		$interval = isset($this->params['interval']) ? (int) $this->params['interval'] : Configure::read('Resque.default.interval');
-		$count = isset($this->params['number']) ? (int) $this->params['number'] : Configure::read('Resque.default.count');
+		$count = isset($this->params['workers']) ? (int) $this->params['workers'] : Configure::read('Resque.default.workers');
 		
 		//exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
 		//$user = $status === 0 ? 'apache' : 'www-data';
