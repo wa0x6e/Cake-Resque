@@ -2,6 +2,8 @@
 
 CakeResque is a CakePHP plugin for creating background jobs that can be processed offline later.
 
+*Take a look at [Fresque](https://github.com/kamisama/Fresque) if you want a version for generic PHP application*
+
 ##What you can do with cakeResque
 
 The main goal is to delay some non-essential tasks to later, reducing the waiting time for the user.
