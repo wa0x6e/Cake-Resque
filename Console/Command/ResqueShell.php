@@ -15,9 +15,9 @@ class ResqueShell extends Shell {
 		$this->log_path = TMP . 'logs' . DS . 'php-resque-worker.log';
 
 		App::import('Lib', 'Resque.ResqueUtility');
-		App::import('Vendor', 'Resque.Resque', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque.php'));
-		App::import('Vendor', 'Resque.Resque_Stat', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Stat.php'));
-		App::import('Vendor', 'Resque.Resque_Worker', array('file' => 'php-resque' . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php'));
+		require_once APP . 'Plugin' . DS . 'Resque' . DS . 'Vendor' . DS . 'php-resque' . DS . 'lib' . DS . 'Resque.php';
+		require_once APP . 'Plugin' . DS . 'Resque' . DS . 'Vendor' . DS . 'php-resque' . DS . 'lib' . DS . 'Resque' . DS .'Stat.php';
+		require_once APP . 'Plugin' . DS . 'Resque' . DS . 'Vendor' . DS . 'php-resque' . DS . 'lib' . DS . 'Resque' . DS .'Worker.php';
 	}
 
 	public function getOptionParser() {
