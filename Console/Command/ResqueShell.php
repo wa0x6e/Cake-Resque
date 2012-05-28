@@ -137,7 +137,12 @@ class ResqueShell extends Shell {
 
 		$path = App::pluginPath('Resque') . 'Vendor' . DS . 'php-resque' . DS;
 		$log_path = $this->log_path;
-		$bootstrap_path = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
+
+		if (file_exists(APP . 'Lib' . DS . 'ResqueBootstrap.php')) {
+			$bootstrap_path = APP . 'Lib' . DS . 'ResqueBootstrap.php';
+		} else {
+			$bootstrap_path = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
+		}
 
 		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 		$cmd = 'nohup sudo -u '.$user.' bash -c "cd ' .
