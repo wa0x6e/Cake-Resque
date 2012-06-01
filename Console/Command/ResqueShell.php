@@ -146,9 +146,18 @@ class ResqueShell extends Shell {
 
 		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 
+		$env_vars = array();
+		$vars = Configure::read('Resque.environment_variables');
+		foreach ((array) $vars as $var) {
+			if (isset($_SERVER[$var])) {
+				$env_vars[] = sprintf("%s=%s", $var, escapeshellarg($_SERVER[$var]));
+			}
+		}
+
 		$cmd = implode(' ', array(
 			sprintf("nohup sudo -u %s", $user),
 			sprintf('bash -c "cd %s;', escapeshellarg($path)),
+			implode(' ', $env_vars),
 			sprintf("VVERBOSE=true QUEUE=%s", escapeshellarg($queue)),
 			sprintf("APP_INCLUDE=%s INTERVAL=%s", escapeshellarg($bootstrap_path), escapeshellarg($interval)),
 			sprintf("REDIS_BACKEND=%s", escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port'))),
