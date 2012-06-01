@@ -145,16 +145,17 @@ class ResqueShell extends Shell {
 		}
 
 		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
-		$cmd = 'nohup sudo -u '.$user.' bash -c "cd ' .
-		escapeshellarg($path) . '; VVERBOSE=true QUEUE=' .
-		escapeshellarg($queue) . ' APP_INCLUDE=' .
-		escapeshellarg($bootstrap_path) . ' INTERVAL=' .
-		escapeshellarg($interval) . ' REDIS_BACKEND=' .
-		escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port')) . ' CAKE=' .
-		escapeshellarg(CAKE) . ' COUNT=' . $count .
-		 ' php ./resque.php';
-		$cmd .= ' >> '. escapeshellarg($log_path).' 2>&1" >/dev/null 2>&1 &';
 
+		$cmd = implode(' ', array(
+			sprintf("nohup sudo -u %s", $user),
+			sprintf('bash -c "cd %s;', escapeshellarg($path)),
+			sprintf("VVERBOSE=true QUEUE=%s", escapeshellarg($queue)),
+			sprintf("APP_INCLUDE=%s INTERVAL=%s", escapeshellarg($bootstrap_path), escapeshellarg($interval)),
+			sprintf("REDIS_BACKEND=%s", escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port'))),
+			sprintf("CAKE=%s COUNT=%s", escapeshellarg(CAKE), $count),
+			sprintf("php ./resque.php >> %s", escapeshellarg($log_path)),
+			'2>&1" >/dev/null 2>&1 &'
+		));
 		passthru($cmd);
 
 		if (isset($this->params['tail']) && $this->params['tail']) {
