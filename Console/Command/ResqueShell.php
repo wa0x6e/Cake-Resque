@@ -167,12 +167,15 @@ class ResqueShell extends Shell {
 		));
 		passthru($cmd);
 
+		$this->out("<info>Forked worker</info> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 		if (isset($this->params['tail']) && $this->params['tail']) {
 			sleep(3); // give it time to output to the log for the first time
 			$this->tail();
 		}
 
+		$this->out("<info>Adding worker to resque</info> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 		$this->__addWorker($this->params);
+		$this->out("<info>Done</info> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
 	}
 
 /**
