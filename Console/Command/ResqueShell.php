@@ -44,6 +44,14 @@ class ResqueShell extends Shell {
 				'log' => array(
 					'short' => 'l',
 					'help' => __d('resque_console', 'Log path')
+				),
+				'log-handler' => array(
+					'short' => 'l',
+					'help' => __d('resque_console', 'Log Handler to use for logging.')
+				),
+				'log-handler-target' => array(
+					'short' => 'l',
+					'help' => __d('resque_console', 'Log Handler arguments')
 				)
 			)
 		);
@@ -153,6 +161,7 @@ class ResqueShell extends Shell {
 			sprintf("APP_INCLUDE=%s INTERVAL=%s", escapeshellarg($bootstrap_path), escapeshellarg($this->_runtime['interval'])),
 			sprintf("REDIS_BACKEND=%s", escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port'))),
 			sprintf("CAKE=%s COUNT=%s", escapeshellarg(CAKE), $this->_runtime['workers']),
+			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
 			sprintf("php ./resque.php >> %s", escapeshellarg($this->_runtime['log'])),
 			'2>&1" >/dev/null 2>&1 &'
 		));
@@ -161,7 +170,7 @@ class ResqueShell extends Shell {
 		$this->out("<info>Forked worker</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
 
 		$this->out("<info>Adding worker to resque</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
-		$this->__addWorker($this->_runtime);
+		if ($args === null) $this->__addWorker($this->_runtime);
 		$this->out("<info>Done</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
 	}
 
@@ -280,12 +289,16 @@ class ResqueShell extends Shell {
 		$this->_runtime['interval'] = isset($this->params['interval']) ? $this->params['interval'] : Configure::read('Resque.default.interval');
 		if (!is_numeric($this->_runtime['interval'])) {
 			$errors[] = __d('resque_console', 'Interval time is not valid. Please enter a valid number');
+		} else {
+			$this->_runtime['interval'] = (int)$this->_runtime['interval'];
 		}
 
 		// Validate workers number
 		$this->_runtime['workers'] = isset($this->params['workers']) ? $this->params['workers'] : Configure::read('Resque.default.workers');
 		if (!is_numeric($this->_runtime['workers'])) {
 			$errors[] = __d('resque_console', 'Workers number is not valid. Please enter a valid number');
+		} else {
+			$this->_runtime['workers'] = (int)$this->_runtime['workers'];
 		}
 
 		$this->_runtime['queue'] = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
@@ -295,6 +308,10 @@ class ResqueShell extends Shell {
 
 		$this->_runtime['user'] = isset($this->params['user']) ? $this->params['user'] : get_current_user();
 		// @todo Validate that user exists on the system
+
+		$this->_runtime['Log']['handler'] = isset($this->params['log-handler']) ? $this->params['log-handler'] : Configure::read('Resque.Log.handler');
+
+		$this->_runtime['Log']['target'] = isset($this->params['log-handler-target']) ? $this->params['log-handler-target'] : Configure::read('Resque.Log.target');
 
 		foreach($errors as $error) {
 			$this->out('<warning>Error: '.$error.'</warning>');

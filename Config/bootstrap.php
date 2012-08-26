@@ -36,7 +36,7 @@
 			// - an relative path, that will be relative to
 			// 	 app/tmp/logs folder
 			// - a simple filename, file will be created inside app/tmp/logs
-			'log' => TMP . 'logs' . DS . 'php-resque-worker.log'
+			'log' => TMP . 'logs' . DS . 'resque-worker.log'
 		),
 		 /*
 		'queues' => array(
@@ -67,5 +67,10 @@
 		// eg : array('SERVER_NAME');
 		// Passing a key and a value will set the env variable to this value
 		// eg : array('ARCH' => 'x64')
-		'environment_variables' => array()
+		'environment_variables' => array(),
+
+		'Log' => array(
+			'handler' => 'RotatingFile',
+			'target' => TMP . 'logs' . DS . 'resque-error.log'
+		)
 	));
