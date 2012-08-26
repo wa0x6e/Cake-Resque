@@ -4,7 +4,9 @@ class ResqueShell extends Shell {
 
 	public $uses = array();
 
-	public $log_path = null;
+	protected $_resqueLibrary = null;
+
+	protected $_runtime = array();
 
 /**
  * Startup callback.
@@ -12,22 +14,17 @@ class ResqueShell extends Shell {
  * Initializes defaults.
  */
 	public function startup() {
-		$this->log_path = TMP . 'logs' . DS . 'php-resque-worker.log';
+		$this->_resqueLibrary = App::pluginPath('Resque') . 'vendor' . DS . Configure::read('Resque.Resque.lib') . DS;
 
 		App::import('Lib', 'Resque.ResqueUtility');
-		require_once APP . 'Plugin' . DS . 'Resque' . DS . 'Vendor' . DS . 'php-resque' . DS . 'lib' . DS . 'Resque.php';
-		require_once APP . 'Plugin' . DS . 'Resque' . DS . 'Vendor' . DS . 'php-resque' . DS . 'lib' . DS . 'Resque' . DS .'Stat.php';
-		require_once APP . 'Plugin' . DS . 'Resque' . DS . 'Vendor' . DS . 'php-resque' . DS . 'lib' . DS . 'Resque' . DS .'Worker.php';
+		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque.php';
+		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS .'Stat.php';
+		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS .'Worker.php';
 	}
 
 	public function getOptionParser() {
 		$startParserArguments = array(
 			'options' => array(
-				'tail' => array(
-					'short' => 't',
-					'help' => __d('resque_console', 'Display the tail onscreen.'),
-					'boolean' => true
-				),
 				'user' => array(
 					'short' => 'u',
 					'help' => __d('resque_console', 'User running the workers')
@@ -40,9 +37,13 @@ class ResqueShell extends Shell {
 					'short' => 'i',
 					'help' => __d('resque_console', 'Pause time in seconds between each works')
 				),
-					 'workers' => array(
+				'workers' => array(
 					'short' => 'n',
 					'help' => __d('resque_console', 'Number of workers to fork')
+				),
+				'log' => array(
+					'short' => 'l',
+					'help' => __d('resque_console', 'Log path')
 				)
 			)
 		);
@@ -75,19 +76,11 @@ class ResqueShell extends Shell {
 				'help' => __d('resque_console', 'View stats about processed/failed jobs.')
 			))
 	   		->addSubcommand('tail', array(
-    			'help' => __d('resque_console', 'View tail of the workers logs.')
+    			'help' => __d('resque_console', 'Tail the workers logs.')
 	    	))
-			->addSubcommand('jobs', array(
-				'help' => __d('resque_console', 'Display a list of all available jobs.'),
-				'parser' => array(
-					'arguments' => array(
-						'jobname' => array(
-							'help' => __d('resque_console', 'Name of the job to get description')
-						)
-					)
-				)
-			)
-		);
+	    	->addSubcommand('load', array(
+	    		'help' => __d('resque_console', 'Load a set of predefined workers.')
+	    	));
 	}
 
 /**
@@ -124,19 +117,15 @@ class ResqueShell extends Shell {
  */
 	public function start($args = null) {
 		if (!is_null($args)) {
-			$this->params = $args;
+			$this->_runtime = $args;
 		}
 
-		$queue = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
-		$user = isset($this->params['user']) ? $this->params['user'] : get_current_user();
-		$interval = isset($this->params['interval']) ? (int) $this->params['interval'] : Configure::read('Resque.default.interval');
-		$count = isset($this->params['workers']) ? (int) $this->params['workers'] : Configure::read('Resque.default.workers');
+		if (!$this->__validate()) return;
 
 		//exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
 		//$user = $status === 0 ? 'apache' : 'www-data';
 
-		$path = App::pluginPath('Resque') . 'Vendor' . DS . 'php-resque' . DS;
-		$log_path = $this->log_path;
+		$log_path = $this->_runtime['log'];
 
 		if (file_exists(APP . 'Lib' . DS . 'ResqueBootstrap.php')) {
 			$bootstrap_path = APP . 'Lib' . DS . 'ResqueBootstrap.php';
@@ -144,38 +133,36 @@ class ResqueShell extends Shell {
 			$bootstrap_path = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
 		}
 
-		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
+		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
 
 		$env_vars = array();
 		$vars = Configure::read('Resque.environment_variables');
-		foreach ((array) $vars as $var) {
-			if (isset($_SERVER[$var])) {
-				$env_vars[] = sprintf("%s=%s", $var, escapeshellarg($_SERVER[$var]));
+		foreach ($vars as $key => $val) {
+			if (is_int($key) && isset($_SERVER[$val])) {
+				$env_vars[] = sprintf("%s=%s", $val, escapeshellarg($_SERVER[$val]));
+			} else {
+				$env_vars[] = sprintf("%s=%s", $key, escapeshellarg($val));
 			}
 		}
 
 		$cmd = implode(' ', array(
-			sprintf("nohup sudo -u %s", $user),
-			sprintf('bash -c "cd %s;', escapeshellarg($path)),
+			sprintf("nohup sudo -u %s", $this->_runtime['user']),
+			sprintf('bash -c "cd %s;', escapeshellarg($this->_resqueLibrary)),
 			implode(' ', $env_vars),
-			sprintf("VVERBOSE=true QUEUE=%s", escapeshellarg($queue)),
-			sprintf("APP_INCLUDE=%s INTERVAL=%s", escapeshellarg($bootstrap_path), escapeshellarg($interval)),
+			sprintf("VVERBOSE=true QUEUE=%s", escapeshellarg($this->_runtime['queue'])),
+			sprintf("APP_INCLUDE=%s INTERVAL=%s", escapeshellarg($bootstrap_path), escapeshellarg($this->_runtime['interval'])),
 			sprintf("REDIS_BACKEND=%s", escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port'))),
-			sprintf("CAKE=%s COUNT=%s", escapeshellarg(CAKE), $count),
-			sprintf("php ./resque.php >> %s", escapeshellarg($log_path)),
+			sprintf("CAKE=%s COUNT=%s", escapeshellarg(CAKE), $this->_runtime['workers']),
+			sprintf("php ./resque.php >> %s", escapeshellarg($this->_runtime['log'])),
 			'2>&1" >/dev/null 2>&1 &'
 		));
 		passthru($cmd);
 
-		$this->out("<info>Forked worker</info> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
-		if (isset($this->params['tail']) && $this->params['tail']) {
-			sleep(3); // give it time to output to the log for the first time
-			$this->tail();
-		}
+		$this->out("<info>Forked worker</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
 
-		$this->out("<info>Adding worker to resque</info> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
-		$this->__addWorker($this->params);
-		$this->out("<info>Done</info> (<info>queue:</info>{$queue} <info>user:</info>{$user})");
+		$this->out("<info>Adding worker to resque</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
+		$this->__addWorker($this->_runtime);
+		$this->out("<info>Done</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
 	}
 
 /**
@@ -256,11 +243,12 @@ class ResqueShell extends Shell {
 	}
 
 	private function __addWorker($args) {
-		Resque::Redis()->sAdd('ResqueWorker', serialize($args));
+		Resque::Redis()->rpush('ResqueWorker', serialize($args));
 	}
 
 	private function __getWorkers() {
-		$workers = Resque::Redis()->sMembers('ResqueWorker');
+		$listLength = Resque::Redis()->llen('ResqueWorker');
+		$workers = Resque::Redis()->lrange('ResqueWorker', 0, $listLength-1);
 		if (empty($workers)) {
 			return false;
 		} else {
@@ -274,6 +262,45 @@ class ResqueShell extends Shell {
 
 	private function __clearWorker() {
 		Resque::Redis()->del('ResqueWorker');
+	}
+
+	private function __validate()
+	{
+		$errors = array();
+
+		// Validate Log path
+		$this->_runtime['log'] = isset($this->params['log']) ? $this->params['log'] : Configure::read('Resque.default.log');
+		if (substr($this->_runtime['log'], 0, 2) == './') {
+			$this->_runtime['log'] =  TMP . 'logs' . DS . substr($this->_runtime['log'], 2);
+		} elseif (substr($this->_runtime['log'], 0, 1) != '/') {
+			$this->_runtime['log'] =  TMP . 'logs' . DS . $this->_runtime['log'];
+		}
+
+		// Validate Interval
+		$this->_runtime['interval'] = isset($this->params['interval']) ? $this->params['interval'] : Configure::read('Resque.default.interval');
+		if (!is_numeric($this->_runtime['interval'])) {
+			$errors[] = __d('resque_console', 'Interval time is not valid. Please enter a valid number');
+		}
+
+		// Validate workers number
+		$this->_runtime['workers'] = isset($this->params['workers']) ? $this->params['workers'] : Configure::read('Resque.default.workers');
+		if (!is_numeric($this->_runtime['workers'])) {
+			$errors[] = __d('resque_console', 'Workers number is not valid. Please enter a valid number');
+		}
+
+		$this->_runtime['queue'] = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
+		if ($this->_runtime['queue'] == '') {
+			$errors[] = __d('resque_console', 'Please enter a queue name');
+		}
+
+		$this->_runtime['user'] = isset($this->params['user']) ? $this->params['user'] : get_current_user();
+		// @todo Validate that user exists on the system
+
+		foreach($errors as $error) {
+			$this->out('<warning>Error: '.$error.'</warning>');
+		}
+
+		return empty($errors);
 	}
 
 }
