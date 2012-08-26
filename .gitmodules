@@ -1,6 +1,0 @@
-[submodule "vendors/php-resque"]
-	path = vendors/php-resque
-	url = git://github.com/mikesmullin/php-resque.git
-[submodule "Vendor/php-resque-ex"]
-	path = Vendor/php-resque-ex
-	url = git@github.com:kamisama/php-resque-ex.git
