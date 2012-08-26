@@ -15,6 +15,5 @@
 	"require": {
 		"php": ">=5.3.0",
 		"kamisama/php-resque-ex": ">=1.0.0"
-	},
-	"vendor-dir": "Vendor"
+	}
 }
