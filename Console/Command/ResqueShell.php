@@ -137,6 +137,7 @@ class ResqueShell extends Shell {
 		if (!is_null($args)) {
 			$this->_runtime = $args;
 		} else {
+			$this->_runtime = $this->params;
 			$this->out('<info>Creating workers</info>');
 		}
 
@@ -185,7 +186,7 @@ class ResqueShell extends Shell {
 		$workersCountAfter = Resque::Redis()->scard('workers');
 		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
 			if ($args === null || $new === true) $this->__addWorker($this->_runtime);
-			$this->out(' <success>Done</success>');
+			$this->out(' <success>Done</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x'.$this->_runtime['workers']));
 		} else {
 			$this->out(' <error>Fail</error>');
 		}
@@ -285,12 +286,11 @@ class ResqueShell extends Shell {
 			foreach($workers as $worker) {
 				$this->start($worker, false);
 			}
+			$this->out("");
 		} else {
 			$this->out('<warning>No active workers found, will start brand new worker</warning>');
 			$this->start();
 		}
-
-		$this->out("");
 	}
 
 	public function stats() {
@@ -353,7 +353,7 @@ class ResqueShell extends Shell {
 		$errors = array();
 
 		// Validate Log path
-		$this->_runtime['log'] = isset($this->params['log']) ? $this->params['log'] : Configure::read('Resque.default.log');
+		$this->_runtime['log'] = isset($this->_runtime['log']) ? $this->_runtime['log'] : Configure::read('Resque.default.log');
 		if (substr($this->_runtime['log'], 0, 2) == './') {
 			$this->_runtime['log'] =  TMP . 'logs' . DS . substr($this->_runtime['log'], 2);
 		} elseif (substr($this->_runtime['log'], 0, 1) != '/') {
@@ -361,29 +361,29 @@ class ResqueShell extends Shell {
 		}
 
 		// Validate Interval
-		$this->_runtime['interval'] = isset($this->params['interval']) ? $this->params['interval'] : Configure::read('Resque.default.interval');
+		$this->_runtime['interval'] = isset($this->_runtime['interval']) ? $this->_runtime['interval'] : Configure::read('Resque.default.interval');
 		if (!is_numeric($this->_runtime['interval'])) {
-			$errors[] = __d('resque_console', 'Interval time is not valid. Please enter a valid number');
+			$errors[] = __d('resque_console', 'Interval time [%s] is not valid. Please enter a valid number', $this->_runtime['interval']);
 		} else {
 			$this->_runtime['interval'] = (int)$this->_runtime['interval'];
 		}
 
 		// Validate workers number
-		$this->_runtime['workers'] = isset($this->params['workers']) ? $this->params['workers'] : Configure::read('Resque.default.workers');
+		$this->_runtime['workers'] = isset($this->_runtime['workers']) ? $this->_runtime['workers'] : Configure::read('Resque.default.workers');
 		if (!is_numeric($this->_runtime['workers'])) {
-			$errors[] = __d('resque_console', 'Workers number is not valid. Please enter a valid number');
+			$errors[] = __d('resque_console', 'Workers number [%s] is not valid. Please enter a valid number', $this->_runtime['workers']);
 		} else {
 			$this->_runtime['workers'] = (int)$this->_runtime['workers'];
 		}
 
-		$this->_runtime['queue'] = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
+		$this->_runtime['queue'] = isset($this->_runtime['queue']) ? $this->_runtime['queue'] : Configure::read('Resque.default.queue');
 
-		$this->_runtime['user'] = isset($this->params['user']) ? $this->params['user'] : get_current_user();
+		$this->_runtime['user'] = isset($this->_runtime['user']) ? $this->_runtime['user'] : get_current_user();
 		// @todo Validate that user exists on the system
 
-		$this->_runtime['Log']['handler'] = isset($this->params['log-handler']) ? $this->params['log-handler'] : Configure::read('Resque.Log.handler');
+		$this->_runtime['Log']['handler'] = isset($this->_runtime['log-handler']) ? $this->_runtime['log-handler'] : Configure::read('Resque.Log.handler');
 
-		$this->_runtime['Log']['target'] = isset($this->params['log-handler-target']) ? $this->params['log-handler-target'] : Configure::read('Resque.Log.target');
+		$this->_runtime['Log']['target'] = isset($this->_runtime['log-handler-target']) ? $this->_runtime['log-handler-target'] : Configure::read('Resque.Log.target');
 
 		foreach($errors as $error) {
 			$this->err('<error>Error:</error> ' . $error);
