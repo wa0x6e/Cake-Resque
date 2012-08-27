@@ -23,7 +23,7 @@
 		'Redis' => array(
 			'host' => 'localhost', 		// Redis server hostname
 			'port' => 6379 				// Redis server port
-	 	),
+		),
 
 		'default' => array(
 			'queue' => 'default',		// Name of the default queue
