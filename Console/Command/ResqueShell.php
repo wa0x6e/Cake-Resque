@@ -20,6 +20,8 @@ class ResqueShell extends Shell {
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS .'Stat.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS .'Worker.php';
+
+		$this->stdout->styles('success', array('text' => 'green'));
 	}
 
 	public function getOptionParser() {
@@ -61,6 +63,11 @@ class ResqueShell extends Shell {
 				'force' => array(
 					'short' => 'f',
 					'help' => __d('resque_console', 'Force workers shutdown, forcing all the current jobs to finish (and fail)'),
+					'boolean' => true
+				),
+				'all' => array(
+					'short' => 'a',
+					'help' => __d('resque_console', 'shutdown all workers'),
 					'boolean' => true
 				)
 			)
@@ -121,17 +128,19 @@ class ResqueShell extends Shell {
 	}
 
 /**
- * Fork a new php resque worker service.
+ * Create a new worker
+ *
+ * @param array $args
+ * @param bool $new Whether the worker is new, or from a restart
  */
-	public function start($args = null) {
+	public function start($args = null, $new = true) {
 		if (!is_null($args)) {
 			$this->_runtime = $args;
+		} else {
+			$this->out('<info>Creating workers</info>');
 		}
 
 		if (!$this->__validate()) return;
-
-		//exec('id apache 2>&1 >/dev/null', $out, $status); // check if user exists; cross-platform for ubuntu & redhat
-		//$user = $status === 0 ? 'apache' : 'www-data';
 
 		$log_path = $this->_runtime['log'];
 
@@ -140,8 +149,6 @@ class ResqueShell extends Shell {
 		} else {
 			$bootstrap_path = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
 		}
-
-		$this->out("<warning>Forking new PHP Resque worker service</warning> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
 
 		$env_vars = array();
 		$vars = Configure::read('Resque.environment_variables');
@@ -165,41 +172,97 @@ class ResqueShell extends Shell {
 			sprintf("php ./resque.php >> %s", escapeshellarg($this->_runtime['log'])),
 			'2>&1" >/dev/null 2>&1 &'
 		));
+
+		$workersCountBefore = Resque::Redis()->scard('workers');
 		passthru($cmd);
 
-		$this->out("<info>Forked worker</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
+		$this->out("Starting worker ", 0);
+		for($i=0; $i<3;$i++) {
+			$this->out(".", 0);
+			usleep(100000);
+		}
 
-		$this->out("<info>Adding worker to resque</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
-		if ($args === null) $this->__addWorker($this->_runtime);
-		$this->out("<info>Done</info> (<info>queue:</info>{$this->_runtime['queue']} <info>user:</info>{$this->_runtime['user']})");
+		$workersCountAfter = Resque::Redis()->scard('workers');
+		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
+			if ($args === null || $new === true) $this->__addWorker($this->_runtime);
+			$this->out(' <success>Done</success>');
+		} else {
+			$this->out(' <error>Fail</error>');
+		}
+
+		if ($args === null) {
+			$this->out("");
+		}
 	}
 
 /**
- * Kill all php resque worker services.
+ * Kill workers
+ *
+ * @param bool $shutdown Whether to force shutdown, or wait for all the jobs to finish first
+ * @param bool $all True to directly stop all workers, false will ask the user
+ * for the worker to stop, from a list
  */
-	public function stop($shutdown = true) {
-		$this->out('<warning>Shutting down Resque Worker complete</warning>');
+	public function stop($shutdown = true, $all = false) {
+		App::uses('CakeTime', 'Utility');
+		$this->out('<info>Stopping workers</info>');
 		$workers = Resque_Worker::all();
 		if (empty($workers)) {
-			$this->out('   There were no active workers to kill ...');
+			$this->out('   There is no active workers to kill ...');
 		} else {
-			$this->out('Killing '.count($workers).' workers ...');
-			foreach($workers as $w) {
-				$this->params['force'] ? $w->shutDownNow() : $w->shutDown();	// Send signal to stop processing jobs
-				$w->unregisterWorker();											// Remove jobs from resque environment
-				list($hostname, $pid, $queue) = explode(':', (string)$w);
-				$this->out('Killing ' . $pid);
-				exec('kill -9 '.$pid);											// Kill all remaining system process
+
+			$workerIndex = array();
+			if (!$this->params['all'] && !$all) {
+				$this->out("Active workers list :");
+				$i = 1;
+				foreach($workers as $worker) {
+					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker, CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
+				}
+
+				$options = range(1, $i-1);
+
+				if ($i > 2) {
+					$this->out('    [all] - Stop all workers');
+					$options[] = 'all';
+				}
+
+				$in = $this->in("Worker to kill : ", $options);
+				if ($in == 'all') {
+					$workerIndex = range(1, count($workers));
+				} else {
+					$workerIndex[] = $in;
+				}
+
+			} else {
+				$workerIndex = range(1, count($workers));
+			}
+
+			foreach($workerIndex as $index) {
+
+				$worker = $workers[$index-1];
+
+				list($hostname, $pid, $queue) = explode(':', (string)$worker);
+				$this->out('Killing ' . $pid . ' ... ', 0);
+				$this->params['force'] ? $worker->shutDownNow() : $worker->shutDown();	// Send signal to stop processing jobs
+				$worker->unregisterWorker();									// Remove jobs from resque environment
+
+				$result = exec('kill -9 '.$pid);								// Kill all remaining system process
+				if (empty($result)) {
+					$this->out('<success>Done</success>');
+				} else {
+					$this->out('<warning>'.$result.'</warning>');
+				}
 			}
 		}
 
 		if ($shutdown) $this->__clearWorker();
+		$this->out("");
 	}
 
 /**
- * Start a list of predefined queues
+ * Start a list of predefined workers
  */
 	public function load() {
+		$this->out('<info>Loading predefined workers</info>');
 		if (Configure::read('Resque.queues') == null) {
 			$this->out('   You have no configured queues to load.');
 		} else {
@@ -207,26 +270,32 @@ class ResqueShell extends Shell {
 				$this->start($queue);
 			}
 		}
+
+		$this->out("");
 	}
 
 /**
  * Restart all workers
  */
 	public function restart() {
-		$this->stop(false);
+		$this->stop(false, true);
 
+		$this->out('<info>Restarting workers</info>');
 		if (false !== $workers = $this->__getWorkers()) {
 			foreach($workers as $worker) {
-				$this->start($worker);
+				$this->start($worker, false);
 			}
 		} else {
+			$this->out('<warning>No active workers found, will start brand new worker</warning>');
 			$this->start();
 		}
+
+		$this->out("");
 	}
 
 	public function stats() {
 		$this->out("\n");
-		$this->out('<info>PHPResque Statistics</info>');
+		$this->out('<info>Resque Statistics</info>');
 		$this->hr();
 		$this->out("\n");
 		$this->out('<info>Jobs Stats</info>');
@@ -273,6 +342,12 @@ class ResqueShell extends Shell {
 		Resque::Redis()->del('ResqueWorker');
 	}
 
+/**
+ * Validate command line options
+ * And print the errors
+ *
+ * @return true if all options are valid
+ */
 	private function __validate()
 	{
 		$errors = array();
@@ -302,9 +377,6 @@ class ResqueShell extends Shell {
 		}
 
 		$this->_runtime['queue'] = isset($this->params['queue']) ? $this->params['queue'] : Configure::read('Resque.default.queue');
-		if ($this->_runtime['queue'] == '') {
-			$errors[] = __d('resque_console', 'Please enter a queue name');
-		}
 
 		$this->_runtime['user'] = isset($this->params['user']) ? $this->params['user'] : get_current_user();
 		// @todo Validate that user exists on the system
@@ -314,7 +386,7 @@ class ResqueShell extends Shell {
 		$this->_runtime['Log']['target'] = isset($this->params['log-handler-target']) ? $this->params['log-handler-target'] : Configure::read('Resque.Log.target');
 
 		foreach($errors as $error) {
-			$this->out('<warning>Error: '.$error.'</warning>');
+			$this->err('<error>Error:</error> ' . $error);
 		}
 
 		return empty($errors);
