@@ -1,12 +1,41 @@
 <?php
+/**
+ * CakeResque Shell File
+ *
+ * Use to manage the workers via CLI
+ *
+ * PHP version 5
+ *
+ * Licensed under The MIT License
+ * Redistributions of files must retain the above copyright notice.
+ *
+ * @author        Wan Qi Chen <kami@kamisama.me>
+ * @copyright     Copyright 2012, Wan Qi Chen <kami@kamisama.me>
+ * @link          http://cakeresque.kamisama.me
+ * @package       CakeResque
+ * @subpackage	  CakeResque.Console.Command
+ * @since         0.5
+ * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
+ */
 
-class ResqueShell extends Shell {
+class CakeResqueShell extends Shell {
 
 	public $uses = array();
 
+/**
+ * Absolute path to the php-resque library
+ */
 	protected $_resqueLibrary = null;
 
+/**
+ * Runtime arguments
+ */
 	protected $_runtime = array();
+
+/**
+ * Plugin version
+ */
+	const VERSION = '1.0';
 
 /**
  * Startup callback.
@@ -14,9 +43,9 @@ class ResqueShell extends Shell {
  * Initializes defaults.
  */
 	public function startup() {
-		$this->_resqueLibrary = App::pluginPath('Resque') . 'vendor' . DS . Configure::read('Resque.Resque.lib') . DS;
+		$this->_resqueLibrary = App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS;
 
-		App::import('Lib', 'Resque.ResqueUtility');
+		App::import('Lib', 'CakeResque.ResqueUtility');
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Stat.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Worker.php';
@@ -97,11 +126,13 @@ class ResqueShell extends Shell {
 	}
 
 /**
- * Manually enqueue a job via CLI.
+ * Enqueue a job via CLI.
  */
 	public function enqueue() {
-		if (count($this->args) < 1) {
-			$this->out('Which job class would you like to enqueue?');
+		$this->out('<info>Adding a job to worker</info>');
+		if (count($this->args) < 3) {
+			$this->err('<error>Wrong number of arguments</error>');
+			$this->out('Usage : enqueue <queue> <jobclass> <comma-separated-args>', 2);
 			return false;
 		}
 
@@ -110,7 +141,7 @@ class ResqueShell extends Shell {
 		$params = explode(',', $this->args[2]);
 
 		Resque::enqueue($jobQueue, $jobClass, $params);
-		$this->out('Enqueued new job "' . $jobClass . '"' . ($this->args[2] ? ' with params (' . $this->args[2] . ')' : '') . '...');
+		$this->out('Enqueued new job "' . $jobClass . '" to queue "' . $jobClass . '"' . ($this->args[2] ? ' with params (' . $this->args[2] . ')' : '') . '...', 2);
 	}
 
 /**
@@ -162,7 +193,7 @@ class ResqueShell extends Shell {
 /**
  * Create a new worker
  *
- * @param array $args
+ * @param array $args If present, start the worker with these args.
  * @param bool $new Whether the worker is new, or from a restart
  */
 	public function start($args = null, $new = true) {
@@ -173,13 +204,13 @@ class ResqueShell extends Shell {
 		if (!$this->__validate($args)) return;
 
 		if (file_exists(APP . 'Lib' . DS . 'ResqueBootstrap.php')) {
-			$bootstrapPath = APP . 'Lib' . DS . 'ResqueBootstrap.php';
+			$bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
 		} else {
-			$bootstrapPath = App::pluginPath('Resque') . 'Lib' . DS . 'ResqueBootstrap.php';
+			$bootstrapPath = App::pluginPath('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
 		}
 
 		$envVars = array();
-		$vars = Configure::read('Resque.environment_variables');
+		$vars = Configure::read('CakeResque.Env');
 		foreach ($vars as $key => $val) {
 			if (is_int($key) && isset($_SERVER[$val])) {
 				$envVars[] = sprintf("%s=%s", $val, escapeshellarg($_SERVER[$val]));
@@ -194,7 +225,7 @@ class ResqueShell extends Shell {
 			implode(' ', $envVars),
 			sprintf("VVERBOSE=true QUEUE=%s", escapeshellarg($this->_runtime['queue'])),
 			sprintf("APP_INCLUDE=%s INTERVAL=%s", escapeshellarg($bootstrapPath), $this->_runtime['interval']),
-			sprintf("REDIS_BACKEND=%s", escapeshellarg(Configure::read('Resque.Redis.host') . ':' . Configure::read('Resque.Redis.port'))),
+			sprintf("REDIS_BACKEND=%s", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
 			sprintf("CAKE=%s COUNT=%s", escapeshellarg(CAKE), $this->_runtime['workers']),
 			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
 			sprintf("php ./resque.php >> %s", escapeshellarg($this->_runtime['log'])),
@@ -224,7 +255,7 @@ class ResqueShell extends Shell {
 	}
 
 /**
- * Kill workers
+ * Stop workers
  *
  * Will ask the user to choose the worker to stop, from a list of worker,
  * if more than one worker is running, or if --all is not passed
@@ -351,10 +382,20 @@ class ResqueShell extends Shell {
 		$this->out("\n");
 	}
 
+/**
+ * Save the workers arguments
+ *
+ * Used when restarting the worker
+ */
 	private function __addWorker($args) {
 		Resque::Redis()->rpush('ResqueWorker', serialize($args));
 	}
 
+/**
+ * Return all started workers arguments
+ *
+ * @return array An array of settings, by worker
+ */
 	private function __getWorkers() {
 		$listLength = Resque::Redis()->llen('ResqueWorker');
 		$workers = Resque::Redis()->lrange('ResqueWorker', 0, $listLength - 1);
@@ -369,6 +410,9 @@ class ResqueShell extends Shell {
 		}
 	}
 
+/**
+ * Clear all workers saved arguments
+ */
 	private function __clearWorker() {
 		Resque::Redis()->del('ResqueWorker');
 	}
@@ -377,6 +421,7 @@ class ResqueShell extends Shell {
  * Validate command line options
  * And print the errors
  *
+ * @since 1.0
  * @return true if all options are valid
  */
 	private function __validate($args = null) {
@@ -385,7 +430,7 @@ class ResqueShell extends Shell {
 		$errors = array();
 
 		// Validate Log path
-		$this->_runtime['log'] = isset($this->_runtime['log']) ? $this->_runtime['log'] : Configure::read('Resque.default.log');
+		$this->_runtime['log'] = isset($this->_runtime['log']) ? $this->_runtime['log'] : Configure::read('CakeResque.Worker.log');
 		if (substr($this->_runtime['log'], 0, 2) == './') {
 			$this->_runtime['log'] = TMP . 'logs' . DS . substr($this->_runtime['log'], 2);
 		} elseif (substr($this->_runtime['log'], 0, 1) != '/') {
@@ -393,7 +438,7 @@ class ResqueShell extends Shell {
 		}
 
 		// Validate Interval
-		$this->_runtime['interval'] = isset($this->_runtime['interval']) ? $this->_runtime['interval'] : Configure::read('Resque.default.interval');
+		$this->_runtime['interval'] = isset($this->_runtime['interval']) ? $this->_runtime['interval'] : Configure::read('CakeResque.Worker.interval');
 		if (!is_numeric($this->_runtime['interval'])) {
 			$errors[] = __d('resque_console', 'Interval time [%s] is not valid. Please enter a valid number', $this->_runtime['interval']);
 		} else {
@@ -401,14 +446,14 @@ class ResqueShell extends Shell {
 		}
 
 		// Validate workers number
-		$this->_runtime['workers'] = isset($this->_runtime['workers']) ? $this->_runtime['workers'] : Configure::read('Resque.default.workers');
+		$this->_runtime['workers'] = isset($this->_runtime['workers']) ? $this->_runtime['workers'] : Configure::read('CakeResque.Worker.workers');
 		if (!is_numeric($this->_runtime['workers'])) {
 			$errors[] = __d('resque_console', 'Workers number [%s] is not valid. Please enter a valid number', $this->_runtime['workers']);
 		} else {
 			$this->_runtime['workers'] = (int)$this->_runtime['workers'];
 		}
 
-		$this->_runtime['queue'] = isset($this->_runtime['queue']) ? $this->_runtime['queue'] : Configure::read('Resque.default.queue');
+		$this->_runtime['queue'] = isset($this->_runtime['queue']) ? $this->_runtime['queue'] : Configure::read('CakeResque.Worker.queue');
 
 		$this->_runtime['user'] = isset($this->_runtime['user']) ? $this->_runtime['user'] : get_current_user();
 
@@ -417,9 +462,9 @@ class ResqueShell extends Shell {
 			$errors[] = __d('resque_console', 'User [%s] does not exists. Please enter a valid system user', $this->_runtime['user']);
 		}
 
-		$this->_runtime['Log']['handler'] = isset($this->_runtime['log-handler']) ? $this->_runtime['log-handler'] : Configure::read('Resque.Log.handler');
+		$this->_runtime['Log']['handler'] = isset($this->_runtime['log-handler']) ? $this->_runtime['log-handler'] : Configure::read('CakeResque.Log.handler');
 
-		$this->_runtime['Log']['target'] = isset($this->_runtime['log-handler-target']) ? $this->_runtime['log-handler-target'] : Configure::read('Resque.Log.target');
+		$this->_runtime['Log']['target'] = isset($this->_runtime['log-handler-target']) ? $this->_runtime['log-handler-target'] : Configure::read('CakeResque.Log.target');
 		if (substr($this->_runtime['Log']['target'], 0, 2) == './') {
 			$this->_runtime['Log']['target'] = TMP . 'logs' . DS . substr($this->_runtime['Log']['target'], 2);
 		} elseif (substr($this->_runtime['Log']['target'], 0, 1) != '/') {
