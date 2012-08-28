@@ -57,7 +57,7 @@
 			'log' => TMP . 'logs' . DS . 'resque-worker.log'
 		),
 		 /*
-		'queues' => array(
+		'Queues' => array(
 			array(
 	 			'queue' => 'default',	// Use default values from above for missing interval and count indexes
 	 			'user' => 'www-data'	// If PHP is running as a different user on you webserver

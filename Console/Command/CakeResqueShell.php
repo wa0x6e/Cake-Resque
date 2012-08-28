@@ -141,7 +141,7 @@ class CakeResqueShell extends Shell {
 		$params = explode(',', $this->args[2]);
 
 		Resque::enqueue($jobQueue, $jobClass, $params);
-		$this->out('Enqueued new job "' . $jobClass . '" to queue "' . $jobClass . '"' . ($this->args[2] ? ' with params (' . $this->args[2] . ')' : '') . '...', 2);
+		$this->out('Enqueued new job "' . $jobClass . '" to queue "' . $jobQueue . '"' . ($this->args[2] ? ' with params (' . $this->args[2] . ')' : '') . '...', 2);
 	}
 
 /**
@@ -326,10 +326,10 @@ class CakeResqueShell extends Shell {
  */
 	public function load() {
 		$this->out('<info>Loading predefined workers</info>');
-		if (Configure::read('Resque.queues') == null) {
+		if (Configure::read('CakeResque.Queues') == null) {
 			$this->out('   You have no configured queues to load.');
 		} else {
-			foreach (Configure::read('Resque.queues') as $queue) {
+			foreach (Configure::read('CakeResque.Queues') as $queue) {
 				$this->start($queue);
 			}
 		}
@@ -467,8 +467,6 @@ class CakeResqueShell extends Shell {
 		$this->_runtime['Log']['target'] = isset($this->_runtime['log-handler-target']) ? $this->_runtime['log-handler-target'] : Configure::read('CakeResque.Log.target');
 		if (substr($this->_runtime['Log']['target'], 0, 2) == './') {
 			$this->_runtime['Log']['target'] = TMP . 'logs' . DS . substr($this->_runtime['Log']['target'], 2);
-		} elseif (substr($this->_runtime['Log']['target'], 0, 1) != '/') {
-			$this->_runtime['Log']['target'] = TMP . 'logs' . DS . $this->_runtime['Log']['target'];
 		}
 
 		if (!empty($errors)) {
