@@ -238,7 +238,7 @@ class CakeResqueShell extends Shell {
 		$this->out("Starting worker ", 0);
 		for ($i = 0; $i < 3;$i++) {
 			$this->out(".", 0);
-			usleep(100000);
+			usleep(150000);
 		}
 
 		$workersCountAfter = Resque::Redis()->scard('workers');
@@ -308,11 +308,12 @@ class CakeResqueShell extends Shell {
 				$this->params['force'] ? $worker->shutDownNow() : $worker->shutDown();	// Send signal to stop processing jobs
 				$worker->unregisterWorker();											// Remove jobs from resque environment
 
-				$result = exec('kill -9 ' . $pid);										// Kill all remaining system process
-				if (empty($result)) {
+				$message = exec('kill -9 ' . $pid . ' 2>&1', $output = array(), $code);	// Kill all remaining system process
+
+				if ($code == 0) {
 					$this->out('<success>Done</success>');
 				} else {
-					$this->out('<warning>' . $result . '</warning>');
+					$this->out('<error>' . $message . '</error>');
 				}
 			}
 		}
