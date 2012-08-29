@@ -243,7 +243,9 @@ class CakeResqueShell extends Shell {
 
 		$workersCountAfter = Resque::Redis()->scard('workers');
 		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
-			if ($args === null || $new === true) $this->__addWorker($this->_runtime);
+			if ($args === null || $new === true) {
+				$this->__addWorker($this->_runtime);
+			}
 			$this->out(' <success>Done</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
 		} else {
 			$this->out(' <error>Fail</error>');
