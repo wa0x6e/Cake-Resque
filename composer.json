@@ -1,5 +1,5 @@
 {
-	"name": "kamisama/Cake-Resque",
+	"name": "kamisama/cake-resque",
 	"description" : "A CakePHP plugin for Resque",
 	"keywords": ["php-resque", "resque", "cli", "cakephp"],
 	"homepage": "http://cakeresque.kamisama.me",
