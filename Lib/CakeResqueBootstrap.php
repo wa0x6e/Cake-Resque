@@ -19,8 +19,9 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-// From Console/cake.php
-
+/*
+ * Copy/Paste from lib/Cake/Console/cake.php
+ */
 if (!defined('DS')) {
 	define('DS', DIRECTORY_SEPARATOR);
 }
@@ -46,8 +47,9 @@ if (!require_once ($dispatcher)) {
 
 unset($paths, $path, $found, $dispatcher, $root, $ds);
 
-// From ShellDipatcher::_boostrap
-
+/*
+ * Copy/Paste from  lib/Cake/Console/ShellDipatcher::_bootstrap()
+ */
 define('ROOT', dirname(dirname(getenv('CAKE'))));
 define('APP_DIR', 'app');
 define('APP', ROOT . DS . APP_DIR . DS);
@@ -71,6 +73,59 @@ if (!defined('FULL_BASE_URL')) {
 	define('FULL_BASE_URL', 'http://localhost');
 }
 
-// End ShellDispatcher
 
 App::uses('Shell', 'Console');
+
+
+/**
+ * Resque Job Creator Class
+ *
+ * Create a job instance
+ *
+ * This will find and instanciate a class from a classname.
+ * Particulary important if the classname isn't the real classname,
+ * like in CakePHP, where the classname can be prefixed with
+ * a plugin name, and the classname doesn't give a clue about
+ * the class file location.
+ *
+ * This class is optional, and if missing, Resque will handle the job
+ * creation itself, with the standard method.
+ *
+ * @since 1.0
+ * @author kamisama
+ *
+ */
+class Resque_Job_Creator
+{
+
+/**
+ * Create and return a job instance
+ *
+ * @param string $className className of the job to instanciate
+ * @return object $args a job instance
+ * @throws Resque_Exception when the class is not found, or does not follow the job file convention
+ */
+	public static function createJob($className, $args) {
+		list($plugin, $model) = pluginSplit($className);
+		$classpath = APP . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Console' . DS . 'Command' . DS . $model . '.php';
+		if (file_exists($classpath)) {
+			require_once $classpath;
+		} else {
+			throw new Resque_Exception('Could not find job class ' . $className . '.');
+		}
+
+		if (!class_exists($model)) {
+			throw new Resque_Exception('Could not find job class ' . $className . '.');
+		}
+
+		if (!method_exists($model, 'perform')) {
+			throw new Resque_Exception('Job class ' . $className . ' does not contain a perform method.');
+		}
+
+		if (!isset($args[0]) || !method_exists($model, $args[0])) {
+			throw new Resque_Exception('Job class ' . $className . ' does not contain ' . $args[0] . ' method.');
+		}
+
+		return new $model();
+	}
+}
