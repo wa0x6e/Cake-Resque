@@ -30,17 +30,22 @@
  * 		default values to init the php-resque library
  *
  * ## Optional indexes :
- * queues
+ * Queues
  * 		An array of queues to start with Resque::load()
  * 		Used when you have multiple queues, as you don't need
  * 		to start each queues individually each time you start Resque
- *
+ * Env
+ * 		Additional environment variables to pass to Resque
+ * Log
+ * 		Log handler and its arguments, to save the log with Monolog
  *
  */
 	 Configure::write('CakeResque', array(
 		'Redis' => array(
 			'host' => 'localhost', 		// Redis server hostname
-			'port' => 6379 				// Redis server port
+			'port' => 6379 ,			// Redis server port
+			'database' => 0,			// Redis database number
+			'namespace' => 'resque'		// Redis keys namespace
 		),
 
 		'Worker' => array(
@@ -112,3 +117,13 @@
 			'target' => TMP . 'logs' . DS . 'resque-error.log'
 		)
 	));
+
+
+	// Don't edit from here
+	require_once App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
+
+	Resque::setBackend(
+		Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'),
+		Configure::read('CakeResque.Redis.database'),
+		Configure::read('CakeResque.Redis.namespace')
+	);

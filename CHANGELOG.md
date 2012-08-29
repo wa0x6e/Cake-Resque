@@ -1,5 +1,12 @@
 ##Changelog
 
+###**v1.1** [2012-08-29]
+
+* [new] Add `CakeResque.Redis.database` and `CakeResque.Redis.namespace` settings in bootstrap
+> **database** to select the redis database (redis database are integer)  
+> **namespace** to set the keys namespace (key prefix)  
+> Add these new 2 keys to your bootstrap when you update
+
 ###**v.1.0** [2012-08-27] 
 
 * [fix] Restart was ignoring workers when they have the same arguments
