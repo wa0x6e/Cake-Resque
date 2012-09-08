@@ -118,12 +118,5 @@
 		)
 	));
 
+	require_once dirname(__DIR__) . DS . 'Lib' . DS . 'CakeResque.php';
 
-	// Don't edit from here
-	require_once App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
-
-	Resque::setBackend(
-		Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'),
-		Configure::read('CakeResque.Redis.database'),
-		Configure::read('CakeResque.Redis.namespace')
-	);

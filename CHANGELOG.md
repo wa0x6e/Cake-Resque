@@ -1,5 +1,13 @@
 ##Changelog
 
+###**v1.2** [2012-09-08]
+
+* [new] Add CakeResque proxy to enable jobs logging
+> Refactor all your `Resque::enqueue()` call to `CakeResque::enqueue()`, to enable logging.  
+> Install [DebugKitEx](https://github.com/kamisama/DebugKitEx) to view jobs log via DebugKit.  
+> `Resque::enqueue()` still works.
+
+
 ###**v1.1** [2012-08-29]
 
 * [new] Add `CakeResque.Redis.database` and `CakeResque.Redis.namespace` settings in bootstrap
