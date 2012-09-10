@@ -1,7 +1,15 @@
 ##Changelog
 
 ###**v1.2.1** [2012-09-10]
+
 * [Fix] Log correct method name when processing job
+
+###**v1.2.0** [2012-09-08]
+
+* [new] Add CakeResque proxy to enable jobs logging
+> Refactor all your `Resque::enqueue()` call to `CakeResque::enqueue()`, to enable logging.  
+> Install [DebugKitEx](https://github.com/kamisama/DebugKitEx) to view jobs log via DebugKit.  
+> `Resque::enqueue()` still works.
 
 ###**v1.1.0** [2012-08-29]
 
