@@ -3,22 +3,16 @@
 ###**v1.2.1** [2012-09-10]
 * [Fix] Log correct method name when processing job
 
-###**v1.2** [2012-09-08]
-
-* [new] Add CakeResque proxy to enable jobs logging
-> Refactor all your `Resque::enqueue()` call to `CakeResque::enqueue()`, to enable logging.  
-> Install [DebugKitEx](https://github.com/kamisama/DebugKitEx) to view jobs log via DebugKit.  
-> `Resque::enqueue()` still works.
-
-
-###**v1.1** [2012-08-29]
+###**v1.1.0** [2012-08-29]
 
 * [new] Add `CakeResque.Redis.database` and `CakeResque.Redis.namespace` settings in bootstrap
 > **database** to select the redis database (redis database are integer)  
 > **namespace** to set the keys namespace (key prefix)  
 > Add these new 2 keys to your bootstrap when you update
+* [change] Remove CakeResqueComponent
+> Remove it from $components in your AppController
 
-###**v.1.0** [2012-08-27] 
+###**v.1.0.0** [2012-08-27] 
 
 * [fix] Restart was ignoring workers when they have the same arguments
 * [fix] Restart was duplicating workers
