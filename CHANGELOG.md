@@ -1,5 +1,8 @@
 ##Changelog
 
+###**v1.2.1** [2012-09-10]
+* [Fix] Log correct method name when processing job
+
 ###**v1.2** [2012-09-08]
 
 * [new] Add CakeResque proxy to enable jobs logging

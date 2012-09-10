@@ -55,7 +55,7 @@ class CakeResque
 		self::$logs[$queue][] = array(
 				'queue' => $queue,
 				'class' => $class,
-				'method' => array_pop($args),
+				'method' => array_shift($args),
 				'args' => $args,
 				'caller' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
 			);
