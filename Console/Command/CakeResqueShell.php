@@ -203,7 +203,7 @@ class CakeResqueShell extends Shell {
 
 		if (!$this->__validate($args)) return;
 
-		if (file_exists(APP . 'Lib' . DS . 'ResqueBootstrap.php')) {
+		if (file_exists(APP . 'Lib' . DS . 'CakeResqueBootstrap.php')) {
 			$bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
 		} else {
 			$bootstrapPath = App::pluginPath('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
