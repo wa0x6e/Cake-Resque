@@ -1,0 +1,20 @@
+server: true
+markdown: rdiscount
+pygments: true
+lsi: true
+auto: true
+url: http://localhost:4000
+
+navigation:
+- text: Home
+  url: /
+- text: Install
+  url: /install
+- text: Changelog
+  url: /changelog
+
+name: CakeResque
+permalink: /:title
+
+include:
+- .htaccess
