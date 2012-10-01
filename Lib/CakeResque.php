@@ -57,6 +57,7 @@ class CakeResque
 			'class' => $class,
 			'method' => array_shift($args),
 			'args' => $args,
+			'jobId' => $r,
 			'caller' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
 		);
 
