@@ -3,7 +3,7 @@ markdown: rdiscount
 pygments: true
 lsi: true
 auto: true
-url: http://localhost:4000
+baseurl: /Cake-Resque
 
 navigation:
 - text: Home
