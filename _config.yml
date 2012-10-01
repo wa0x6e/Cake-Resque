@@ -1,7 +1,5 @@
-server: true
 markdown: rdiscount
 pygments: true
-lsi: true
 auto: true
 baseurl: /Cake-Resque
 
@@ -14,7 +12,6 @@ navigation:
   url: /changelog
 
 name: CakeResque
-permalink: /:title
 
 include:
 - .htaccess
