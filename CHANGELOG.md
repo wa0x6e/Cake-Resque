@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v1.2.4** [2012-10-01]
+
+* [new] Log Job ID for DebugKit resque panel
+
 ###**v1.2.3** [2012-10-01]
 
 * [fix] Fix composer dependencies
