@@ -47,17 +47,19 @@ class CakeResque
  * @return void
  */
 	public static function enqueue($queue, $class, $args = array(), $trackStatus = false) {
-		Resque::enqueue($queue, $class, $args, $trackStatus);
+		$r = Resque::enqueue($queue, $class, $args, $trackStatus);
 
 		if (!is_array($args)) {
 			$args = array($args);
 		}
 		self::$logs[$queue][] = array(
-				'queue' => $queue,
-				'class' => $class,
-				'method' => array_shift($args),
-				'args' => $args,
-				'caller' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
-			);
+			'queue' => $queue,
+			'class' => $class,
+			'method' => array_shift($args),
+			'args' => $args,
+			'caller' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
+		);
+
+		return $r;
 	}
 }

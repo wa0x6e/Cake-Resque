@@ -1,5 +1,13 @@
 ##Changelog
 
+###**v1.2.3** [2012-10-01]
+
+* [fix] Fix composer dependencies
+
+###**v1.2.2** [2012-09-27]
+
+* [new] Enqueuing a job return job id
+
 ###**v1.2.1** [2012-09-10]
 
 * [Fix] Log correct method name when processing job

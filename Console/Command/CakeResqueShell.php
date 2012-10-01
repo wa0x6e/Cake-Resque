@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '1.2.0';
+	const VERSION = '1.2.3';
 
 /**
  * Startup callback.
@@ -140,8 +140,9 @@ class CakeResqueShell extends Shell {
 		$jobClass = $this->args[1];
 		$params = explode(',', $this->args[2]);
 
-		CakeResque::enqueue($jobQueue, $jobClass, $params);
-		$this->out('Enqueued new job "' . $jobClass . '" to queue "' . $jobQueue . '"' . ($this->args[2] ? ' with params (' . $this->args[2] . ')' : '') . '...', 2);
+		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
+		$this->out('<success>Succesfully enqueued Job #' . $result . '</success>');
+
 	}
 
 /**
