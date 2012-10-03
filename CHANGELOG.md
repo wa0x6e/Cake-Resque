@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v1.2.5** [2012-10-03]
+
+* [fix] Strict Error warning when checking for existing user
+
 ###**v1.2.4** [2012-10-01]
 
 * [new] Log Job ID for DebugKit resque panel
