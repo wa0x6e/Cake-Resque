@@ -462,7 +462,8 @@ class CakeResqueShell extends Shell {
 
 		$this->_runtime['user'] = isset($this->_runtime['user']) ? $this->_runtime['user'] : get_current_user();
 
-		exec('id ' . $this->_runtime['user'] . ' 2>&1', $output = array(), $status);
+		$output = array();
+		exec('id ' . $this->_runtime['user'] . ' 2>&1', $output, $status);
 		if ($status != 0) {
 			$errors[] = __d('resque_console', 'User [%s] does not exists. Please enter a valid system user', $this->_runtime['user']);
 		}
