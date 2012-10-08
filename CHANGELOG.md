@@ -1,10 +1,10 @@
 ##Changelog
 
-###**v1.2.7** [2012-10-08]
+###**v1.2.6** [2012-10-08]
 
 * [new] Use your own php-resque library
 
-###**v1.2.6** [2012-10-03]
+###**v1.2.5** [2012-10-03]
 
 * [fix] Strict Error warning when checking for existing user
 
