@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '1.2.3';
+	const VERSION = '1.2.7';
 
 /**
  * Startup callback.
@@ -43,9 +43,12 @@ class CakeResqueShell extends Shell {
  * Initializes defaults.
  */
 	public function startup() {
-		$this->_resqueLibrary = App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS;
+		if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
+			$this->_resqueLibrary = Configure::read('CakeResque.Resque.lib') . DS;
+		} else {
+			$this->_resqueLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS);
+		}
 
-		App::import('Lib', 'CakeResque.ResqueUtility');
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Stat.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Worker.php';
@@ -142,7 +145,6 @@ class CakeResqueShell extends Shell {
 
 		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
 		$this->out('<success>Succesfully enqueued Job #' . $result . '</success>');
-
 	}
 
 /**

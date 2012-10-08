@@ -75,13 +75,13 @@
 		*/
 		'Resque' => array(
 
-			// Path to the php-resque library,
-			// relative to plugin vendor
-			// Lib name follow Composer convention : vendor-name/project-name
-			// If you wish use another php-resque library, such as
-			// chrisboulton's original php-resque, you'll have to modify the
-			// require object in the composer.json, and the following
-			// lib accordingly to the new library name
+			// Path to the php-resque library
+			//
+			// Relative or absolute path to the php-resque library
+			// If you are using Composer to install dependencies,
+			// this is the name of the vendor library
+			// Path is relative to the CakeResque/vendor
+			// Don't add trailing slash to path
 			'lib' => 'kamisama/php-resque-ex'
 		),
 

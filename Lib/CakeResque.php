@@ -18,7 +18,11 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-require_once App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
+if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
+	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
+} else {
+	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php');
+}
 
 Resque::setBackend(
 	Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'),
