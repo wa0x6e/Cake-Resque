@@ -46,7 +46,7 @@ class CakeResqueShell extends Shell {
 		if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 			$this->_resqueLibrary = Configure::read('CakeResque.Resque.lib') . DS;
 		} else {
-			$this->_resqueLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS);
+			$this->_resqueLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib')) . DS;
 		}
 
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque.php';
