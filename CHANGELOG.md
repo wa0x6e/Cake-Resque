@@ -1,5 +1,12 @@
 ##Changelog
 
+###**v2.0.0** [2012-10-14]
+
+* [new] Add `pause` command to pause one or all worker 
+* [new] Add `resume` command to resume one or all paused worker
+* [new] Add `cleanup` command to immediately terminate a worker's job
+* [change] Add more documentation
+
 ###**v1.2.6** [2012-10-08]
 
 * [new] Use your own php-resque library
