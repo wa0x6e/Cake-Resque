@@ -110,8 +110,14 @@
 		//		Arguments taken by the handler constructor. If the handler required
 		//		multiple arguments, separate them with a comma
 		//
-		// As of now, only Cube and RotatingFile are supported, since other handler
-		// takes object, and not simple string as argument.
+		// As of now, the following handler are supported:
+		//
+		// [HANDLER]		[TARGET]
+		// Cube 			Cube server address (e.g: http://127.0.0.1:1081)
+		// RotatingFile 	Path to the log file (e.g: /path/to/resque.log)
+		// Syslog 			Facility name
+		// Socket 			Address (e.g: udp://127.0.0.1:23)
+		// MongoDB 			MongoDB server address  (e.g: mongodb://localhost:27017)
 		'Log' => array(
 			'handler' => 'RotatingFile',
 			'target' => TMP . 'logs' . DS . 'resque-error.log'
