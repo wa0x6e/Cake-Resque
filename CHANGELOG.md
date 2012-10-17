@@ -1,5 +1,25 @@
 ##Changelog
 
+###**v2.1.0** [2012-10-16]
+
+* [new] Add `track` command to track a job status
+
+> A new `CakeResque.Job.track` setting has been added to the bootstrap file.  
+> It's the master value to enable the job tracking status.
+> You can also enable/disable tracking on a per-job basis,
+> by passing `true`/`false` as fourth argument when queueing job via `CakeResque::enqueue()`.
+>
+> Job status tracking is disabled by default.  
+> Job status is only kept for 24 hours.  
+> *Unknown* will be returned 
+> 
+> - when job ID is invalid, 
+> - when job status is expired, 
+> - or when job status tracking is disabled.
+
+
+
+
 ###**v2.0.0** [2012-10-14]
 
 * [new] Add `pause` command to pause one or all worker 

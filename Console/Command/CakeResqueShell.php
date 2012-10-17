@@ -188,6 +188,9 @@ class CakeResqueShell extends Shell {
 			->addSubcommand('tail', array(
 				'help' => __d('resque_console', 'Tail the workers logs.')
 			))
+			->addSubcommand('track', array(
+				'help' => __d('resque_console', 'Track a job status.')
+			))
 			->addSubcommand('load', array(
 				'help' => __d('resque_console', 'Load a set of predefined workers.')
 		));
@@ -210,6 +213,8 @@ class CakeResqueShell extends Shell {
 
 		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
 		$this->out('<success>Succesfully enqueued Job #' . $result . '</success>');
+
+		$this->out("");
 	}
 
 /**
@@ -405,7 +410,6 @@ class CakeResqueShell extends Shell {
  * @since 2.0.0
  */
 	public function cleanup() {
-
 		if (!function_exists('pcntl_signal')) {
 			return $this->out("<error>Cleaning up worker is not supported on your system. \nPlease install the PCNTL extension</error>");
 		}
@@ -473,7 +477,6 @@ class CakeResqueShell extends Shell {
  * @since 2.0.0
  */
 	public function pause() {
-
 		if (!function_exists('pcntl_signal')) {
 			return $this->out("<error>Pausing worker is not supported on your system. \nPlease install the PCNTL extension</error>");
 		}
@@ -484,7 +487,7 @@ class CakeResqueShell extends Shell {
 
 		$pausedWorkers = $this->__getPausedWorker();
 		if (count($pausedWorkers) > 0) {
-			for ($i = count($workers)-1; $i >= 0; $i--) {
+			for ($i = count($workers) - 1; $i >= 0; $i--) {
 				if (in_array((string)$workers[$i], $pausedWorkers)) {
 					unset($workers[$i]);
 				}
@@ -554,7 +557,6 @@ class CakeResqueShell extends Shell {
  * @since 2.0.0
  */
 	public function resume() {
-
 		if (!function_exists('pcntl_signal')) {
 			return $this->out("<error>Pausing worker is not supported on your system. \nPlease install the PCNTL extension</error>");
 		}
@@ -677,6 +679,46 @@ class CakeResqueShell extends Shell {
 		}
 
 		$this->out("\n");
+	}
+
+/**
+ * Track a job status
+ *
+ * @since 2.1.0
+ */
+	public function track() {
+		$this->out('<info>Tracking job status</info>');
+
+		if (isset($this->args[0])) {
+			$jobId = $this->args[0];
+		} else {
+			return $this->out('<error>Please provide a valid job ID</error>');
+		}
+
+		$status = new Resque_Job_Status($jobId);
+		$jobStatus = $status->get();
+
+		if ($jobStatus === false) {
+			$this->out('Status : <warning>Unknown</warning>');
+		} else {
+
+			$statusName = array(
+				Resque_Job_Status::STATUS_WAITING => __d('resque_console', 'waiting'),
+				Resque_Job_Status::STATUS_RUNNING => __d('resque_console', 'running'),
+				Resque_Job_Status::STATUS_FAILED => __d('resque_console', 'failed'),
+				Resque_Job_Status::STATUS_COMPLETE => __d('resque_console', 'complete')
+			);
+
+			$statusClass = array(
+				Resque_Job_Status::STATUS_WAITING => 'info',
+				Resque_Job_Status::STATUS_RUNNING => 'info',
+				Resque_Job_Status::STATUS_FAILED => 'error',
+				Resque_Job_Status::STATUS_COMPLETE => 'success'
+			);
+
+			$this->out(sprintf('Status : <%1$s>%2$s</%1$s>', $statusClass[$jobStatus], $statusName[$jobStatus]));
+		}
+		$this->out("");
 	}
 
 /**

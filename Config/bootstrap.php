@@ -61,6 +61,15 @@
 			// - a simple filename, file will be created inside app/tmp/logs
 			'log' => TMP . 'logs' . DS . 'resque-worker.log'
 		),
+		'Job' => array(
+			// Whether to track job status
+			// Enabling this will allow you to track a job status by its ID
+			// Job status are purged after 24 hours
+			//
+			// You can also defined per-job tracking by passing true/false
+			// as fourth argument when calling CakeResque::enqueue();
+			'track' => false
+		),
 		 /*
 		'Queues' => array(
 			array(

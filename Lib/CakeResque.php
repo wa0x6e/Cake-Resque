@@ -50,28 +50,30 @@ class CakeResque
  * @param  boolean 	$trackStatus Whether to track the status of the job
  * @return void
  */
-  public static function enqueue($queue, $class, $args = array(), $trackStatus = false) {
-    $r = Resque::enqueue($queue, $class, $args, $trackStatus);
+	public static function enqueue($queue, $class, $args = array(), $trackStatus = false) {
+		if ($trackStatus === null) {
+			$trackStatus = Configure::read('CakeResque.Job.track');
+		}
 
-    if (!is_array($args)) {
-      $args = array($args);
-    }
+		$r = Resque::enqueue($queue, $class, $args, $trackStatus);
 
-    // two-argument form of debug_backtrace() is only available in PHP >= 5.4.0
-    if(version_compare(PHP_VERSION, '5.4.0') >= 0) {
-      $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1);
-    } else {
-      $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    }
-    self::$logs[$queue][] = array(
-      'queue' => $queue,
-      'class' => $class,
-      'method' => array_shift($args),
-      'args' => $args,
-      'jobId' => $r,
-      'caller' => $caller
-    );
+		if (!is_array($args)) {
+			$args = array($args);
+		}
 
-    return $r;
-  }
+		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
+			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
+			: debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+
+		self::$logs[$queue][] = array(
+			'queue' => $queue,
+			'class' => $class,
+			'method' => array_shift($args),
+			'args' => $args,
+			'jobId' => $r,
+			'caller' => $caller
+		);
+
+		return $r;
+	}
 }
