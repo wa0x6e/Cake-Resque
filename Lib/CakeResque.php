@@ -50,7 +50,7 @@ class CakeResque
  * @param  boolean 	$trackStatus Whether to track the status of the job
  * @return void
  */
-	public static function enqueue($queue, $class, $args = array(), $trackStatus = false) {
+	public static function enqueue($queue, $class, $args = array(), $trackStatus = null) {
 		if ($trackStatus === null) {
 			$trackStatus = Configure::read('CakeResque.Job.track');
 		}
