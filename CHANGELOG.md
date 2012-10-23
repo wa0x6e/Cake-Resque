@@ -1,5 +1,14 @@
 ##Changelog
 
+###**v2.2.0** [2012-10-23]
+
+* [fix] Tracking job not working properly
+* [new] Display failed job details using `track` when job status is *fail*
+
+> Require php-resque-ex **1.0.14**.  
+> Update dependencies with `composer update`
+
+
 ###**v2.1.0** [2012-10-16]
 
 * [new] Add `track` command to track a job status

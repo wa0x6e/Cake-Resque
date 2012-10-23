@@ -717,6 +717,32 @@ class CakeResqueShell extends Shell {
 			);
 
 			$this->out(sprintf('Status : <%1$s>%2$s</%1$s>', $statusClass[$jobStatus], $statusName[$jobStatus]));
+
+			if ($jobStatus === Resque_Job_Status::STATUS_FAILED) {
+				$log = \Resque_Failure_Redis::get($jobId);
+				if (!empty($log)) {
+					$this->hr();
+					$this->out("<comment>Failed job details</comment>");
+					$this->hr();
+					foreach ($log as $key => $value) {
+						$this->out(sprintf("<info>%-10s: </info>", strtoupper($key)), 0);
+						if (is_string($value)) {
+							$this->out($value);
+						} else {
+							$this->out("");
+							foreach ($value as $s_key => $s_value) {
+								$this->out(sprintf("    <info>%5s : </info>", $s_key), 0);
+								if (is_string($s_value)) {
+									$this->out($s_value);
+								} else {
+									$this->out(str_replace("\n", "\n            ", var_export($s_value, true)));
+								}
+							}
+						}
+
+					}
+				}
+			}
 		}
 		$this->out("");
 	}
