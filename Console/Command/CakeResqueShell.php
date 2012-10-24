@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '2.1.0';
+	const VERSION = '2.2.1';
 
 /**
  * Startup callback.
@@ -53,7 +53,7 @@ class CakeResqueShell extends Shell {
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Stat.php';
 		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Worker.php';
 
-		$this->stdout->styles('success', array('text' => 'green'));
+		$this->stdout->styles('success', array('text' => 'green')); Configure::write('Config.language', 'fre');
 	}
 
 	public function getOptionParser() {
@@ -61,29 +61,29 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'user' => array(
 					'short' => 'u',
-					'help' => __d('resque_console', 'User running the workers')
+					'help' => __d('cake_resque', 'User running the workers')
 				),
 				'queue' => array(
 					'short' => 'q',
-					'help' => __d('resque_console', 'Name of the queue. If multiple queues, separe with comma.')
+					'help' => __d('cake_resque', 'Name of the queue. If multiple queues, separe with comma.')
 				),
 				'interval' => array(
 					'short' => 'i',
-					'help' => __d('resque_console', 'Pause time in seconds between each works')
+					'help' => __d('cake_resque', 'Pause time in seconds between each works')
 				),
 				'workers' => array(
 					'short' => 'n',
-					'help' => __d('resque_console', 'Number of workers to fork')
+					'help' => __d('cake_resque', 'Number of workers to fork')
 				),
 				'log' => array(
 					'short' => 'l',
-					'help' => __d('resque_console', 'Log path')
+					'help' => __d('cake_resque', 'Log path')
 				),
 				'log-handler' => array(
-					'help' => __d('resque_console', 'Log Handler to use for logging.')
+					'help' => __d('cake_resque', 'Log Handler to use for logging.')
 				),
 				'log-handler-target' => array(
-					'help' => __d('resque_console', 'Log Handler arguments')
+					'help' => __d('cake_resque', 'Log Handler arguments')
 				)
 			)
 		);
@@ -92,20 +92,20 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'force' => array(
 					'short' => 'f',
-					'help' => __d('resque_console', 'Force workers shutdown, forcing all the current jobs to finish (and fail)'),
+					'help' => __d('cake_resque', 'Force workers shutdown, forcing all the current jobs to finish (and fail)'),
 					'boolean' => true
 				),
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('resque_console', 'shutdown all workers'),
+					'help' => __d('cake_resque', 'shutdown all workers'),
 					'boolean' => true
 				)
 			),
 			'description' => array(
-				__d('resque_console', 'Stop one or all workers'),
-				__d('resque_console', 'Unless you force the stop with the --force option,'),
-				__d('resque_console', 'the worker will wait for all jobs to complete'),
-				__d('resque_console', 'before shutting down')
+				__d('cake_resque', 'Stop one or all workers'),
+				__d('cake_resque', 'Unless you force the stop with the --force option,'),
+				__d('cake_resque', 'the worker will wait for all jobs to complete'),
+				__d('cake_resque', 'before shutting down')
 			)
 		);
 
@@ -113,14 +113,14 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('resque_console', 'pause all workers'),
+					'help' => __d('cake_resque', 'pause all workers'),
 					'boolean' => true
 				)
 			),
 			'description' => array(
-				__d('resque_console', 'Pause one or all workers'),
-				__d('resque_console', 'Pausing is only supported on Unix system,'),
-				__d('resque_console', 'with PHP pcntl extension installed')
+				__d('cake_resque', 'Pause one or all workers'),
+				__d('cake_resque', 'Pausing is only supported on Unix system,'),
+				__d('cake_resque', 'with PHP pcntl extension installed')
 			)
 		);
 
@@ -128,14 +128,14 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('resque_console', 'resume all paused workers'),
+					'help' => __d('cake_resque', 'resume all paused workers'),
 					'boolean' => true
 				)
 			),
 			'description' => array(
-				__d('resque_console', 'Resume one or all paused workers'),
-				__d('resque_console', 'Resuming is only supported on Unix system,'),
-				__d('resque_console', 'with PHP pcntl extension installed')
+				__d('cake_resque', 'Resume one or all paused workers'),
+				__d('cake_resque', 'Resuming is only supported on Unix system,'),
+				__d('cake_resque', 'with PHP pcntl extension installed')
 			)
 		);
 
@@ -143,56 +143,56 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('resque_console', 'Clean up all workers'),
+					'help' => __d('cake_resque', 'Clean up all workers'),
 					'boolean' => true
 				)
 			),
 			'description' => array(
-				__d('resque_console', 'Cleaning Up one or all paused workers'),
-				__d('resque_console', 'Cleaning Up will immedately terminate the job'),
-				__d('resque_console', 'the worker is currently working on.'),
-				__d('resque_console', 'Resuming is only supported on Unix system,'),
-				__d('resque_console', 'with PHP pcntl extension installed')
+				__d('cake_resque', 'Cleaning Up one or all paused workers'),
+				__d('cake_resque', 'Cleaning Up will immedately terminate the job'),
+				__d('cake_resque', 'the worker is currently working on.'),
+				__d('cake_resque', 'Resuming is only supported on Unix system,'),
+				__d('cake_resque', 'with PHP pcntl extension installed')
 			)
 		);
 
 		return parent::getOptionParser()
-			->description(__d('resque_console', "A Shell to manage PHP Resque.\n"))
+			->description(__d('cake_resque', "A Shell to manage PHP Resque") . "\n")
 			->addSubcommand('start', array(
-				'help' => __d('resque_console', 'Start a new Resque worker.'),
+				'help' => __d('cake_resque', 'Start a new worker.'),
 				'parser' => $startParserArguments
 			))
 			->addSubcommand('stop', array(
-				'help' => __d('resque_console', 'Stop a resque worker.'),
+				'help' => __d('cake_resque', 'Stop a worker.'),
 				'parser' => $stopParserArguments
 			))
 			->addSubcommand('pause', array(
-				'help' => __d('resque_console', 'Pause a resque worker.'),
+				'help' => __d('cake_resque', 'Pause a worker.'),
 				'parser' => $pauseParserArguments
 			))
 			->addSubcommand('resume', array(
-				'help' => __d('resque_console', 'Resume a paused resque worker.'),
+				'help' => __d('cake_resque', 'Resume a paused worker.'),
 				'parser' => $resumeParserArguments
 			))
 			->addSubcommand('cleanup', array(
-				'help' => __d('resque_console', 'Immediately terminate a worker job execution.'),
+				'help' => __d('cake_resque', 'Immediately terminate a worker job execution.'),
 				'parser' => $cleanupParserArguments
 			))
 			->addSubcommand('restart', array(
-				'help' => __d('resque_console', 'Stop all Resque workers, and start a new one.'),
+				'help' => __d('cake_resque', 'Stop all Resque workers, and start a new one.'),
 				'parser' => array_merge_recursive($startParserArguments, $stopParserArguments)
 			))
 			->addSubcommand('stats', array(
-				'help' => __d('resque_console', 'View stats about processed/failed jobs.')
+				'help' => __d('cake_resque', 'View stats about processed/failed jobs.')
 			))
 			->addSubcommand('tail', array(
-				'help' => __d('resque_console', 'Tail the workers logs.')
+				'help' => __d('cake_resque', 'Tail the workers logs.')
 			))
 			->addSubcommand('track', array(
-				'help' => __d('resque_console', 'Track a job status.')
+				'help' => __d('cake_resque', 'Track a job status.')
 			))
 			->addSubcommand('load', array(
-				'help' => __d('resque_console', 'Load a set of predefined workers.')
+				'help' => __d('cake_resque', 'Load a set of predefined workers.')
 		));
 	}
 
@@ -200,10 +200,10 @@ class CakeResqueShell extends Shell {
  * Enqueue a job via CLI.
  */
 	public function enqueue() {
-		$this->out('<info>Adding a job to worker</info>');
+		$this->out('<info>' . __d('cake_resque', 'Adding a job to worker') . '</info>');
 		if (count($this->args) < 3) {
-			$this->err('<error>Wrong number of arguments</error>');
-			$this->out('Usage : enqueue <queue> <jobclass> <comma-separated-args>', 2);
+			$this->err('<error>' . __d('cake_resque', 'Wrong number of arguments') . '</error>');
+			$this->out(__d('cake_resque', 'Usage : enqueue <queue> <jobclass> <comma-separated-args>'), 2);
 			return false;
 		}
 
@@ -212,7 +212,7 @@ class CakeResqueShell extends Shell {
 		$params = explode(',', $this->args[2]);
 
 		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
-		$this->out('<success>Succesfully enqueued Job #' . $result . '</success>');
+		$this->out('<success>' . __d('cake_resque', 'Succesfully enqueued Job #%s',  $result) . '</success>');
 
 		$this->out("");
 	}
@@ -245,9 +245,9 @@ class CakeResqueShell extends Shell {
 
 		$logs = array_values(array_unique($logs));
 
-		$this->out('<info>Tailing log file</info>');
+		$this->out('<info>' . __d('cake_resque', 'Tailing log file') . '</info>');
 		if (empty($logs)) {
-			$this->err('    No log file to tail', 2);
+			$this->err('    ' . __d('cake_resque', 'No log file to tail'), 2);
 			return;
 		} elseif (count($logs) == 1) {
 			$index = 1;
@@ -256,10 +256,10 @@ class CakeResqueShell extends Shell {
 				$this->out(sprintf('    [%2d] - %s', $i++, $log));
 			}
 
-			$index = $this->in('Choose a log file to tail :', range(1, $i - 1));
+			$index = $this->in(__d('cake_resque', 'Choose a log file to tail') . ':', range(1, $i - 1));
 		}
 
-		$this->out('<warning>Tailing ' . $logs[$index - 1] . '</warning>');
+		$this->out('<warning>' . __d('cake_resque', 'Tailing %s', $logs[$index - 1]) . '</warning>');
 		passthru('tail -f ' . escapeshellarg($logs[$index - 1]));
 	}
 
@@ -271,7 +271,7 @@ class CakeResqueShell extends Shell {
  */
 	public function start($args = null, $new = true) {
 		if ($args === null) {
-			$this->out('<info>Creating workers</info>');
+			$this->out('<info>' . __d('cake_resque', 'Creating workers') . '</info>');
 		}
 
 		if (!$this->__validate($args)) return;
@@ -309,7 +309,7 @@ class CakeResqueShell extends Shell {
 		$workersCountBefore = Resque::Redis()->scard('workers');
 		passthru($cmd);
 
-		$this->out("Starting worker ", 0);
+		$this->out(__d('cake_resque', 'Starting worker '), 0);
 		for ($i = 0; $i < 3;$i++) {
 			$this->out(".", 0);
 			usleep(150000);
@@ -320,9 +320,9 @@ class CakeResqueShell extends Shell {
 			if ($args === null || $new === true) {
 				$this->__addWorker($this->_runtime);
 			}
-			$this->out(' <success>Done</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
+			$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
 		} else {
-			$this->out(' <error>Fail</error>');
+			$this->out(' <error>' . __d('cake_resque', 'Fail') . '</error>');
 		}
 
 		if ($args === null) {
@@ -342,15 +342,15 @@ class CakeResqueShell extends Shell {
  */
 	public function stop($shutdown = true, $all = false) {
 		App::uses('CakeTime', 'Utility');
-		$this->out('<info>Stopping workers</info>');
+		$this->out('<info>' . __d('cake_resque', 'Stopping workers') . '</info>');
 		$workers = Resque_Worker::all();
 		if (empty($workers)) {
-			$this->out('   There is no active workers to kill ...');
+			$this->out('   ' . __d('cake_resque', 'There is no active workers to kill ...'));
 		} else {
 
 			$workerIndex = array();
 			if (!$this->params['all'] && !$all && count($workers) > 1) {
-				$this->out("Active workers list :");
+				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
 					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
@@ -360,11 +360,11 @@ class CakeResqueShell extends Shell {
 				$options = range(1, $i - 1);
 
 				if ($i > 2) {
-					$this->out('    [all] - Stop all workers');
+					$this->out('    [all] - ' . __d('cake_resque', 'Stop all workers'));
 					$options[] = 'all';
 				}
 
-				$in = $this->in("Worker to kill : ", $options);
+				$in = $this->in(__d('cake_resque', 'Worker to kill') . ': ', $options);
 				if ($in == 'all') {
 					$workerIndex = range(1, count($workers));
 				} else {
@@ -380,7 +380,7 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out('Killing ' . $pid . ' ... ', 0);
+				$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
 				$this->params['force'] ? $worker->shutDownNow() : $worker->shutDown();	// Send signal to stop processing jobs
 				$worker->unregisterWorker();											// Remove jobs from resque environment
 
@@ -388,7 +388,7 @@ class CakeResqueShell extends Shell {
 				$message = exec('kill -9 ' . $pid . ' 2>&1', $output, $code);	// Kill all remaining system process
 
 				if ($code == 0) {
-					$this->out('<success>Done</success>');
+					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
 				} else {
 					$this->out('<error>' . $message . '</error>');
 				}
@@ -411,19 +411,19 @@ class CakeResqueShell extends Shell {
  */
 	public function cleanup() {
 		if (!function_exists('pcntl_signal')) {
-			return $this->out("<error>Cleaning up worker is not supported on your system. \nPlease install the PCNTL extension</error>");
+			return $this->out('<error>' . __d('cake_resque', "Cleaning up worker is not supported on your system. \nPlease install the PCNTL extension") . '</error>');
 		}
 
 		App::uses('CakeTime', 'Utility');
-		$this->out('<info>Cleaning up workers</info>');
+		$this->out('<info>' . __d('cake_resque', 'Cleaning up workers') . '</info>');
 		$workers = Resque_Worker::all();
 		if (empty($workers)) {
-			$this->out('   There is no active workers.');
+			$this->out('   ' . __d('cake_resque', 'There is no active workers.'));
 		} else {
 
 			$workerIndex = array();
 			if (!$this->params['all'] && count($workers) > 1) {
-				$this->out("Active workers list :");
+				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
 					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
@@ -433,11 +433,11 @@ class CakeResqueShell extends Shell {
 				$options = range(1, $i - 1);
 
 				if ($i > 2) {
-					$this->out('    [all] - Cleanup all workers');
+					$this->out('    [all] - ' . __d('cake_resque', 'Cleanup all workers'));
 					$options[] = 'all';
 				}
 
-				$in = $this->in("Worker to cleanup : ", $options);
+				$in = $this->in(__d('cake_resque', 'Worker to cleanup') . ': ', $options);
 				if ($in == 'all') {
 					$workerIndex = range(1, count($workers));
 				} else {
@@ -453,13 +453,13 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out('Cleaning up ' . $pid . ' ... ', 0);
+				$this->out(__d('cake_resque', 'Cleaning up %s ... ', $pid), 0);
 
 				$output = array();
 				$message = exec('kill -USR1 ' . $pid . ' 2>&1', $output, $code);
 
 				if ($code == 0) {
-					$this->out('<success>Done</success>');
+					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
 				} else {
 					$this->out('<error>' . $message . '</error>');
 				}
@@ -478,11 +478,11 @@ class CakeResqueShell extends Shell {
  */
 	public function pause() {
 		if (!function_exists('pcntl_signal')) {
-			return $this->out("<error>Pausing worker is not supported on your system. \nPlease install the PCNTL extension</error>");
+			return $this->out('<error>' . __d('cake_resque' , "Pausing worker is not supported on your system. \nPlease install the PCNTL extension") . '</error>');
 		}
 
 		App::uses('CakeTime', 'Utility');
-		$this->out('<info>Pausing workers</info>');
+		$this->out('<info>' . __d('cake_resque', 'Pausing workers') . '</info>');
 		$workers = Resque_Worker::all();
 
 		$pausedWorkers = $this->__getPausedWorker();
@@ -496,12 +496,12 @@ class CakeResqueShell extends Shell {
 		}
 
 		if (empty($workers)) {
-			$this->out('   There is no active workers to pause ...');
+			$this->out('   ' . __d('cake_resque', 'There is no active workers to pause ...'));
 		} else {
 
 			$workerIndex = array();
 			if (!$this->params['all'] && count($workers) > 1) {
-				$this->out("Active workers list :");
+				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
 					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
@@ -511,11 +511,11 @@ class CakeResqueShell extends Shell {
 				$options = range(1, $i - 1);
 
 				if ($i > 2) {
-					$this->out('    [all] - Pause all workers');
+					$this->out('    [all] - ' . __d('cake_resque', 'Pause all workers'));
 					$options[] = 'all';
 				}
 
-				$in = $this->in("Worker to pause : ", $options);
+				$in = $this->in(__d('cake_resque', 'Worker to pause') . ': ', $options);
 				if ($in == 'all') {
 					$workerIndex = range(1, count($workers));
 				} else {
@@ -531,13 +531,13 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out('Pausing ' . $pid . ' ... ', 0);
+				$this->out(__d('cake_resque', 'Pausing %s ... ', $pid), 0);
 
 				$output = array();
 				$message = exec('kill -USR2 ' . $pid . ' 2>&1', $output, $code);
 
 				if ($code == 0) {
-					$this->out('<success>Done</success>');
+					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
 					$this->__setPausedWorker((string)$worker);
 				} else {
 					$this->out('<error>' . $message . '</error>');
@@ -558,20 +558,21 @@ class CakeResqueShell extends Shell {
  */
 	public function resume() {
 		if (!function_exists('pcntl_signal')) {
-			return $this->out("<error>Pausing worker is not supported on your system. \nPlease install the PCNTL extension</error>");
+			return $this->out('<error>' .
+				__d('cake_resque', "Pausing worker is not supported on your system. \nPlease install the PCNTL extension") . '</error>');
 		}
 
 		App::uses('CakeTime', 'Utility');
-		$this->out('<info>Resuming workers</info>');
+		$this->out('<info>' . __d('cake_resque', 'Resuming workers') . '</info>');
 		$workers = $this->__getPausedWorker();
 
 		if (empty($workers)) {
-			$this->out('   There is no paused workers to resume ...');
+			$this->out('   ' . __d('cake_resque', 'There is no paused workers to resume ...'));
 		} else {
 
 			$workerIndex = array();
 			if (!$this->params['all'] && count($workers) > 1) {
-				$this->out("Paused workers list :");
+				$this->out(__d('cake_resque', 'Paused workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
 					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
@@ -581,11 +582,11 @@ class CakeResqueShell extends Shell {
 				$options = range(1, $i - 1);
 
 				if ($i > 2) {
-					$this->out('    [all] - Resume all workers');
+					$this->out('    [all] - '. __d('cake_resque', 'Resume all workers'));
 					$options[] = 'all';
 				}
 
-				$in = $this->in("Worker to resume : ", $options);
+				$in = $this->in(__d('cake_resque', 'Worker to resume') . ': ', $options);
 				if ($in == 'all') {
 					$workerIndex = range(1, count($workers));
 				} else {
@@ -601,13 +602,13 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out('Resuming ' . $pid . ' ... ', 0);
+				$this->out(__d('cake_resque', 'Resuming %s ... ', $pid), 0);
 
 				$output = array();
 				$message = exec('kill -CONT ' . $pid . ' 2>&1', $output, $code);
 
 				if ($code == 0) {
-					$this->out('<success>Done</success>');
+					$this->out('<success>' . __d('cake_resque', 'Done') .'</success>');
 					$this->__setActiveWorker((string)$worker);
 				} else {
 					$this->out('<error>' . $message . '</error>');
@@ -622,9 +623,9 @@ class CakeResqueShell extends Shell {
  * Start a list of predefined workers
  */
 	public function load() {
-		$this->out('<info>Loading predefined workers</info>');
+		$this->out('<info>' . __d('cake_resque', 'Loading predefined workers') . '</info>');
 		if (Configure::read('CakeResque.Queues') == null) {
-			$this->out('   You have no configured queues to load.');
+			$this->out('   ' . __d('cake_resque', 'You have no configured queues to load.'));
 		} else {
 			foreach (Configure::read('CakeResque.Queues') as $queue) {
 				$this->start($queue);
@@ -640,41 +641,41 @@ class CakeResqueShell extends Shell {
 	public function restart() {
 		$this->stop(false, true);
 
-		$this->out('<info>Restarting workers</info>');
+		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
 		if (false !== $workers = $this->__getWorkers()) {
 			foreach ($workers as $worker) {
 				$this->start($worker, false);
 			}
 			$this->out("");
 		} else {
-			$this->out('<warning>No active workers found, will start brand new worker</warning>');
+			$this->out('<warning>' . __d('cake_resque', 'No active workers found, will start brand new worker') . '</warning>');
 			$this->start();
 		}
 	}
 
 	public function stats() {
 		$this->out("\n");
-		$this->out('<info>Resque Statistics</info>');
+		$this->out('<info>' . __d('cake_resque', 'Resque Statistics') . '</info>');
 		$this->hr();
 		$this->out("\n");
-		$this->out('<info>Jobs Stats</info>');
-		$this->out("   Processed Jobs : " . Resque_Stat::get('processed'));
-		$this->out("   <warning>Failed Jobs    : " . Resque_Stat::get('failed') . "</warning>");
+		$this->out('<info>' . __d('cake_resque', 'Jobs Stats') . '</info>');
+		$this->out('   ' . __d('cake_resque', 'Processed Jobs : %s', Resque_Stat::get('processed')));
+		$this->out('   <warning>' . __d('cake_resque', 'Failed Jobs    : %s', Resque_Stat::get('failed')) . '</warning>');
 		$this->out("\n");
-		$this->out('<info>Workers Stats</info>');
+		$this->out('<info>' . __d('cake_resque', 'Workers Stats') . '</info>');
 		$workers = Resque_Worker::all();
-		$this->out("   Workers count : " . count($workers));
+		$this->out('   ' . __d('cake_resque', 'Workers count : %s', count($workers)));
 
 		$pausedWorkers = $this->__getPausedWorker();
 
 		if (!empty($workers)) {
 			foreach ($workers as $worker) {
-				$this->out("\t" . $worker . (in_array((string)$worker, $pausedWorkers) ? " <warning>(paused)</warning>" : ''));
-				$this->out("\t   - Started on     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
-				$this->out("\t   - Processed Jobs : " . $worker->getStat('processed'));
+				$this->out("\t" . $worker . (in_array((string)$worker, $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . '</warning>' : ''));
+				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
+				$this->out("\t   - " . __d('cake_resque', 'Processed Jobs') . " : " . $worker->getStat('processed'));
 				$worker->getStat('failed') == 0
-					? $this->out("\t   - Failed Jobs    : " . $worker->getStat('failed'))
-					: $this->out("\t   - <warning>Failed Jobs    : " . $worker->getStat('failed') . "</warning>");
+					? $this->out("\t   - " . __d('cake_resque', 'Failed Jobs') . "    : " . $worker->getStat('failed'))
+					: $this->out("\t   - <warning>" . __d('cake_resque', 'Failed Jobs') . "    : " . $worker->getStat('failed') . "</warning>");
 			}
 		}
 
@@ -687,26 +688,26 @@ class CakeResqueShell extends Shell {
  * @since 2.1.0
  */
 	public function track() {
-		$this->out('<info>Tracking job status</info>');
+		$this->out('<info>' . __d('cake_resque', 'Tracking job status') . '</info>');
 
 		if (isset($this->args[0])) {
 			$jobId = $this->args[0];
 		} else {
-			return $this->out('<error>Please provide a valid job ID</error>');
+			return $this->out('<error>' . __d('cake_resque', 'Please provide a valid job ID') . '</error>');
 		}
 
 		$status = new Resque_Job_Status($jobId);
 		$jobStatus = $status->get();
 
 		if ($jobStatus === false) {
-			$this->out('Status : <warning>Unknown</warning>');
+			$this->out(__d('cake_resque', 'Status') . ' : <warning>' . __d('cake_resque', 'Unknown') . '</warning>');
 		} else {
 
 			$statusName = array(
-				Resque_Job_Status::STATUS_WAITING => __d('resque_console', 'waiting'),
-				Resque_Job_Status::STATUS_RUNNING => __d('resque_console', 'running'),
-				Resque_Job_Status::STATUS_FAILED => __d('resque_console', 'failed'),
-				Resque_Job_Status::STATUS_COMPLETE => __d('resque_console', 'complete')
+				Resque_Job_Status::STATUS_WAITING => __d('cake_resque', 'waiting'),
+				Resque_Job_Status::STATUS_RUNNING => __d('cake_resque', 'running'),
+				Resque_Job_Status::STATUS_FAILED => __d('cake_resque', 'failed'),
+				Resque_Job_Status::STATUS_COMPLETE => __d('cake_resque', 'complete')
 			);
 
 			$statusClass = array(
@@ -716,13 +717,13 @@ class CakeResqueShell extends Shell {
 				Resque_Job_Status::STATUS_COMPLETE => 'success'
 			);
 
-			$this->out(sprintf('Status : <%1$s>%2$s</%1$s>', $statusClass[$jobStatus], $statusName[$jobStatus]));
+			$this->out(sprintf(__d('cake_resque', 'Status') . ' : <%1$s>%2$s</%1$s>', $statusClass[$jobStatus], $statusName[$jobStatus]));
 
 			if ($jobStatus === Resque_Job_Status::STATUS_FAILED) {
 				$log = \Resque_Failure_Redis::get($jobId);
 				if (!empty($log)) {
 					$this->hr();
-					$this->out("<comment>Failed job details</comment>");
+					$this->out('<comment>' . __d('cake_resque', 'Failed job details') . '</comment>');
 					$this->hr();
 					foreach ($log as $key => $value) {
 						$this->out(sprintf("<info>%-10s: </info>", strtoupper($key)), 0);
@@ -836,7 +837,7 @@ class CakeResqueShell extends Shell {
 		// Validate Interval
 		$this->_runtime['interval'] = isset($this->_runtime['interval']) ? $this->_runtime['interval'] : Configure::read('CakeResque.Worker.interval');
 		if (!is_numeric($this->_runtime['interval'])) {
-			$errors[] = __d('resque_console', 'Interval time [%s] is not valid. Please enter a valid number', $this->_runtime['interval']);
+			$errors[] = __d('cake_resque', 'Interval time [%s] is not valid. Please enter a valid number', $this->_runtime['interval']);
 		} else {
 			$this->_runtime['interval'] = (int)$this->_runtime['interval'];
 		}
@@ -844,7 +845,7 @@ class CakeResqueShell extends Shell {
 		// Validate workers number
 		$this->_runtime['workers'] = isset($this->_runtime['workers']) ? $this->_runtime['workers'] : Configure::read('CakeResque.Worker.workers');
 		if (!is_numeric($this->_runtime['workers'])) {
-			$errors[] = __d('resque_console', 'Workers number [%s] is not valid. Please enter a valid number', $this->_runtime['workers']);
+			$errors[] = __d('cake_resque', 'Workers number [%s] is not valid. Please enter a valid number', $this->_runtime['workers']);
 		} else {
 			$this->_runtime['workers'] = (int)$this->_runtime['workers'];
 		}
@@ -856,7 +857,7 @@ class CakeResqueShell extends Shell {
 		$output = array();
 		exec('id ' . $this->_runtime['user'] . ' 2>&1', $output, $status);
 		if ($status != 0) {
-			$errors[] = __d('resque_console', 'User [%s] does not exists. Please enter a valid system user', $this->_runtime['user']);
+			$errors[] = __d('cake_resque', 'User [%s] does not exists. Please enter a valid system user', $this->_runtime['user']);
 		}
 
 		$this->_runtime['Log']['handler'] = isset($this->_runtime['log-handler']) ? $this->_runtime['log-handler'] : Configure::read('CakeResque.Log.handler');
@@ -868,7 +869,7 @@ class CakeResqueShell extends Shell {
 
 		if (!empty($errors)) {
 			foreach ($errors as $error) {
-				$this->err('<error>Error:</error> ' . $error);
+				$this->err('<error>' . __d('cake_resque', 'Error') . ':</error> ' . $error);
 			}
 			$this->out();
 		}

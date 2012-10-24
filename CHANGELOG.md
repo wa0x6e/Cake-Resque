@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v2.2.1** [2012-10-24]
+
+* [new] Add .pot file for i18n. Help for translation are welcomed.
+
 ###**v2.2.0** [2012-10-23]
 
 * [fix] Tracking job not working properly
