@@ -59,7 +59,7 @@
 			// - an relative path, that will be relative to
 			// 	 app/tmp/logs folder
 			// - a simple filename, file will be created inside app/tmp/logs
-			'log' => TMP . 'logs' . DS . 'resque-worker.log'
+			'log' => TMP . 'logs' . DS . 'resque-worker-error.log'
 		),
 		'Job' => array(
 			// Whether to track job status
@@ -129,7 +129,7 @@
 		// MongoDB 			MongoDB server address  (e.g: mongodb://localhost:27017)
 		'Log' => array(
 			'handler' => 'RotatingFile',
-			'target' => TMP . 'logs' . DS . 'resque-error.log'
+			'target' => TMP . 'logs' . DS . 'resque.log'
 		),
 
 		// Scheduler Worker
@@ -154,7 +154,7 @@
 			// Path to the php-resque-ex-scheduler's library
 			'lib' => 'kamisama/php-resque-ex-scheduler',
 			// Path to the log file
-			'log' => TMP . 'logs' . DS . 'resque-scheduler-worker.log',
+			'log' => TMP . 'logs' . DS . 'resque-scheduler-error.log',
 
 			// Optional
 			// Will not default to settings defined in the global scope above
