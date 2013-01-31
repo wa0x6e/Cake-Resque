@@ -1,5 +1,15 @@
 ##Changelog
 
+###**v3.0.0** [2012-01-30] 
+
+* [new] Add `enqueueAt()` and `enqueueIn()` for scheduled jobs
+* [new] Display pending jobs count for each queues in `stats`
+* [new] Display message when a queue is not monitored by a worker, in `stats`
+* [new] Display error message when resque library files are not found, instead of fatal error
+
+> Scheduled Jobs are disabled by default. Activate them by setting `CakeResque.Scheduler.enabled` to `true` in the bootstrap file.  
+> Run `composer update` to update your dependencies
+
 ###**v2.2.1** [2012-10-24]
 
 * [new] Add .pot file for i18n. Help for translation are welcomed.

@@ -40,9 +40,9 @@
  * 		Log handler and its arguments, to save the log with Monolog
  *
  */
-	 Configure::write('CakeResque', array(
+	Configure::write('CakeResque', array(
 		'Redis' => array(
-			'host' => 'localhost', 		// Redis server hostname
+			'host' => 'localhost',		// Redis server hostname
 			'port' => 6379 ,			// Redis server port
 			'database' => 0,			// Redis database number
 			'namespace' => 'resque'		// Redis keys namespace
@@ -51,7 +51,7 @@
 		'Worker' => array(
 			'queue' => 'default',		// Name of the default queue
 			'interval' => 5,			// Number of second between each poll
-			'workers' => 1, 			// Number of workers to create
+			'workers' => 1,				// Number of workers to create
 
 			// Path to the log file
 			// Can be an
@@ -70,13 +70,13 @@
 			// as fourth argument when calling CakeResque::enqueue();
 			'track' => false
 		),
-		 /*
+		/*
 		'Queues' => array(
 			array(
-	 			'queue' => 'default',	// Use default values from above for missing interval and count indexes
-	 			'user' => 'www-data'	// If PHP is running as a different user on you webserver
+				'queue' => 'default',	// Use default values from above for missing interval and count indexes
+				'user' => 'www-data'	// If PHP is running as a different user on you webserver
 			),
-	 		array(
+			array(
 				'queue' => 'my-second-queue',
 				'interval' => 10
 			)
@@ -130,6 +130,50 @@
 		'Log' => array(
 			'handler' => 'RotatingFile',
 			'target' => TMP . 'logs' . DS . 'resque-error.log'
+		),
+
+		// Scheduler Worker
+		// It's the worker handling all the scheduled jobs
+		// Only one scheduler worker is permitted to run at one time
+		// It can be paused, resumed and stopped like any other workers
+		// It can be started only with the `startscheduler` command,
+		// or with `load` if Scheduler Worker is enabled.
+		//
+		// Scheduled jobs requires the php-resque-ex-scheduler library,
+		// that should be installed with automatically via the
+		// `composer update` or `composer install` command
+		//
+		// The Scheduler Worker have its own default settings
+		//
+		// @since 2.3.0
+		//
+		'Scheduler' => array(
+			// Enable or disable delayed job
+			'enabled' => false,
+
+			// Path to the php-resque-ex-scheduler's library
+			'lib' => 'kamisama/php-resque-ex-scheduler',
+			// Path to the log file
+			'log' => TMP . 'logs' . DS . 'resque-scheduler-worker.log',
+
+			// Optional
+			// Will not default to settings defined in the global scope above
+			'Env' => array(),
+
+			// Optional
+			// Will default to settings defined in the global scope above
+			// Only available setting is `interval`
+			// The worker will always poll a fixed special queue, and only one worker can run at one time
+			'Worker' => array(
+				'interval' => 3
+			),
+
+			// Optional
+			// Will default to settings defined in the global scope above
+			'Log' => array(
+				'handler' => 'RotatingFile',
+				'target' => TMP . 'logs' . DS . 'resque-scheduler.log'
+			)
 		)
 	));
 

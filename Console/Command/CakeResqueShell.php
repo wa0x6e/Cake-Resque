@@ -18,6 +18,8 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+use Kamisama\ResqueScheduler;
+
 class CakeResqueShell extends Shell {
 
 	public $uses = array();
@@ -35,7 +37,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '2.2.1';
+	const VERSION = '3.0.0';
 
 /**
  * Startup callback.
@@ -48,12 +50,41 @@ class CakeResqueShell extends Shell {
 		} else {
 			$this->_resqueLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib')) . DS;
 		}
+		$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
 
-		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque.php';
-		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Stat.php';
-		require_once $this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Worker.php';
+		$files = array(
+			$this->_resqueLibrary . 'lib' . DS . 'Resque.php',
+			$this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Stat.php',
+			$this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Worker.php'
+		);
 
-		$this->stdout->styles('success', array('text' => 'green')); Configure::write('Config.language', 'fre');
+		foreach ($files as $file) {
+			if (is_readable($file)) {
+				require_once $file;
+			} else {
+				$this->out('<error>' . __d('cake_resque', 'Unable to load the file `%s` from Resque Library', pathinfo($file, PATHINFO_BASENAME)) . '</error>');
+				die();
+			}
+		}
+
+		$files = array(
+			$this->_ResqueSchedulerLibrary . 'lib' . DS . 'ResqueScheduler.php',
+			$this->_ResqueSchedulerLibrary . 'lib' . DS . 'ResqueScheduler' . DS . 'job' . DS . 'Status.php',
+		);
+		if (Configure::read('CakeResque.Scheduler.enabled') === true) {
+			foreach ($files as $file) {
+				if (is_readable($file)) {
+					require_once $file;
+				} else {
+					$this->out('<error>' . __d('cake_resque', 'Unable to load the file `%s` from ResqueScheduler Library', pathinfo($file, PATHINFO_BASENAME)) . '</error>');
+					$this->out(__d('cake_resque', ''));
+					die();
+				}
+			}
+		}
+
+		$this->stdout->styles('success', array('text' => 'green'));
+		$this->stdout->styles('bold', array('bold' => true));
 	}
 
 	public function getOptionParser() {
@@ -74,6 +105,29 @@ class CakeResqueShell extends Shell {
 				'workers' => array(
 					'short' => 'n',
 					'help' => __d('cake_resque', 'Number of workers to fork')
+				),
+				'log' => array(
+					'short' => 'l',
+					'help' => __d('cake_resque', 'Log path')
+				),
+				'log-handler' => array(
+					'help' => __d('cake_resque', 'Log Handler to use for logging.')
+				),
+				'log-handler-target' => array(
+					'help' => __d('cake_resque', 'Log Handler arguments')
+				)
+			)
+		);
+
+		$startSchedulerParserArguments = array(
+			'options' => array(
+				'user' => array(
+					'short' => 'u',
+					'help' => __d('cake_resque', 'User running the workers')
+				),
+				'interval' => array(
+					'short' => 'i',
+					'help' => __d('cake_resque', 'Pause time in seconds between each works')
 				),
 				'log' => array(
 					'short' => 'l',
@@ -162,6 +216,10 @@ class CakeResqueShell extends Shell {
 				'help' => __d('cake_resque', 'Start a new worker.'),
 				'parser' => $startParserArguments
 			))
+			->addSubcommand('startscheduler', array(
+				'help' => __d('cake_resque', 'Start a new scheduler worker.'),
+				'parser' => $startSchedulerParserArguments
+			))
 			->addSubcommand('stop', array(
 				'help' => __d('cake_resque', 'Stop a worker.'),
 				'parser' => $stopParserArguments
@@ -212,7 +270,53 @@ class CakeResqueShell extends Shell {
 		$params = explode(',', $this->args[2]);
 
 		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
-		$this->out('<success>' . __d('cake_resque', 'Succesfully enqueued Job #%s',  $result) . '</success>');
+		$this->out('<success>' . __d('cake_resque', 'Succesfully enqueued Job #%s', $result) . '</success>');
+
+		$this->out("");
+	}
+
+/**
+ * Enqueue a scheduled job via CLI.
+ *
+ * @since  2.3.0
+ */
+	public function enqueueIn() {
+		$this->out('<info>' . __d('cake_resque', 'Scheduling a job') . '</info>');
+		if (count($this->args) < 4) {
+			$this->err('<error>' . __d('cake_resque', 'Wrong number of arguments') . '</error>');
+			$this->out(__d('cake_resque', 'Usage : enqueueIn <seconds> <queue> <jobclass> <comma-separated-args>'), 2);
+			return false;
+		}
+
+		$jobQueue = $this->args[1];
+		$jobClass = $this->args[2];
+		$params = explode(',', $this->args[3]);
+
+		$result = CakeResque::enqueueIn($this->args[0], $jobQueue, $jobClass, $params, (isset($this->args[4]) ? (bool)$this->args[4] : false));
+		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
+
+		$this->out("");
+	}
+
+/**
+ * Enqueue a scheduled job via CLI.
+ *
+ * @since  2.3.0
+ */
+	public function enqueueAt() {
+		$this->out('<info>' . __d('cake_resque', 'Scheduling a job') . '</info>');
+		if (count($this->args) < 4) {
+			$this->err('<error>' . __d('cake_resque', 'Wrong number of arguments') . '</error>');
+			$this->out(__d('cake_resque', 'Usage : enqueue <timestamp> <queue> <jobclass> <comma-separated-args>'), 2);
+			return false;
+		}
+
+		$jobQueue = $this->args[1];
+		$jobClass = $this->args[2];
+		$params = explode(',', $this->args[3]);
+
+		$result = CakeResque::enqueueAt($this->args[0], $jobQueue, $jobClass, $params, (isset($this->args[4]) ? (bool)$this->args[4] : false));
+		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
 
 		$this->out("");
 	}
@@ -302,7 +406,7 @@ class CakeResqueShell extends Shell {
 			sprintf("REDIS_DATABASE=%s REDIS_NAMESPACE=%s", Configure::read('CakeResque.Redis.database'), escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
 			sprintf("CAKE=%s COUNT=%s ", escapeshellarg(CAKE), $this->_runtime['workers']),
 			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s ", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
-			sprintf("php ./resque.php >> %s", escapeshellarg($this->_runtime['log'])),
+			sprintf("php ./bin/resque.php >> %s", escapeshellarg($this->_runtime['log'])),
 			'2>&1" >/dev/null 2>&1 &'
 		));
 
@@ -319,6 +423,86 @@ class CakeResqueShell extends Shell {
 		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
 			if ($args === null || $new === true) {
 				$this->__addWorker($this->_runtime);
+			}
+			$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
+		} else {
+			$this->out(' <error>' . __d('cake_resque', 'Fail') . '</error>');
+		}
+
+		if ($args === null) {
+			$this->out("");
+		}
+	}
+
+/**
+ * Start the scheduler worker
+ *
+ * @param array $args If present, start the worker with these args.
+ * @param bool $new Whether the worker is new, or from a restart
+ * @since 2.3.0
+ */
+	public function startScheduler($args = null, $new = true) {
+		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
+			return $this->out('<error>' . __d('cake_resque', 'Scheduler Worker is not enabled') . '</error>');
+		}
+
+		if ($this->__isRunningSchedulerWorker(true)) {
+			return $this->out('<warning>' . __d('cake_resque', 'The scheduler worker is already running') . '</warning>');
+		}
+
+		if ($args === null) {
+			$this->out('<info>' . __d('cake_resque', 'Creating the scheduler worker') . '</info>');
+		}
+
+		$args['type'] = 'scheduler';
+
+		if (!$this->__validate($args)) return;
+
+		if (file_exists(APP . 'Lib' . DS . 'CakeResqueBootstrap.php')) {
+			$bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
+		} else {
+			$bootstrapPath = App::pluginPath('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
+		}
+
+		$envVars = array();
+		$vars = Configure::read('CakeResque.Scheduler.Env');
+		foreach ($vars as $key => $val) {
+			if (is_int($key) && isset($_SERVER[$val])) {
+				$envVars[] = sprintf("%s=%s", $val, escapeshellarg($_SERVER[$val]));
+			} else {
+				$envVars[] = sprintf("%s=%s", $key, escapeshellarg($val));
+			}
+		}
+
+		$cmd = implode(' ', array(
+			sprintf("nohup sudo -u %s", $this->_runtime['user']),
+			sprintf('bash -c "cd %s;', escapeshellarg($this->_ResqueSchedulerLibrary)),
+			implode(' ', $envVars),
+			sprintf("VVERBOSE=true "),
+			sprintf("APP_INCLUDE=%s INTERVAL=%s ", escapeshellarg($bootstrapPath), $this->_runtime['interval']),
+			sprintf("RESQUE_PHP=%s ", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
+			sprintf("REDIS_BACKEND=%s ", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
+			sprintf("REDIS_DATABASE=%s REDIS_NAMESPACE=%s", Configure::read('CakeResque.Redis.database'), escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
+			sprintf("CAKE=%s ", escapeshellarg(CAKE)),
+			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s ", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
+			sprintf("php ./bin/resque-scheduler.php >> %s", escapeshellarg(Configure::read('CakeResque.Scheduler.log'))),
+			'2>&1" >/dev/null 2>&1 &'
+		));
+
+		$workersCountBefore = Resque::Redis()->scard('workers');
+		passthru($cmd);
+
+		$this->out(__d('cake_resque', 'Starting the scheduler worker '), 0);
+		for ($i = 0; $i < 3; $i++) {
+			$this->out(".", 0);
+			usleep(150000);
+		}
+
+		$workersCountAfter = Resque::Redis()->scard('workers');
+		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
+			if ($args === null || $new === true) {
+				$this->__addWorker($this->_runtime);
+				$this->__registerSchedulerWorker();
 			}
 			$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
 		} else {
@@ -353,7 +537,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
+					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -380,7 +564,13 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
+				if ($this->__isSchedulerWorker($worker)) {
+					$this->__unregisterSchedulerWorker();
+					$this->out(__d('cake_resque', 'Killing the Scheduler Worker ... '), 0);
+				} else {
+					$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
+				}
+
 				$this->params['force'] ? $worker->shutDownNow() : $worker->shutDown();	// Send signal to stop processing jobs
 				$worker->unregisterWorker();											// Remove jobs from resque environment
 
@@ -426,7 +616,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
+					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -453,7 +643,11 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out(__d('cake_resque', 'Cleaning up %s ... ', $pid), 0);
+				if ($this->__isSchedulerWorker($worker)) {
+					$this->out(__d('cake_resque', 'Cleaning up the Scheduler Worker ... '), 0);
+				} else {
+					$this->out(__d('cake_resque', 'CLeaning up %s ... ', $pid), 0);
+				}
 
 				$output = array();
 				$message = exec('kill -USR1 ' . $pid . ' 2>&1', $output, $code);
@@ -504,7 +698,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
+					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -531,7 +725,11 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out(__d('cake_resque', 'Pausing %s ... ', $pid), 0);
+				if ($this->__isSchedulerWorker($worker)) {
+					$this->out(__d('cake_resque', 'Pausing the Scheduler Worker ... '), 0);
+				} else {
+					$this->out(__d('cake_resque', 'Pausing %s ... ', $pid), 0);
+				}
 
 				$output = array();
 				$message = exec('kill -USR2 ' . $pid . ' 2>&1', $output, $code);
@@ -575,14 +773,14 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Paused workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $worker,
+					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
 				$options = range(1, $i - 1);
 
 				if ($i > 2) {
-					$this->out('    [all] - '. __d('cake_resque', 'Resume all workers'));
+					$this->out('    [all] - ' . __d('cake_resque', 'Resume all workers'));
 					$options[] = 'all';
 				}
 
@@ -602,13 +800,17 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				$this->out(__d('cake_resque', 'Resuming %s ... ', $pid), 0);
+				if ($this->__isSchedulerWorker($worker)) {
+					$this->out(__d('cake_resque', 'Resuming the Scheduler Worker ... '), 0);
+				} else {
+					$this->out(__d('cake_resque', 'Resuming %s ... ', $pid), 0);
+				}
 
 				$output = array();
 				$message = exec('kill -CONT ' . $pid . ' 2>&1', $output, $code);
 
 				if ($code == 0) {
-					$this->out('<success>' . __d('cake_resque', 'Done') .'</success>');
+					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
 					$this->__setActiveWorker((string)$worker);
 				} else {
 					$this->out('<error>' . $message . '</error>');
@@ -632,6 +834,10 @@ class CakeResqueShell extends Shell {
 			}
 		}
 
+		if (Configure::read('CakeResque.Scheduler.enabled') === true) {
+			$this->startscheduler();
+		}
+
 		$this->out("");
 	}
 
@@ -644,7 +850,12 @@ class CakeResqueShell extends Shell {
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
 		if (false !== $workers = $this->__getWorkers()) {
 			foreach ($workers as $worker) {
-				$this->start($worker, false);
+				if (isset($worker['type']) && $worker['type'] === 'scheduler') {
+					$this->startScheduler($worker, false);
+				} else {
+					$this->start($worker, false);
+				}
+
 			}
 			$this->out("");
 		} else {
@@ -654,23 +865,57 @@ class CakeResqueShell extends Shell {
 	}
 
 	public function stats() {
+		$workers = Resque_Worker::all();
+		// List of all queues
+		$queues = Resque::Redis()->smembers('queues');
+		if (!empty($queues)) {
+			$queues = array_unique($queues);
+		}
+		// List of queues monitored by a worker
+		$activeQueues = array();
+		foreach ($workers as $worker) {
+			$activeQueues = array_merge($activeQueues, explode(',', array_pop(explode(':', $worker))));
+		}
+
 		$this->out("\n");
 		$this->out('<info>' . __d('cake_resque', 'Resque Statistics') . '</info>');
 		$this->hr();
 		$this->out("\n");
+
 		$this->out('<info>' . __d('cake_resque', 'Jobs Stats') . '</info>');
-		$this->out('   ' . __d('cake_resque', 'Processed Jobs : %s', Resque_Stat::get('processed')));
-		$this->out('   <warning>' . __d('cake_resque', 'Failed Jobs    : %s', Resque_Stat::get('failed')) . '</warning>');
+		$this->out('   ' . __d('cake_resque', 'Processed Jobs : %12s', number_format(Resque_Stat::get('processed'))));
+		$this->out('   <warning>' . __d('cake_resque', 'Failed Jobs    : %12s', number_format(Resque_Stat::get('failed'))) . '</warning>');
+		$this->out("\n");
+
+		$this->out('<info>' . __d('cake_resque', 'Queues Stats') . '</info>');
+		for ($i = count($queues) - 1; $i >= 0; --$i) {
+			$count = Resque::Redis()->llen('queue:' . $queues[$i]);
+			if (!in_array($queues[$i], $activeQueues) && $count == 0) {
+				unset($queues[$i]);
+			}
+
+		}
+
+		$this->out('   ' . __d('cake_resque', 'Queues count : %s', count($queues)));
+		foreach ($queues as $queue) {
+			$this->out("\t- " . $queue . "\t : " . $count . " " . __d('cake_resque', 'pending jobs') . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : ""));
+		}
+
 		$this->out("\n");
 		$this->out('<info>' . __d('cake_resque', 'Workers Stats') . '</info>');
-		$workers = Resque_Worker::all();
 		$this->out('   ' . __d('cake_resque', 'Workers count : %s', count($workers)));
 
 		$pausedWorkers = $this->__getPausedWorker();
+		$schedulerWorkers = array();
 
 		if (!empty($workers)) {
+			$this->out("\t<info>" . strtoupper(__d('cake_resque', 'regular workers')) . "</info>");
 			foreach ($workers as $worker) {
-				$this->out("\t" . $worker . (in_array((string)$worker, $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . '</warning>' : ''));
+				if ($this->__isSchedulerWorker($worker)) {
+					$schedulerWorkers[] = $worker;
+					continue;
+				}
+				$this->out("\t* <bold>" . (string)$worker . '</bold>' . (in_array((string)$worker, $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . ')</warning>' : ''));
 				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
 				$this->out("\t   - " . __d('cake_resque', 'Processed Jobs') . " : " . $worker->getStat('processed'));
 				$worker->getStat('failed') == 0
@@ -680,6 +925,30 @@ class CakeResqueShell extends Shell {
 		}
 
 		$this->out("\n");
+
+		if (!empty($schedulerWorkers)) {
+			$this->out("\t<info>" . strtoupper(__d('cake_resque', 'scheduler worker')) . "</info>" . (in_array((string)$schedulerWorkers[0], $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . ')</warning>' : ''));
+			foreach ($schedulerWorkers as $worker) {
+				$schedulerWorker = new ResqueScheduler\ResqueScheduler();
+				$delayedJobCount = $schedulerWorker->getDelayedQueueScheduleSize();
+				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
+				$this->out("\t   - " . __d('cake_resque', 'Delayed Jobs') . "   : " . $delayedJobCount);
+
+				if ($delayedJobCount > 0) {
+					$this->out("\t   - " . __d('cake_resque', 'Next Job on') . "    : " . strftime('%a %b %d %H:%M:%S %Z %Y', $schedulerWorker->nextDelayedTimestamp()));
+				}
+			}
+			$this->out("\n");
+		} elseif (Configure::read('CakeResque.Scheduler.enabled') === true) {
+			$jobsCount = ResqueScheduler\ResqueScheduler::getDelayedQueueScheduleSize();
+			if ($jobsCount > 0) {
+				$this->out("\t<error>************ " . __d('cake_resque', 'Alert') . " ************</error>");
+				$this->out("\t<bold>" . __d('cake_resque', 'The Scheduler Worker is not running') . "</bold>");
+				$this->out("\t" . __d('cake_resque', 'But there is still <bold>%d</bold> scheduled jobs left in its queue', $jobsCount));
+				$this->out("\t<error>********************************</error>");
+				$this->out("\n");
+			}
+		}
 	}
 
 /**
@@ -707,7 +976,8 @@ class CakeResqueShell extends Shell {
 				Resque_Job_Status::STATUS_WAITING => __d('cake_resque', 'waiting'),
 				Resque_Job_Status::STATUS_RUNNING => __d('cake_resque', 'running'),
 				Resque_Job_Status::STATUS_FAILED => __d('cake_resque', 'failed'),
-				Resque_Job_Status::STATUS_COMPLETE => __d('cake_resque', 'complete')
+				Resque_Job_Status::STATUS_COMPLETE => __d('cake_resque', 'complete'),
+
 			);
 
 			$statusClass = array(
@@ -717,10 +987,21 @@ class CakeResqueShell extends Shell {
 				Resque_Job_Status::STATUS_COMPLETE => 'success'
 			);
 
-			$this->out(sprintf(__d('cake_resque', 'Status') . ' : <%1$s>%2$s</%1$s>', $statusClass[$jobStatus], $statusName[$jobStatus]));
+			if (Configure::read('CakeResque.Scheduler.enabled') === true) {
+				$statusClass[ResqueScheduler\Job\Status::STATUS_SCHEDULED] = 'info';
+				$statusName[ResqueScheduler\Job\Status::STATUS_SCHEDULED] = __d('cake_resque', 'scheduled');
+			}
+
+			$this->out(
+				sprintf(
+					__d('cake_resque', 'Status') . ' : <%1$s>%2$s</%1$s>',
+					(isset($statusClass[$jobStatus]) ? $statusClass[$jobStatus] : 'warning'),
+					isset($statusName[$jobStatus]) ? $statusName[$jobStatus] : __d('cake_resque', 'Unknown')
+				)
+			);
 
 			if ($jobStatus === Resque_Job_Status::STATUS_FAILED) {
-				$log = \Resque_Failure_Redis::get($jobId);
+				$log = Resque_Failure_Redis::get($jobId);
 				if (!empty($log)) {
 					$this->hr();
 					$this->out('<comment>' . __d('cake_resque', 'Failed job details') . '</comment>');
@@ -731,12 +1012,12 @@ class CakeResqueShell extends Shell {
 							$this->out($value);
 						} else {
 							$this->out("");
-							foreach ($value as $s_key => $s_value) {
-								$this->out(sprintf("    <info>%5s : </info>", $s_key), 0);
-								if (is_string($s_value)) {
-									$this->out($s_value);
+							foreach ($value as $sKey => $sValue) {
+								$this->out(sprintf("    <info>%5s : </info>", $sKey), 0);
+								if (is_string($sValue)) {
+									$this->out($sValue);
 								} else {
-									$this->out(str_replace("\n", "\n            ", var_export($s_value, true)));
+									$this->out(str_replace("\n", "\n            ", var_export($sValue, true)));
 								}
 							}
 						}
@@ -755,6 +1036,61 @@ class CakeResqueShell extends Shell {
  */
 	private function __addWorker($args) {
 		Resque::Redis()->rpush('ResqueWorker', serialize($args));
+	}
+
+/**
+ * Register a Scheduler Worker
+ *
+ * @since  2.3.0
+ * @return boolean True if a Scheduler worker is found among the list of active workers
+ */
+	private function __registerSchedulerWorker() {
+		$workers = Resque_Worker::all();
+		foreach ($workers as $worker) {
+			if (array_pop(explode(':', $worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
+				Resque::Redis()->set('ResqueScheduler\ResqueSchedulerWorker', (string)$worker);
+				return true;
+			}
+		}
+		return false;
+	}
+
+/**
+ * Test if a given worker is a scheduler worker
+ *
+ * @param 	Worker|string	$worker	Worker to test
+ * @since 	2.3.0
+ * @return 	boolean True if the worker is a scheduler worker
+ */
+	private function __isSchedulerWorker($worker) {
+		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
+			return false;
+		}
+
+		return array_pop(explode(':', (string)$worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME;
+	}
+
+/**
+ * Check if the Scheduler Worker is already running
+ * @param  boolean $check Check agains list of all active workers, in case the previous scheduler worker was not stopped properly
+ * @return boolean        True if the scheduler worker is already running
+ */
+	private function __isRunningSchedulerWorker($check = false) {
+		if ($check) {
+			$this->__unregisterSchedulerWorker();
+			return $this->__registerSchedulerWorker();
+		}
+		return Resque::Redis()->exists('ResqueScheduler\ResqueSchedulerWorker');
+	}
+
+/**
+ * Unregister a Scheduler Worker
+ *
+ * @since  2.3.0
+ * @return boolean True if the scheduler worker existed and was successfully unregistered
+ */
+	private function __unregisterSchedulerWorker() {
+		return Resque::Redis()->del('ResqueScheduler\ResqueSchedulerWorker') > 0;
 	}
 
 /**
@@ -826,8 +1162,17 @@ class CakeResqueShell extends Shell {
 
 		$errors = array();
 
+		if (!isset($this->_runtime['type'])) {
+			$this->_runtime['type'] = 'regular';
+		}
+
 		// Validate Log path
-		$this->_runtime['log'] = isset($this->_runtime['log']) ? $this->_runtime['log'] : Configure::read('CakeResque.Worker.log');
+		$this->_runtime['log'] = isset($this->_runtime['log'])
+		? $this->_runtime['log']
+		: (Configure::read('CakeResque.Scheduler.log') && $this->_runtime['type'] === 'scheduler'
+			? Configure::read('CakeResque.Scheduler.log')
+			: Configure::read('CakeResque.Worker.log')
+		);
 		if (substr($this->_runtime['log'], 0, 2) == './') {
 			$this->_runtime['log'] = TMP . 'logs' . DS . substr($this->_runtime['log'], 2);
 		} elseif (substr($this->_runtime['log'], 0, 1) != '/') {
@@ -835,7 +1180,12 @@ class CakeResqueShell extends Shell {
 		}
 
 		// Validate Interval
-		$this->_runtime['interval'] = isset($this->_runtime['interval']) ? $this->_runtime['interval'] : Configure::read('CakeResque.Worker.interval');
+		$this->_runtime['interval'] = isset($this->_runtime['interval'])
+		? $this->_runtime['interval']
+		: (Configure::read('CakeResque.Scheduler.Worker.interval') && $this->_runtime['type'] === 'scheduler'
+			? Configure::read('CakeResque.Scheduler.Worker.interval')
+			: Configure::read('CakeResque.Worker.interval')
+		);
 		if (!is_numeric($this->_runtime['interval'])) {
 			$errors[] = __d('cake_resque', 'Interval time [%s] is not valid. Please enter a valid number', $this->_runtime['interval']);
 		} else {
@@ -860,9 +1210,19 @@ class CakeResqueShell extends Shell {
 			$errors[] = __d('cake_resque', 'User [%s] does not exists. Please enter a valid system user', $this->_runtime['user']);
 		}
 
-		$this->_runtime['Log']['handler'] = isset($this->_runtime['log-handler']) ? $this->_runtime['log-handler'] : Configure::read('CakeResque.Log.handler');
+		$this->_runtime['Log']['handler'] = isset($this->_runtime['log-handler'])
+		? $this->_runtime['log-handler']
+		: (Configure::read('CakeResque.Scheduler.Log.handler') && $this->_runtime['type'] === 'scheduler'
+			? Configure::read('CakeResque.Scheduler.Log.handler')
+			: Configure::read('CakeResque.Log.handler')
+		);
 
-		$this->_runtime['Log']['target'] = isset($this->_runtime['log-handler-target']) ? $this->_runtime['log-handler-target'] : Configure::read('CakeResque.Log.target');
+		$this->_runtime['Log']['target'] = isset($this->_runtime['log-handler-target'])
+		? $this->_runtime['log-handler-target']
+		: (Configure::read('CakeResque.Scheduler.Log.target') && $this->_runtime['type'] === 'scheduler'
+			? Configure::read('CakeResque.Scheduler.Log.target')
+			: Configure::read('CakeResque.Log.target')
+		);
 		if (substr($this->_runtime['Log']['target'], 0, 2) == './') {
 			$this->_runtime['Log']['target'] = TMP . 'logs' . DS . substr($this->_runtime['Log']['target'], 2);
 		}
