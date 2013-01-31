@@ -37,7 +37,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.0.2';
+	const VERSION = '3.0.3';
 
 /**
  * Startup callback.
@@ -50,11 +50,15 @@ class CakeResqueShell extends Shell {
 		} else {
 			$this->_resqueLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib')) . DS;
 		}
-		$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
 
-		$files = array(
-			$this->_ResqueSchedulerLibrary . 'lib' . DS . 'ResqueScheduler.php'
-		);
+		if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
+			$this->_ResqueSchedulerLibrary = Configure::read('CakeResque.Scheduler.lib') . DS;
+		} else {
+			$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
+		}
+
+		//$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
+
 
 		$this->stdout->styles('success', array('text' => 'green'));
 		$this->stdout->styles('bold', array('bold' => true));

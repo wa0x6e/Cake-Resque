@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.0.3** [2012-01-30] 
+
+* [fix] Load ResqueScheduler library even if scheduler is disabled to prevent class not found
+
 ###**v3.0.2** [2012-01-30] 
 
 * [fix] Load missing resque library files

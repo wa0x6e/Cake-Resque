@@ -18,7 +18,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-use Kamisama\ResqueScheduler as ResqueScheduler;
+use Kamisama\ResqueScheduler;
 
 if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
@@ -28,15 +28,15 @@ if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php');
 }
 
-if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-	if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
-		require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php';
-		require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php';
-	} else {
-		require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php');
-		require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php');
-	}
+
+if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
+	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php';
+	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php';
+} else {
+	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php');
+	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php');
 }
+
 
 Resque::setBackend(
 	Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'),
