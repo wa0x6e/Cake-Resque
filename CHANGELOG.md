@@ -1,5 +1,11 @@
 ##Changelog
 
+###**v3.0.2** [2012-01-30] 
+
+* [fix] Load missing resque library files
+* [fix] More accurate detection of workers status
+* [change] Reove redundant fiels include
+
 ###**v3.0.1** [2012-01-30] 
 
 * [change] Rename default log files for consistency

@@ -53,35 +53,8 @@ class CakeResqueShell extends Shell {
 		$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
 
 		$files = array(
-			$this->_resqueLibrary . 'lib' . DS . 'Resque.php',
-			$this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Stat.php',
-			$this->_resqueLibrary . 'lib' . DS . 'Resque' . DS . 'Worker.php'
+			$this->_ResqueSchedulerLibrary . 'lib' . DS . 'ResqueScheduler.php'
 		);
-
-		foreach ($files as $file) {
-			if (is_readable($file)) {
-				require_once $file;
-			} else {
-				$this->out('<error>' . __d('cake_resque', 'Unable to load the file `%s` from Resque Library', pathinfo($file, PATHINFO_BASENAME)) . '</error>');
-				die();
-			}
-		}
-
-		$files = array(
-			$this->_ResqueSchedulerLibrary . 'lib' . DS . 'ResqueScheduler.php',
-			$this->_ResqueSchedulerLibrary . 'lib' . DS . 'ResqueScheduler' . DS . 'job' . DS . 'Status.php',
-		);
-		if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-			foreach ($files as $file) {
-				if (is_readable($file)) {
-					require_once $file;
-				} else {
-					$this->out('<error>' . __d('cake_resque', 'Unable to load the file `%s` from ResqueScheduler Library', pathinfo($file, PATHINFO_BASENAME)) . '</error>');
-					$this->out(__d('cake_resque', ''));
-					die();
-				}
-			}
-		}
 
 		$this->stdout->styles('success', array('text' => 'green'));
 		$this->stdout->styles('bold', array('bold' => true));
@@ -414,18 +387,25 @@ class CakeResqueShell extends Shell {
 		passthru($cmd);
 
 		$this->out(__d('cake_resque', 'Starting worker '), 0);
-		for ($i = 0; $i < 3;$i++) {
-			$this->out(".", 0);
-			usleep(150000);
+
+		$started = false;
+		$attempt = 7;
+		while ($attempt-- > 0) {
+			for ($i = 0; $i < 3;$i++) {
+				$this->out(".", 0);
+				usleep(150000);
+			}
+			if (($workersCountBefore + $this->_runtime['workers']) == Resque::Redis()->scard('workers')) {
+				if ($args === null || $new === true) {
+					$this->__addWorker($this->_runtime);
+				}
+				$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
+				$started = true;
+				break;
+			}
 		}
 
-		$workersCountAfter = Resque::Redis()->scard('workers');
-		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
-			if ($args === null || $new === true) {
-				$this->__addWorker($this->_runtime);
-			}
-			$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
-		} else {
+		if (!$started) {
 			$this->out(' <error>' . __d('cake_resque', 'Fail') . '</error>');
 		}
 
@@ -493,19 +473,26 @@ class CakeResqueShell extends Shell {
 		passthru($cmd);
 
 		$this->out(__d('cake_resque', 'Starting the scheduler worker '), 0);
-		for ($i = 0; $i < 3; $i++) {
-			$this->out(".", 0);
-			usleep(150000);
+
+		$started = false;
+		$attempt = 7;
+		while ($attempt-- > 0) {
+			for ($i = 0; $i < 3;$i++) {
+				$this->out(".", 0);
+				usleep(150000);
+			}
+			if (($workersCountBefore + $this->_runtime['workers']) == Resque::Redis()->scard('workers')) {
+				if ($args === null || $new === true) {
+					$this->__addWorker($this->_runtime);
+					$this->__registerSchedulerWorker();
+				}
+				$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
+				$started = true;
+				break;
+			}
 		}
 
-		$workersCountAfter = Resque::Redis()->scard('workers');
-		if (($workersCountBefore + $this->_runtime['workers']) == $workersCountAfter) {
-			if ($args === null || $new === true) {
-				$this->__addWorker($this->_runtime);
-				$this->__registerSchedulerWorker();
-			}
-			$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
-		} else {
+		if (!$started) {
 			$this->out(' <error>' . __d('cake_resque', 'Fail') . '</error>');
 		}
 
@@ -1048,7 +1035,7 @@ class CakeResqueShell extends Shell {
 		$workers = Resque_Worker::all();
 		foreach ($workers as $worker) {
 			if (array_pop(explode(':', $worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
-				Resque::Redis()->set('ResqueScheduler\ResqueSchedulerWorker', (string)$worker);
+				Resque::Redis()->set('ResqueSchedulerWorker', (string)$worker);
 				return true;
 			}
 		}
@@ -1080,7 +1067,7 @@ class CakeResqueShell extends Shell {
 			$this->__unregisterSchedulerWorker();
 			return $this->__registerSchedulerWorker();
 		}
-		return Resque::Redis()->exists('ResqueScheduler\ResqueSchedulerWorker');
+		return Resque::Redis()->exists('ResqueSchedulerWorker');
 	}
 
 /**
@@ -1090,7 +1077,7 @@ class CakeResqueShell extends Shell {
  * @return boolean True if the scheduler worker existed and was successfully unregistered
  */
 	private function __unregisterSchedulerWorker() {
-		return Resque::Redis()->del('ResqueScheduler\ResqueSchedulerWorker') > 0;
+		return Resque::Redis()->del('ResqueSchedulerWorker') > 0;
 	}
 
 /**
