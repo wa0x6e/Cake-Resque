@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.0.1** [2012-01-30] 
+
+* [change] Rename default log files for consistency
+
 ###**v3.0.0** [2012-01-30] 
 
 * [new] Add `enqueueAt()` and `enqueueIn()` for scheduled jobs
@@ -8,7 +12,8 @@
 * [new] Display error message when resque library files are not found, instead of fatal error
 
 > Scheduled Jobs are disabled by default. Activate them by setting `CakeResque.Scheduler.enabled` to `true` in the bootstrap file.  
-> Run `composer update` to update your dependencies
+> Run `composer update` to update your dependencies  
+> See [upgrade notes]()http://www.kamisama.me/?p=495)
 
 ###**v2.2.1** [2012-10-24]
 
