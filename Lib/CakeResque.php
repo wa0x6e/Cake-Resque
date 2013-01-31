@@ -22,15 +22,19 @@ use Kamisama\ResqueScheduler as ResqueScheduler;
 
 if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
+	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php';
 } else {
 	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php');
+	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php');
 }
 
 if (Configure::read('CakeResque.Scheduler.enabled') === true) {
 	if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
 		require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php';
+		require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php';
 	} else {
 		require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php');
+		require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php');
 	}
 }
 
