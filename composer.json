@@ -3,7 +3,6 @@
 	"description" : "A CakePHP plugin for Resque",
 	"keywords": ["php-resque", "resque", "cli", "cakephp"],
 	"homepage": "http://cakeresque.kamisama.me",
-	"minimum-stability": "dev",
 	"authors": [
 		{
 			"name": "Wan Chen",
@@ -15,7 +14,8 @@
 	"license": "MIT",
 	"require": {
 		"php": ">=5.3.0",
-		"kamisama/php-resque-ex": ">=1.0.14"
+		"kamisama/php-resque-ex": ">=1.2.1",
+		"kamisama/php-resque-ex-scheduler": ">=1.0.1"
 	},
 	"support": {
 		"email": "kami@kamisama.me",
