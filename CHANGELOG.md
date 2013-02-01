@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.0.4** [2012-02-01] 
+
+* [new] Display total number of scheduled jobs in stats
+
 ###**v3.0.3** [2012-01-30] 
 
 * [fix] Load ResqueScheduler library even if scheduler is disabled to prevent class not found

@@ -876,6 +876,11 @@ class CakeResqueShell extends Shell {
 		$this->out('<info>' . __d('cake_resque', 'Jobs Stats') . '</info>');
 		$this->out('   ' . __d('cake_resque', 'Processed Jobs : %12s', number_format(Resque_Stat::get('processed'))));
 		$this->out('   <warning>' . __d('cake_resque', 'Failed Jobs    : %12s', number_format(Resque_Stat::get('failed'))) . '</warning>');
+
+		if (Configure::read('CakeResque.Scheduler.enabled') === true) {
+			$this->out('   ' . __d('cake_resque', 'Scheduled Jobs : %12s', number_format(ResqueScheduler\Stat::get())));
+		}
+
 		$this->out("\n");
 
 		$this->out('<info>' . __d('cake_resque', 'Queues Stats') . '</info>');
