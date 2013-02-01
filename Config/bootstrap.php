@@ -122,7 +122,7 @@
 		// As of now, the following handler are supported:
 		//
 		// [HANDLER]		[TARGET]
-		// Cube 			Cube server address (e.g: http://127.0.0.1:1081)
+		// Cube 			Cube server address (e.g: udp://127.0.0.1:1180)
 		// RotatingFile 	Path to the log file (e.g: /path/to/resque.log)
 		// Syslog 			Facility name
 		// Socket 			Address (e.g: udp://127.0.0.1:23)
