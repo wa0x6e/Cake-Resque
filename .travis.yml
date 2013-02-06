@@ -15,6 +15,11 @@ before_script:
   - cp -R ../Cake-Resque plugins/CakeResque
   - chmod -R 777 ../cakephp/app/tmp
   - set +H
+  - echo "
+
+  CakeResque::$resqueSchedulerClass" >> ../cakephp/app/Config/bootstrap.php
+  - cd ../cakephp/app/Plugin/CakeResque
+  - composer install
 
 script:
   - ./lib/Cake/Console/cake test CakeResque AllCakeResque --stderr
