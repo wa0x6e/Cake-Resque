@@ -50,10 +50,23 @@ Resque::setBackend(
 class CakeResque
 {
 
+/**
+ * Array containing all the queuing activity
+ * @var array
+ */
 	public static $logs = array();
 
-	public static $RESQUE_CLASS = 'Resque';
-	public static $RESQUE_SCHEDULER_CLASS = 'Kamisama\ResqueScheduler\ResqueScheduler';
+/**
+ * Resque classname
+ * @var string
+ */
+	public static $resqueClass = 'Resque';
+
+/**
+ * ResqueScheduler classname
+ * @var string
+ */
+	public static $resqueSchedulerClass = 'Kamisama\ResqueScheduler\ResqueScheduler';
 
 /**
  * Enqueue a Job
@@ -74,7 +87,7 @@ class CakeResque
 			$args = array($args);
 		}
 
-		$r = call_user_func_array(self::$RESQUE_CLASS . '::enqueue', array_merge(array($queue), array($class), array($args), array($trackStatus)));
+		$r = call_user_func_array(self::$resqueClass . '::enqueue', array_merge(array($queue), array($class), array($args), array($trackStatus)));
 
 		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
 			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
@@ -116,7 +129,7 @@ class CakeResque
 			$args = array($args);
 		}
 
-		$r = call_user_func_array(self::$RESQUE_SCHEDULER_CLASS . '::enqueueAt', array_merge(array($at), array($queue), array($class), array($args), array($trackStatus)));
+		$r = call_user_func_array(self::$resqueSchedulerClass . '::enqueueAt', array_merge(array($at), array($queue), array($class), array($args), array($trackStatus)));
 
 		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
 			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
@@ -159,7 +172,7 @@ class CakeResque
 			$args = array($args);
 		}
 
-		$r = call_user_func_array(self::$RESQUE_SCHEDULER_CLASS . '::enqueueIn', array_merge(array($in), array($queue), array($class), array($args), array($trackStatus)));
+		$r = call_user_func_array(self::$resqueSchedulerClass . '::enqueueIn', array_merge(array($in), array($queue), array($class), array($args), array($trackStatus)));
 
 		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
 			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
