@@ -17,7 +17,7 @@ before_script:
   - set +H
   - echo "
 
-  CakeResque::$resqueSchedulerClass" >> ../cakephp/app/Config/bootstrap.php
+  CakePlugin::loadAll(array('CakeResque' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
   - cd ../cakephp/app/Plugin/CakeResque
   - composer install
 
