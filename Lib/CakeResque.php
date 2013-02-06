@@ -18,8 +18,6 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-use Kamisama\ResqueScheduler;
-
 if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
 	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php';
@@ -54,6 +52,9 @@ class CakeResque
 
 	public static $logs = array();
 
+	public static $RESQUE_CLASS = 'Resque';
+	public static $RESQUE_SCHEDULER_CLASS = 'Kamisama\ResqueScheduler\ResqueScheduler';
+
 /**
  * Enqueue a Job
  * and keep a log for debugging
@@ -69,11 +70,11 @@ class CakeResque
 			$trackStatus = Configure::read('CakeResque.Job.track');
 		}
 
-		$r = Resque::enqueue($queue, $class, $args, $trackStatus);
-
 		if (!is_array($args)) {
 			$args = array($args);
 		}
+
+		$r = call_user_func_array(self::$RESQUE_CLASS . '::enqueue', array_merge(array($queue), array($class), array($args), array($trackStatus)));
 
 		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
 			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
@@ -111,11 +112,11 @@ class CakeResque
 			$trackStatus = Configure::read('CakeResque.Job.track');
 		}
 
-		$r = ResqueScheduler\ResqueScheduler::enqueueAt($at, $queue, $class, $args, $trackStatus);
-
 		if (!is_array($args)) {
 			$args = array($args);
 		}
+
+		$r = call_user_func_array(self::$RESQUE_SCHEDULER_CLASS . '::enqueueAt', array_merge(array($at), array($queue), array($class), array($args), array($trackStatus)));
 
 		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
 			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
@@ -154,11 +155,11 @@ class CakeResque
 			$trackStatus = Configure::read('CakeResque.Job.track');
 		}
 
-		$r = ResqueScheduler\ResqueScheduler::enqueueIn($in, $queue, $class, $args, $trackStatus);
-
 		if (!is_array($args)) {
 			$args = array($args);
 		}
+
+		$r = call_user_func_array(self::$RESQUE_SCHEDULER_CLASS . '::enqueueIn', array_merge(array($in), array($queue), array($class), array($args), array($trackStatus)));
 
 		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
 			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
