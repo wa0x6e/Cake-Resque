@@ -16,4 +16,4 @@ before_script:
   - set +H
 
 script:
-  - ./lib/Cake/Console/cake test CakeResque AllDebugKit --stderr
+  - ./lib/Cake/Console/cake test CakeResque AllCakeResque --stderr
