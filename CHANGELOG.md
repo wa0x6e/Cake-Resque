@@ -3,6 +3,7 @@
 ###**v3.1.1** [2012-02-07] 
 
 * [change] More accurate error message when starting workers fail
+* [fix] Fix error while loading the Resque Job Creator class
 
 ###**v3.1.0** [2012-02-06] 
 
