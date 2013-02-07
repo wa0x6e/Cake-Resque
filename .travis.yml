@@ -17,7 +17,7 @@ before_script:
   - echo "
 
     CakePlugin::loadAll(array('CakeResque' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
-  - cd ../cakephp/app/Plugin/CakeResque
+  - cd plugins/CakeResque
   - composer install
 
 script:
