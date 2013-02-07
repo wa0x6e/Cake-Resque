@@ -21,4 +21,4 @@ before_script:
   - composer install
 
 script:
-  - ./lib/Cake/Console/cake test CakeResque AllCakeResque --stderr
+  - ../../lib/Cake/Console/cake test CakeResque AllCakeResque --stderr
