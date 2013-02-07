@@ -43,10 +43,10 @@ class Resque_Job_CreatorTest extends CakeTestCase
 		self::cleanTempDir();
 
 		$shellClassFile = new File(self::$testDir . DS . 'Console' . DS . 'Command' . DS . 'JobClassOneShell.php', true, 0755);
-		$shellClassFile->append('<?php class JobClassOneShell extends AppShell { public function funcOne() {} public function funcTwo() {} }');
+		$shellClassFile->append('<?php class JobClassOneShell extends AppShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
 
 		$pluginShellClassFile = new File(self::$testDir . DS . 'Plugin' . DS . 'MyPlugin' . DS . 'Console' . DS . 'Command' . DS . 'PluginJobClassOneShell.php', true, 0755);
-		$pluginShellClassFile->append('<?php class PluginJobClassOneShell extends AppShell { public function funcOne() {} public function funcTwo() {} }');
+		$pluginShellClassFile->append('<?php class PluginJobClassOneShell extends AppShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
 
 		Resque_Job_Creator::$rootFolder = self::$testDir . DS;
 
