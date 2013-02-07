@@ -11,14 +11,15 @@ env:
 
 before_script:
   - git clone --depth 1 git://github.com/cakephp/cakephp ../cakephp && cd ../cakephp && git checkout $CAKE_VERSION
-  - cp -R ../Cake-Resque plugins/CakeResque
+  - cp -R ../Cake-Resque app/Plugin/CakeResque
   - chmod -R 777 ../cakephp/app/tmp
   - set +H
   - echo "
 
     CakePlugin::loadAll(array('CakeResque' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
-  - cd plugins/CakeResque
+  - cd app/Plugin/CakeResque
   - composer install
+  - cd ../../Console
 
 script:
-  - ../../lib/Cake/Console/cake test CakeResque AllCakeResque --stderr
+  - ./cake test CakeResque AllCakeResque --stderr
