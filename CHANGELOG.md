@@ -1,5 +1,11 @@
 ##Changelog
 
+###**v3.1.0** [2012-02-06] 
+
+* [new] Add tests & refactor some class to make them more testable
+* [new] Use Travis CI
+* [change] Update composer to make plugin installable as a CakePHP Plugin
+
 ###**v3.0.4** [2012-02-01] 
 
 * [new] Display total number of scheduled jobs in stats
