@@ -37,7 +37,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.1.0';
+	const VERSION = '3.1.1';
 
 /**
  * Startup callback.
@@ -388,29 +388,35 @@ class CakeResqueShell extends Shell {
 		));
 
 		$workersCountBefore = Resque::Redis()->scard('workers');
+		$workersCountAfter = 0;
 		passthru($cmd);
 
 		$this->out(__d('cake_resque', 'Starting worker '), 0);
 
-		$started = false;
+		$success = false;
 		$attempt = 7;
 		while ($attempt-- > 0) {
 			for ($i = 0; $i < 3;$i++) {
 				$this->out(".", 0);
 				usleep(150000);
 			}
-			if (($workersCountBefore + $this->_runtime['workers']) == Resque::Redis()->scard('workers')) {
+			if (($workersCountBefore + $this->_runtime['workers']) == ($workersCountAfter = Resque::Redis()->scard('workers'))) {
 				if ($args === null || $new === true) {
 					$this->__addWorker($this->_runtime);
 				}
 				$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>' . (($this->_runtime['workers'] == 1) ? '' : ' x' . $this->_runtime['workers']));
-				$started = true;
+				$success = true;
 				break;
 			}
 		}
 
-		if (!$started) {
-			$this->out(' <error>' . __d('cake_resque', 'Fail') . '</error>');
+		if (!$success) {
+			if ($workersCountBefore === $workersCountAfter) {
+				$this->out(' <error>' . __d('cake_resque', 'Fail') . '</error>');
+			} else {
+				$this->out(' <warning>' . __d('cake_resque', 'Warning, could not start %d workers', (($workersCountBefore + $this->_runtime['workers']) - $workersCountAfter)) . '</warning>');
+			}
+
 		}
 
 		if ($args === null) {

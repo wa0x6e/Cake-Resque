@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.1.1** [2012-02-07] 
+
+* [change] More accurate error message when starting workers fail
+
 ###**v3.1.0** [2012-02-06] 
 
 * [new] Add tests & refactor some class to make them more testable
