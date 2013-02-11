@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.1.2** [2012-02-10] 
+
+* [fix] 100% test code coverage for existing tests
+
 ###**v3.1.1** [2012-02-07] 
 
 * [change] More accurate error message when starting workers fail

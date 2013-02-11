@@ -43,10 +43,16 @@ class Resque_Job_CreatorTest extends CakeTestCase
 		self::cleanTempDir();
 
 		$shellClassFile = new File(self::$testDir . DS . 'Console' . DS . 'Command' . DS . 'JobClassOneShell.php', true, 0755);
-		$shellClassFile->append('<?php class JobClassOneShell extends AppShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
+		$shellClassFile->append('<?php class JobClassOneShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
 
 		$pluginShellClassFile = new File(self::$testDir . DS . 'Plugin' . DS . 'MyPlugin' . DS . 'Console' . DS . 'Command' . DS . 'PluginJobClassOneShell.php', true, 0755);
-		$pluginShellClassFile->append('<?php class PluginJobClassOneShell extends AppShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
+		$pluginShellClassFile->append('<?php class PluginJobClassOneShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
+
+		$invalidShellClassFile = new File(self::$testDir . DS . 'Console' . DS . 'Command' . DS . 'InvalidJobClassShell.php', true, 0755);
+		$invalidShellClassFile->append('<?php class NotTheSameClassShell { public function funcOne() {} public function funcTwo() {} public function perform() {} }');
+
+		$shellClassFile = new File(self::$testDir . DS . 'Console' . DS . 'Command' . DS . 'NotAJobShellClass.php', true, 0755);
+		$shellClassFile->append('<?php class NotAJobShellClass { public function funcOne() {} }');
 
 		Resque_Job_Creator::$rootFolder = self::$testDir . DS;
 
@@ -87,6 +93,24 @@ class Resque_Job_CreatorTest extends CakeTestCase
  */
 	public function testJobWithErrorOnInexistingClass() {
 		Resque_Job_Creator::createJob('InexistingClassShell', array('funcOne'));
+	}
+
+/**
+ * Test job creation from a filename that does not match its class
+ *
+ * @expectedException Resque_Exception
+ */
+	public function testJobWithErrorOnValidFileNameButNotClassname() {
+		Resque_Job_Creator::createJob('InvalidJobClassShell', array('funcOne'));
+	}
+
+/**
+ * Test job creation from a shell class that does not implement the perform method
+ *
+ * @expectedException Resque_Exception
+ */
+	public function testJobWithErrorOnNotValidJobClass() {
+		Resque_Job_Creator::createJob('NotAJobShellClass', array('funcOne'));
 	}
 
 /**
