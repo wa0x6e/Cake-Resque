@@ -52,6 +52,7 @@
 			'queue' => 'default',		// Name of the default queue
 			'interval' => 5,			// Number of second between each poll
 			'workers' => 1,				// Number of workers to create
+			// 'user' => 'www-data' 	// User running the worker process
 
 			// Path to the log file
 			// Can be an

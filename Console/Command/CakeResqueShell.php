@@ -37,7 +37,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.1.2';
+	const VERSION = '3.1.3';
 
 /**
  * Startup callback.
@@ -888,16 +888,16 @@ class CakeResqueShell extends Shell {
 
 		$this->out('<info>' . __d('cake_resque', 'Queues Stats') . '</info>');
 		for ($i = count($queues) - 1; $i >= 0; --$i) {
-			$count = Resque::Redis()->llen('queue:' . $queues[$i]);
-			if (!in_array($queues[$i], $activeQueues) && $count == 0) {
+			$count[$queues[$i]] = Resque::Redis()->llen('queue:' . $queues[$i]);
+			if (!in_array($queues[$i], $activeQueues) && $count[$queues[$i]] == 0) {
 				unset($queues[$i]);
 			}
 
 		}
 
-		$this->out('   ' . __d('cake_resque', 'Queues count : %s', count($queues)));
+		$this->out('   ' . __d('cake_resque', 'Queues count : %d', count($queues)));
 		foreach ($queues as $queue) {
-			$this->out("\t- " . $queue . "\t : " . $count . " " . __d('cake_resque', 'pending jobs') . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : ""));
+			$this->out("\t- " . $queue . "\t : " . $count[$queue] . " " . __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : ""));
 		}
 
 		$this->out("\n");
