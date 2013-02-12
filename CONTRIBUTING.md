@@ -6,3 +6,12 @@ This plugin follows [CakePHP coding convention](http://book.cakephp.org/2.0/en/c
 
 A PHPCodeSniffer coding standard for CakePHP is available [here](https://github.com/cakephp/cakephp-codesniffer).  
 Please make sure the code is valid with `phpcs --standard=CakePHP YOURFILES` before sending a pull request.
+
+## Documentation
+
+You can also contribute to [website](http://cakeresque.kamisama.me/) documentation.
+All files are located in the [doc](https://github.com/kamisama/Cake-Resque/tree/gh-pages/docs) folder, on the [gh-pages](https://github.com/kamisama/Cake-Resque/tree/gh-pages) branche.
+
+There's one folder for each language. As of now, only english and french are available.
+
+Documentation uses the [Markdown Extra(http://michelf.ca/projects/php-markdown/extra/) syntax, mixed with some html.
