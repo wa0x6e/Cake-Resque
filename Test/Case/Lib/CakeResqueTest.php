@@ -29,7 +29,7 @@ class CakeResqueTest extends CakeTestCase
 
 	public function setUp() {
 		CakeResque::$resqueClass = $this->Resque = $this->getMockClass('Resque', array('enqueue'));
-		CakeResque::$resqueSchedulerClass = $this->ResqueScheduler = $this->getMockClass('Kamisama\ResqueScheduler\ResqueScheduler', array('enqueueIn', 'enqueueAt'));
+		CakeResque::$resqueSchedulerClass = $this->ResqueScheduler = $this->getMockClass('ResqueScheduler\ResqueScheduler', array('enqueueIn', 'enqueueAt'));
 
 		$this->fixture = array(
 				'queue' => 'default',
