@@ -1,15 +1,15 @@
 ##Changelog
 
-###**v3.1.4** [2012-02-27] 
+###**v3.2.4** [2012-02-27] 
 
 * [fix] Namespace was changed in ResqueScheduler
 
-###**v3.1.3** [2012-02-12] 
+###**v3.2.3** [2012-02-12] 
 
 * [fix] Invalid jobs number for queues stats
 * [fix] Add example of using custom user when starting worker
 
-###**v3.1.2** [2012-02-10] 
+###**v3.2.2** [2012-02-10] 
 
 * [fix] 100% test code coverage for existing tests
 
