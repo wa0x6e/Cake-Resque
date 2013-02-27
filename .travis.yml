@@ -18,6 +18,7 @@ before_script:
 
     CakePlugin::loadAll(array('CakeResque' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
   - cd app/Plugin/CakeResque
+  - composer self-update
   - composer install
   - cd ../../Console
 
