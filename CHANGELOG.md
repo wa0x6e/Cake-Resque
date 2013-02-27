@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.1.4** [2012-02-27] 
+
+* [fix] Namespace was changed in ResqueScheduler
+
 ###**v3.1.3** [2012-02-12] 
 
 * [fix] Invalid jobs number for queues stats

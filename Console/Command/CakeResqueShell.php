@@ -18,8 +18,6 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-use Kamisama\ResqueScheduler;
-
 class CakeResqueShell extends Shell {
 
 	public $uses = array();
@@ -37,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.1.3';
+	const VERSION = '3.1.4';
 
 /**
  * Startup callback.

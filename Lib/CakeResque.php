@@ -28,10 +28,12 @@ if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 
 
 if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
-	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php';
+	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'ResqueScheduler.php';
+	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Stat.php';
 	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php';
 } else {
-	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler.php');
+	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'ResqueScheduler.php');
+	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Stat.php');
 	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php');
 }
 
@@ -66,7 +68,7 @@ class CakeResque
  * ResqueScheduler classname
  * @var string
  */
-	public static $resqueSchedulerClass = 'Kamisama\ResqueScheduler\ResqueScheduler';
+	public static $resqueSchedulerClass = 'ResqueScheduler\ResqueScheduler';
 
 /**
  * Enqueue a Job
