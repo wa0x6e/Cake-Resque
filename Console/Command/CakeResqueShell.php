@@ -991,8 +991,7 @@ class CakeResqueShell extends Shell {
 				Resque_Job_Status::STATUS_WAITING => __d('cake_resque', 'waiting'),
 				Resque_Job_Status::STATUS_RUNNING => __d('cake_resque', 'running'),
 				Resque_Job_Status::STATUS_FAILED => __d('cake_resque', 'failed'),
-				Resque_Job_Status::STATUS_COMPLETE => __d('cake_resque', 'complete'),
-
+				Resque_Job_Status::STATUS_COMPLETE => __d('cake_resque', 'complete')
 			);
 
 			$statusClass = array(
@@ -1036,7 +1035,6 @@ class CakeResqueShell extends Shell {
 								}
 							}
 						}
-
 					}
 				}
 			}
