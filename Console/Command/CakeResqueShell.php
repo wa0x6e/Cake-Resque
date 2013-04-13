@@ -182,6 +182,20 @@ class CakeResqueShell extends Shell {
 			)
 		);
 
+		$clearParserArguments = array(
+			'options' => array(
+				'all' => array(
+					'short' => 'a',
+					'help' => __d('cake_resque', 'Clear all queues'),
+					'boolean' => true
+				)
+			),
+			'description' => array(
+				__d('cake_resque', 'Clear one or all queues'),
+				__d('cake_resque', 'Clearing a queue will remove all its jobs')
+			)
+		);
+
 		return parent::getOptionParser()
 			->description(__d('cake_resque', "A Shell to manage PHP Resque") . "\n")
 			->addSubcommand('start', array(
@@ -211,6 +225,10 @@ class CakeResqueShell extends Shell {
 			->addSubcommand('restart', array(
 				'help' => __d('cake_resque', 'Stop all Resque workers, and start a new one.'),
 				'parser' => array_merge_recursive($startParserArguments, $stopParserArguments)
+			))
+			->addSubcommand('clear', array(
+				'help' => __d('cake_resque', 'Clear all jobs inside a queue'),
+				'parser' => $clearParserArguments
 			))
 			->addSubcommand('stats', array(
 				'help' => __d('cake_resque', 'View stats about processed/failed jobs.')
@@ -329,7 +347,7 @@ class CakeResqueShell extends Shell {
 			$index = 1;
 		} else {
 			foreach ($logs as $log) {
-				$this->out(sprintf('    [%2d] - %s', $i++, $log));
+				$this->out(sprintf('    [%3d] - %s', $i++, $log));
 			}
 
 			$index = $this->in(__d('cake_resque', 'Choose a log file to tail') . ':', range(1, $i - 1));
@@ -529,7 +547,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -608,7 +626,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -638,7 +656,7 @@ class CakeResqueShell extends Shell {
 				if ($this->__isSchedulerWorker($worker)) {
 					$this->out(__d('cake_resque', 'Cleaning up the Scheduler Worker ... '), 0);
 				} else {
-					$this->out(__d('cake_resque', 'CLeaning up %s ... ', $pid), 0);
+					$this->out(__d('cake_resque', 'Cleaning up %s ... ', $pid), 0);
 				}
 
 				$output = array();
@@ -690,7 +708,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -765,7 +783,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Paused workers list') . ':');
 				$i = 1;
 				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%2d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->__isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
 				}
 
@@ -1024,6 +1042,70 @@ class CakeResqueShell extends Shell {
 			}
 		}
 		$this->out("");
+	}
+
+/**
+ * Clear a queue
+ *
+ * Remove all jobs inside a queue
+ * If more than one queue is present, it will prompt the user which queue to clear via a menu
+ *
+ * @since 3.3.0
+ */
+	public function clear() {
+		// List of all queues
+		$queues = Resque::Redis()->smembers('queues');
+		if (!empty($queues)) {
+			$queues = array_unique($queues);
+		} else {
+			return $this->out(__d('cake_resque', 'There is no queue to clear'));
+		}
+
+		if (isset($this->args[0])) {
+			if (in_array($this->args[0], $queues)) {
+				$queueIndex[] = array_search($this->args[0], $queues) + 1;
+			}
+		} else {
+			$queueIndex = array();
+			if (!$this->params['all'] && count($queues) > 1) {
+				$this->out(__d('cake_resque', 'Queues list') . ':');
+				$i = 1;
+				foreach ($queues as $queue) {
+					$this->out(sprintf("    [%3d] - %-'.20s<bold>%'.9s</bold> jobs", $i++, $queue, number_format(Resque::Redis()->llen('queue:' . $queue))));
+				}
+
+				$options = range(1, $i - 1);
+
+				if ($i > 2) {
+					$this->out('    [all] - ' . __d('cake_resque', 'Clear all queues'));
+					$options[] = 'all';
+				}
+
+				$in = $this->in(__d('cake_resque', 'Queue to clear') . ': ', $options);
+				if ($in == 'all') {
+					$queueIndex = range(1, count($queues));
+				} else {
+					$queueIndex[] = $in;
+				}
+
+			} else {
+				$queueIndex = range(1, count($queues));
+			}
+		}
+
+		foreach ($queueIndex as $index) {
+
+			$this->out(__d('cake_resque', 'Clearing %s ... ', $queues[$index - 1]), 0);
+
+			$output = array();
+			$code = Resque::Redis()->ltrim('queue:' . $queues[$index - 1], 1, 0);
+
+			if ($code) {
+				$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
+			} else {
+				$this->out('<error>' . __d('cake_resque', 'An unexpected error occured while clearing the queue') . '</error>');
+			}
+		}
 	}
 
 /**
