@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.3.0** [2012-04-13] 
+
+* [new] Add `clear` command to clear queues' jobs
+
 ###**v3.2.4** [2012-02-27] 
 
 * [fix] Namespace was changed in ResqueScheduler
