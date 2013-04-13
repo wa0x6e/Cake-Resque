@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.2.4';
+	const VERSION = '3.3.0';
 
 /**
  * Startup callback.
@@ -913,7 +913,7 @@ class CakeResqueShell extends Shell {
 
 		$this->out('   ' . __d('cake_resque', 'Queues count : %d', count($queues)));
 		foreach ($queues as $queue) {
-			$this->out("\t- " . $queue . "\t : " . $count[$queue] . " " . __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : ""));
+			$this->out(sprintf("\t- %s \t : %12s %s", $queue, number_format($count[$queue]), __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : "")));
 		}
 
 		$this->out("\n");
