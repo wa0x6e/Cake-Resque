@@ -4,6 +4,9 @@
 	"keywords": ["php-resque", "resque", "cli", "cakephp", "background jobs", "scheduled jobs"],
 	"homepage": "http://cakeresque.kamisama.me",
 	"type": "cakephp-plugin",
+	"extra": {
+        "installer-name": "CakeResque"
+    },
 	"authors": [
 		{
 			"name": "Wan Chen",
