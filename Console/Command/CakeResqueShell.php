@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.3.0';
+	const VERSION = '3.3.1';
 
 /**
  * Startup callback.
@@ -87,6 +87,11 @@ class CakeResqueShell extends Shell {
 				),
 				'log-handler-target' => array(
 					'help' => __d('cake_resque', 'Log Handler arguments')
+				),
+				'verbose' => array(
+					'short' => 'v',
+					'help' => __d('cake_resque', 'Log more verbose informations'),
+					'boolean' => true
 				)
 			)
 		);
@@ -110,7 +115,12 @@ class CakeResqueShell extends Shell {
 				),
 				'log-handler-target' => array(
 					'help' => __d('cake_resque', 'Log Handler arguments')
-				)
+				),
+				'verbose' => array(
+					'short' => 'v',
+					'help' => __d('cake_resque', 'Log more verbose informations'),
+					'boolean' => true
+				),
 			)
 		);
 
@@ -390,7 +400,8 @@ class CakeResqueShell extends Shell {
 			sprintf("nohup sudo -u %s", $this->_runtime['user']),
 			sprintf('bash -c "cd %s;', escapeshellarg($this->_resqueLibrary)),
 			implode(' ', $envVars),
-			sprintf("VVERBOSE=true QUEUE=%s ", escapeshellarg($this->_runtime['queue'])),
+			sprintf("%sVERBOSE=true ", $this->_runtime['verbose'] ? 'V' : ''),
+			sprintf("QUEUE=%s ", escapeshellarg($this->_runtime['queue'])),
 			sprintf("APP_INCLUDE=%s INTERVAL=%s ", escapeshellarg($bootstrapPath), $this->_runtime['interval']),
 			sprintf("REDIS_BACKEND=%s ", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
 			sprintf("REDIS_DATABASE=%s REDIS_NAMESPACE=%s", Configure::read('CakeResque.Redis.database'), escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
@@ -481,7 +492,7 @@ class CakeResqueShell extends Shell {
 			sprintf("nohup sudo -u %s", $this->_runtime['user']),
 			sprintf('bash -c "cd %s;', escapeshellarg($this->_ResqueSchedulerLibrary)),
 			implode(' ', $envVars),
-			sprintf("VVERBOSE=true "),
+			sprintf("%sVERBOSE=true ", $this->_runtime['verbose'] ? 'V' : ''),
 			sprintf("APP_INCLUDE=%s INTERVAL=%s ", escapeshellarg($bootstrapPath), $this->_runtime['interval']),
 			sprintf("RESQUE_PHP=%s ", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
 			sprintf("REDIS_BACKEND=%s ", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
@@ -1280,6 +1291,8 @@ class CakeResqueShell extends Shell {
 		$this->_runtime['queue'] = isset($this->_runtime['queue']) ? $this->_runtime['queue'] : Configure::read('CakeResque.Worker.queue');
 
 		$this->_runtime['user'] = isset($this->_runtime['user']) ? $this->_runtime['user'] : get_current_user();
+
+		$this->_runtime['verbose'] = $this->params['verbose'] ? $this->params['verbose'] : Configure::read('CakeResque.Worker.verbose');
 
 		$output = array();
 		exec('id ' . $this->_runtime['user'] . ' 2>&1', $output, $status);

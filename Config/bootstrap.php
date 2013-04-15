@@ -60,7 +60,12 @@
 			// - an relative path, that will be relative to
 			// 	 app/tmp/logs folder
 			// - a simple filename, file will be created inside app/tmp/logs
-			'log' => TMP . 'logs' . DS . 'resque-worker-error.log'
+			'log' => TMP . 'logs' . DS . 'resque-worker-error.log',
+
+			// Log Verbose mode
+			// true to log more debugging informations
+			// Can also be enabled per worker, by starting with --verbose
+			'verbose' => false
 		),
 		'Job' => array(
 			// Whether to track job status
