@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.3.1** [2012-04-14] 
+
+* [new] Add `--verbose` option when starting worker. Default log mode downgraded from verbose to normal.
+
 ###**v3.3.0** [2012-04-13] 
 
 * [new] Add `clear` command to clear queues' jobs
