@@ -407,7 +407,7 @@ class CakeResqueShell extends Shell {
 			sprintf("REDIS_DATABASE=%s REDIS_NAMESPACE=%s", Configure::read('CakeResque.Redis.database'), escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
 			sprintf("CAKE=%s COUNT=%s ", escapeshellarg(CAKE), $this->_runtime['workers']),
 			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s ", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
-			sprintf("php ./bin/resque.php >> %s", escapeshellarg($this->_runtime['log'])),
+			sprintf("php %s >> %s", escapeshellarg($this->__getResqueBinFile($this->_resqueLibrary)), escapeshellarg($this->_runtime['log'])),
 			'2>&1" >/dev/null 2>&1 &'
 		));
 
@@ -1325,5 +1325,26 @@ class CakeResqueShell extends Shell {
 		}
 		return empty($errors);
 	}
+
+	/**
+     * Return the php-resque executable file
+     *
+     * Maintain backward compatibility, as newer version of
+     * php-resque has that file in another location
+     *
+     * @since  1.1.6
+     * @param  String $base Php-resque folder path
+     * @return String Relative path to php-resque executable file
+     */
+    private function __getResqueBinFile($base)
+    {
+        if (file_exists($base . DS . 'bin' . DS . 'resque')) {
+            return '.' . DS . 'bin' . DS .'resque';
+        } elseif (file_exists($base .'bin' . DS . 'resque.php')) {
+            return '.' . DS . 'bin' . DS .'resque.php';
+        } else {
+            return '.' . DS .'resque.php';
+        }
+    }
 
 }
