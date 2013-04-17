@@ -92,6 +92,11 @@ class CakeResqueShell extends Shell {
 					'short' => 'v',
 					'help' => __d('cake_resque', 'Log more verbose informations'),
 					'boolean' => true
+				),
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
+					'boolean' => true
 				)
 			)
 		);
@@ -121,6 +126,11 @@ class CakeResqueShell extends Shell {
 					'help' => __d('cake_resque', 'Log more verbose informations'),
 					'boolean' => true
 				),
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
+					'boolean' => true
+				)
 			)
 		);
 
@@ -133,7 +143,7 @@ class CakeResqueShell extends Shell {
 				),
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('cake_resque', 'shutdown all workers'),
+					'help' => __d('cake_resque', 'Shutdown all workers'),
 					'boolean' => true
 				)
 			),
@@ -149,7 +159,12 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('cake_resque', 'pause all workers'),
+					'help' => __d('cake_resque', 'Pause all workers'),
+					'boolean' => true
+				),
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
 					'boolean' => true
 				)
 			),
@@ -164,7 +179,12 @@ class CakeResqueShell extends Shell {
 			'options' => array(
 				'all' => array(
 					'short' => 'a',
-					'help' => __d('cake_resque', 'resume all paused workers'),
+					'help' => __d('cake_resque', 'Resume all paused workers'),
+					'boolean' => true
+				),
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
 					'boolean' => true
 				)
 			),
@@ -180,6 +200,11 @@ class CakeResqueShell extends Shell {
 				'all' => array(
 					'short' => 'a',
 					'help' => __d('cake_resque', 'Clean up all workers'),
+					'boolean' => true
+				),
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
 					'boolean' => true
 				)
 			),
@@ -198,6 +223,11 @@ class CakeResqueShell extends Shell {
 					'short' => 'a',
 					'help' => __d('cake_resque', 'Clear all queues'),
 					'boolean' => true
+				),
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
+					'boolean' => true
 				)
 			),
 			'description' => array(
@@ -206,8 +236,22 @@ class CakeResqueShell extends Shell {
 			)
 		);
 
+		$debugOptions = array(
+			'options' => array(
+				'debug' => array(
+					'short' => 'd',
+					'help' => __d('cake_resque', 'Print debug informations'),
+					'boolean' => true
+				)
+			)
+		);
+
 		return parent::getOptionParser()
-			->description(__d('cake_resque', "A Shell to manage PHP Resque") . "\n")
+			->description(
+				__d('cake_resque', "A Shell to manage PHP Resque") . "\n" .
+				__d('cake_resque', "Version " . self::VERSION) . "\n" .
+				__d('cake_resque', "Wan Chen (2013)")
+				)
 			->addSubcommand('start', array(
 				'help' => __d('cake_resque', 'Start a new worker.'),
 				'parser' => $startParserArguments
@@ -241,7 +285,8 @@ class CakeResqueShell extends Shell {
 				'parser' => $clearParserArguments
 			))
 			->addSubcommand('stats', array(
-				'help' => __d('cake_resque', 'View stats about processed/failed jobs.')
+				'help' => __d('cake_resque', 'View stats about processed/failed jobs.'),
+				'parser' => $debugOptions
 			))
 			->addSubcommand('tail', array(
 				'help' => __d('cake_resque', 'Tail the workers logs.')
@@ -250,7 +295,8 @@ class CakeResqueShell extends Shell {
 				'help' => __d('cake_resque', 'Track a job status.')
 			))
 			->addSubcommand('load', array(
-				'help' => __d('cake_resque', 'Load a set of predefined workers.')
+				'help' => __d('cake_resque', 'Load a set of predefined workers.'),
+				'parser' => $debugOptions
 		));
 	}
 
@@ -397,19 +443,29 @@ class CakeResqueShell extends Shell {
 		}
 
 		$cmd = implode(' ', array(
-			sprintf("nohup sudo -u %s", $this->_runtime['user']),
-			sprintf('bash -c "cd %s;', escapeshellarg($this->_resqueLibrary)),
+			sprintf("nohup sudo -u %s \\\n", $this->_runtime['user']),
+			sprintf("bash -c \"cd %s; \\\n", escapeshellarg($this->_resqueLibrary)),
 			implode(' ', $envVars),
-			sprintf("%sVERBOSE=true ", $this->_runtime['verbose'] ? 'V' : ''),
-			sprintf("QUEUE=%s ", escapeshellarg($this->_runtime['queue'])),
-			sprintf("APP_INCLUDE=%s INTERVAL=%s ", escapeshellarg($bootstrapPath), $this->_runtime['interval']),
-			sprintf("REDIS_BACKEND=%s ", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
-			sprintf("REDIS_DATABASE=%s REDIS_NAMESPACE=%s", Configure::read('CakeResque.Redis.database'), escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
-			sprintf("CAKE=%s COUNT=%s ", escapeshellarg(CAKE), $this->_runtime['workers']),
-			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s ", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
-			sprintf("php %s >> %s", escapeshellarg($this->__getResqueBinFile($this->_resqueLibrary)), escapeshellarg($this->_runtime['log'])),
-			'2>&1" >/dev/null 2>&1 &'
+			" \\\n",
+			sprintf("%sVERBOSE=true \\\n", $this->_runtime['verbose'] ? 'V' : ''),
+			sprintf("QUEUE=%s \\\n", escapeshellarg($this->_runtime['queue'])),
+			sprintf("APP_INCLUDE=%s \\\n", escapeshellarg($bootstrapPath)),
+			sprintf("INTERVAL=%s \\\n", $this->_runtime['interval']),
+			sprintf("REDIS_BACKEND=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
+			sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
+			sprintf("REDIS_NAMESPACE=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
+			sprintf("CAKE=%s \\\n", escapeshellarg(CAKE)),
+			sprintf("COUNT=%s \\\n", $this->_runtime['workers']),
+			sprintf("LOGHANDLER=%s \\\n", escapeshellarg($this->_runtime['Log']['handler'])),
+			sprintf("LOGHANDLERTARGET=%s \\\n", escapeshellarg($this->_runtime['Log']['target'])),
+			sprintf("php %s \\\n", escapeshellarg($this->__getResqueBinFile($this->_resqueLibrary))),
+			sprintf(">> %s \\\n", escapeshellarg($this->_runtime['log'])),
+			"2>&1\" >/dev/null 2>&1 &"
 		));
+
+		if ($this->_runtime['debug']) {
+			$this->_debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
+		}
 
 		$workersCountBefore = Resque::Redis()->scard('workers');
 		$workersCountAfter = 0;
@@ -489,19 +545,28 @@ class CakeResqueShell extends Shell {
 		}
 
 		$cmd = implode(' ', array(
-			sprintf("nohup sudo -u %s", $this->_runtime['user']),
-			sprintf('bash -c "cd %s;', escapeshellarg($this->_ResqueSchedulerLibrary)),
+			sprintf("nohup sudo -u %s \\\n", $this->_runtime['user']),
+			sprintf("bash -c \"cd %s; \\\n", escapeshellarg($this->_ResqueSchedulerLibrary)),
 			implode(' ', $envVars),
-			sprintf("%sVERBOSE=true ", $this->_runtime['verbose'] ? 'V' : ''),
-			sprintf("APP_INCLUDE=%s INTERVAL=%s ", escapeshellarg($bootstrapPath), $this->_runtime['interval']),
-			sprintf("RESQUE_PHP=%s ", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
-			sprintf("REDIS_BACKEND=%s ", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
-			sprintf("REDIS_DATABASE=%s REDIS_NAMESPACE=%s", Configure::read('CakeResque.Redis.database'), escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
-			sprintf("CAKE=%s ", escapeshellarg(CAKE)),
-			sprintf("LOGHANDLER=%s LOGHANDLERTARGET=%s ", escapeshellarg($this->_runtime['Log']['handler']), escapeshellarg($this->_runtime['Log']['target'])),
-			sprintf("php ./bin/resque-scheduler.php >> %s", escapeshellarg(Configure::read('CakeResque.Scheduler.log'))),
-			'2>&1" >/dev/null 2>&1 &'
+			" \\\n",
+			sprintf("%sVERBOSE=true \\\n", $this->_runtime['verbose'] ? 'V' : ''),
+			sprintf("APP_INCLUDE=%s \\\n", escapeshellarg($bootstrapPath)),
+			sprintf("INTERVAL=%s \\\n", $this->_runtime['interval']),
+			sprintf("RESQUE_PHP=%s \\\n", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
+			sprintf("REDIS_BACKEND=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
+			sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
+			sprintf("REDIS_NAMESPACE=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
+			sprintf("CAKE=%s \\\n", escapeshellarg(CAKE)),
+			sprintf("LOGHANDLER=%s \\\n", escapeshellarg($this->_runtime['Log']['handler'])),
+			sprintf("LOGHANDLERTARGET=%s \\\n", escapeshellarg($this->_runtime['Log']['target'])),
+			"php ./bin/resque-scheduler.php \\\n",
+			sprintf(">> %s \\\n", escapeshellarg(Configure::read('CakeResque.Scheduler.log'))),
+			"2>&1\" >/dev/null 2>&1 &"
 		));
+
+		if ($this->_runtime['debug']) {
+			$this->_debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
+		}
 
 		$workersCountBefore = Resque::Redis()->scard('workers');
 		passthru($cmd);
@@ -847,16 +912,20 @@ class CakeResqueShell extends Shell {
  */
 	public function load() {
 		$this->out('<info>' . __d('cake_resque', 'Loading predefined workers') . '</info>');
+		$debug = $this->params['debug'];
+
 		if (Configure::read('CakeResque.Queues') == null) {
 			$this->out('   ' . __d('cake_resque', 'You have no configured queues to load.'));
 		} else {
+
 			foreach (Configure::read('CakeResque.Queues') as $queue) {
+				$queue['debug'] = $debug;
 				$this->start($queue);
 			}
 		}
 
 		if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-			$this->startscheduler();
+			$this->startscheduler(array('debug' => $this->params['debug']));
 		}
 
 		$this->out("");
@@ -870,7 +939,9 @@ class CakeResqueShell extends Shell {
 
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
 		if (false !== $workers = $this->__getWorkers()) {
+			$debug = $this->params['debug'];
 			foreach ($workers as $worker) {
+				$worker['debug'] = $debug;
 				if (isset($worker['type']) && $worker['type'] === 'scheduler') {
 					$this->startScheduler($worker, false);
 				} else {
@@ -1123,6 +1194,7 @@ class CakeResqueShell extends Shell {
  * Used when restarting the worker
  */
 	private function __addWorker($args) {
+		unset($args['debug']);
 		Resque::Redis()->rpush('ResqueWorker', serialize($args));
 	}
 
@@ -1164,6 +1236,10 @@ class CakeResqueShell extends Shell {
  * @return boolean        True if the scheduler worker is already running
  */
 	private function __isRunningSchedulerWorker($check = false) {
+		if ($this->params['debug']) {
+			$this->_debug(__d('cake_resque', 'Checking if the scheduler worker is running'));
+		}
+
 		if ($check) {
 			$this->__unregisterSchedulerWorker();
 			return $this->__registerSchedulerWorker();
@@ -1187,8 +1263,17 @@ class CakeResqueShell extends Shell {
  * @return array An array of settings, by worker
  */
 	private function __getWorkers() {
+		if ($this->params['debug']) {
+			$this->_debug(__d('cake_resque', 'Retrieving list of started workers'));
+		}
+
 		$listLength = Resque::Redis()->llen('ResqueWorker');
 		$workers = Resque::Redis()->lrange('ResqueWorker', 0, $listLength - 1);
+
+		if ($this->params['debug']) {
+			$this->_debug(__d('cake_resque', 'Found ' . count($workers) . ' started workers'));
+		}
+
 		if (empty($workers)) {
 			return false;
 		} else {
@@ -1235,7 +1320,17 @@ class CakeResqueShell extends Shell {
  * @return  array of workers name
  */
 	private function __getPausedWorker() {
-		return (array)Resque::Redis()->smembers('PausedWorker');
+		if ($this->params['debug']) {
+			$this->_debug(__d('cake_resque', 'Retrieving list of paused workers'));
+		}
+
+		$workers = (array)Resque::Redis()->smembers('PausedWorker');
+
+		if ($this->params['debug']) {
+			$this->_debug(__d('cake_resque', 'Found ' . count($workers) . ' paused workers'));
+		}
+
+		return $workers;
 	}
 
 /**
@@ -1326,25 +1421,28 @@ class CakeResqueShell extends Shell {
 		return empty($errors);
 	}
 
-	/**
-     * Return the php-resque executable file
-     *
-     * Maintain backward compatibility, as newer version of
-     * php-resque has that file in another location
-     *
-     * @since  1.1.6
-     * @param  String $base Php-resque folder path
-     * @return String Relative path to php-resque executable file
-     */
-    private function __getResqueBinFile($base)
-    {
-        if (file_exists($base . DS . 'bin' . DS . 'resque')) {
-            return '.' . DS . 'bin' . DS .'resque';
-        } elseif (file_exists($base .'bin' . DS . 'resque.php')) {
-            return '.' . DS . 'bin' . DS .'resque.php';
-        } else {
-            return '.' . DS .'resque.php';
-        }
-    }
+	protected function _debug($string) {
+		return $this->out('<success>[DEBUG] ' . $string . '</success>');
+	}
+
+/**
+ * Return the php-resque executable file
+ *
+ * Maintain backward compatibility, as newer version of
+ * php-resque has that file in another location
+ *
+ * @since  3.3.2
+ * @param  String $base Php-resque folder path
+ * @return String Relative path to php-resque executable file
+ */
+	private function __getResqueBinFile($base) {
+		if (file_exists($base . DS . 'bin' . DS . 'resque')) {
+			return '.' . DS . 'bin' . DS . 'resque';
+		} elseif (file_exists($base . 'bin' . DS . 'resque.php')) {
+			return '.' . DS . 'bin' . DS . 'resque.php';
+		} else {
+			return '.' . DS . 'resque.php';
+		}
+	}
 
 }
