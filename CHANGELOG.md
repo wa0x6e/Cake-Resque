@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.3.3** [2012-04-24]
+
+* [fix] Handle setup with exotic app folder name
+
 ###**v3.3.2** [2012-04-17] 
 
 * [new] Add `--debug`

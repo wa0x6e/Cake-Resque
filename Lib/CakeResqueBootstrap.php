@@ -51,7 +51,9 @@ unset($paths, $path, $found, $dispatcher, $root, $ds);
  * Copy/Paste from  lib/Cake/Console/ShellDipatcher::_bootstrap()
  */
 define('ROOT', dirname(dirname(getenv('CAKE'))));
-define('APP_DIR', 'app');
+if (!defined('APP_DIR')) {
+	define('APP_DIR', basename(dirname(dirname(dirname(dirname(__FILE__))))));
+}
 define('APP', ROOT . DS . APP_DIR . DS);
 define('WWW_ROOT', APP . 'webroot' . DS);
 if (!is_dir(ROOT . DS . APP_DIR . DS . 'tmp')) {
