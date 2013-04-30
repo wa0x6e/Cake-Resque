@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.3.3';
+	const VERSION = '3.3.4';
 
 /**
  * Startup callback.
@@ -657,11 +657,11 @@ class CakeResqueShell extends Shell {
 					$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
 				}
 
-				$this->params['force'] ? $worker->shutDownNow() : $worker->shutDown();	// Send signal to stop processing jobs
+				$signal = $this->params['force'] ? 'SIGTERM' : 'SIGQUIT';	// Send signal to stop processing jobs
 				$worker->unregisterWorker();											// Remove jobs from resque environment
 
 				$output = array();
-				$message = exec('kill -9 ' . $pid . ' 2>&1', $output, $code);	// Kill all remaining system process
+				$message = exec('kill ' . $signal . ' ' . $pid . ' 2>&1', $output, $code);	// Kill all remaining system process
 
 				if ($code == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');

@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.3.4** [2012-04-30]
+
+* [fix] Stop worker gracefully by sending it a SIGNAL, instead of killing the process 
+
 ###**v3.3.3** [2012-04-24]
 
 * [fix] Handle setup with exotic app folder name
