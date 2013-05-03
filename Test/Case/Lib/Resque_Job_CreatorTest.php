@@ -38,7 +38,7 @@ class Resque_Job_CreatorTest extends CakeTestCase
 	public static $testDir = '';
 
 	public static function setUpBeforeClass() {
-		self::$testDir = dirname(dirname(__DIR__)) . DS . 'Temp';
+		self::$testDir = dirname(dirname(__DIR__)) . DS . 'tmp';
 
 		self::cleanTempDir();
 
