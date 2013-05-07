@@ -1,0 +1,11 @@
+<phpunit colors="false">
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../</directory>
+            <exclude>
+                <directory suffix=".php">../vendor/</directory>
+                <directory suffix=".php">./</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>
