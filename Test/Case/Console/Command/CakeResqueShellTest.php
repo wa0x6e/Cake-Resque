@@ -32,6 +32,14 @@ class CakeResqueShellTest extends CakeTestCase
 	}
 
 /**
+ * @covers CakeResqueShell::debug
+ */
+	public function testDebug() {
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('<success>[DEBUG] test string</success>'));
+		$this->Shell->debug('test string');
+	}
+
+/**
  * @covers CakeResqueShell::track
  */
 	public function testTrackingWithNoJobIdReturnError() {
@@ -315,6 +323,8 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->enqueueAt();
 	}
 
+	// PAUSE -------------------------------------------------------------------------------------------------
+
 /**
  * @covers CakeResqueShell::pause
  */
@@ -373,6 +383,113 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+	// STOP -------------------------------------------------------------------------------------------------
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testStopWorkerWhenThereIsNoWorkers() {
+		$shell = $this->Shell;
+
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+
+		$this->Shell->expects($this->exactly(3))->method('out');
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no active workers to kill'));
+
+		$this->Shell->stop();
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testStopWorkerWhenThereIsOnlyOneWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testStopWorkerWhenThereIsMultipleWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testStopWorkerWhenThereIsAlreadySomeStoppedWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testStopWorkerAllAtOnce() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+	// LOAD -------------------------------------------------------------------------------------------------
+
+/**
+ * @covers CakeResqueShell::load
+ */
+	public function testLoadEmpty() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		Configure::write('CakeResque.Queues', null);
+		Configure::write('CakeResque.Scheduler.enabled', false);
+
+		$this->Shell->expects($this->exactly(3))->method('out');
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('no configured queues to load'));
+
+		$this->Shell->load();
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testLoad() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		Configure::write('CakeResque.Queues', null);
+		Configure::write('CakeResque.Scheduler.enabled', false);
+		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
+	public function testLoadWithSchedulerWorker() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		Configure::write('CakeResque.Queues', null);
+		Configure::write('CakeResque.Scheduler.enabled', true);
+		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
 

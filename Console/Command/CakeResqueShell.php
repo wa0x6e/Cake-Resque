@@ -474,7 +474,7 @@ class CakeResqueShell extends Shell {
 		));
 
 		if ($this->_runtime['debug']) {
-			$this->_debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
+			$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
 		}
 
 		$workersCountBefore = Resque::Redis()->scard('workers');
@@ -576,7 +576,7 @@ class CakeResqueShell extends Shell {
 		));
 
 		if ($this->_runtime['debug']) {
-			$this->_debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
+			$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
 		}
 
 		$workersCountBefore = Resque::Redis()->scard('workers');
@@ -624,7 +624,7 @@ class CakeResqueShell extends Shell {
 	public function stop($shutdown = true, $all = false) {
 		App::uses('CakeTime', 'Utility');
 		$this->out('<info>' . __d('cake_resque', 'Stopping workers') . '</info>');
-		$workers = Resque_Worker::all();
+		$workers = call_user_func(self::$cakeResque . '::getWorkers');
 		if (empty($workers)) {
 			$this->out('   ' . __d('cake_resque', 'There is no active workers to kill ...'));
 		} else {
@@ -919,7 +919,7 @@ class CakeResqueShell extends Shell {
  */
 	public function load() {
 		$this->out('<info>' . __d('cake_resque', 'Loading predefined workers') . '</info>');
-		$debug = $this->params['debug'];
+		$debug = isset($this->params['debug']) ? $this->params['debug'] : false;
 
 		if (Configure::read('CakeResque.Queues') == null) {
 			$this->out('   ' . __d('cake_resque', 'You have no configured queues to load.'));
@@ -931,7 +931,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-			$this->startscheduler(array('debug' => $this->params['debug']));
+			$this->startscheduler(array('debug' => $debug));
 		}
 
 		$this->out('');
@@ -1240,7 +1240,7 @@ class CakeResqueShell extends Shell {
  */
 	private function __isRunningSchedulerWorker($check = false) {
 		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->_debug(__d('cake_resque', 'Checking if the scheduler worker is running'));
+			$this->debug(__d('cake_resque', 'Checking if the scheduler worker is running'));
 		}
 
 		if ($check) {
@@ -1267,14 +1267,14 @@ class CakeResqueShell extends Shell {
  */
 	private function __getWorkers() {
 		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->_debug(__d('cake_resque', 'Retrieving list of started workers'));
+			$this->debug(__d('cake_resque', 'Retrieving list of started workers'));
 		}
 
 		$listLength = Resque::Redis()->llen('ResqueWorker');
 		$workers = Resque::Redis()->lrange('ResqueWorker', 0, $listLength - 1);
 
 		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->_debug(__d('cake_resque', 'Found ' . count($workers) . ' started workers'));
+			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' started workers'));
 		}
 
 		if (empty($workers)) {
@@ -1324,13 +1324,13 @@ class CakeResqueShell extends Shell {
  */
 	private function __getPausedWorker() {
 		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->_debug(__d('cake_resque', 'Retrieving list of paused workers'));
+			$this->debug(__d('cake_resque', 'Retrieving list of paused workers'));
 		}
 
 		$workers = (array)Resque::Redis()->smembers('PausedWorker');
 
 		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->_debug(__d('cake_resque', 'Found ' . count($workers) . ' paused workers'));
+			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' paused workers'));
 		}
 
 		return $workers;
@@ -1390,7 +1390,7 @@ class CakeResqueShell extends Shell {
 
 		$this->_runtime['user'] = isset($this->_runtime['user']) ? $this->_runtime['user'] : get_current_user();
 
-		$this->_runtime['verbose'] = $this->params['verbose'] ? $this->params['verbose'] : Configure::read('CakeResque.Worker.verbose');
+		$this->_runtime['verbose'] = isset($this->params['verbose']) ? $this->params['verbose'] : Configure::read('CakeResque.Worker.verbose');
 
 		$output = array();
 		exec('id ' . $this->_runtime['user'] . ' 2>&1', $output, $status);
@@ -1424,7 +1424,7 @@ class CakeResqueShell extends Shell {
 		return empty($errors);
 	}
 
-	protected function _debug($string) {
+	public function debug($string) {
 		return $this->out('<success>[DEBUG] ' . $string . '</success>');
 	}
 
