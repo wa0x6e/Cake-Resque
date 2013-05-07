@@ -1,4 +1,4 @@
-#CakeResque [![Build Status](https://travis-ci.org/kamisama/Cake-Resque.png)](https://travis-ci.org/kamisama/Cake-Resque)
+#CakeResque [![Build Status](https://travis-ci.org/kamisama/Cake-Resque.png)](https://travis-ci.org/kamisama/Cake-Resque) [![Dependencies Status](https://d2xishtp1ojlk0.cloudfront.net/d/2714124)](http://depending.in/kamisama/Cake-Resque)
 
 CakeResque is a CakePHP plugin for Resque, a library for creating background jobs that can be processed offline later.
 
