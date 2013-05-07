@@ -202,4 +202,8 @@ class CakeResque
 		return Resque_Failure_Redis::get($jobId);
 	}
 
+	public static function getWorkers() {
+		return Resque_Worker::all();
+	}
+
 }

@@ -311,17 +311,16 @@ class CakeResqueShell extends Shell {
  */
 	public function enqueue() {
 		$this->out('<info>' . __d('cake_resque', 'Adding a job to worker') . '</info>');
-		if (count($this->args) < 3) {
+		if (count($this->args) !== 3) {
 			$this->err('<error>' . __d('cake_resque', 'Wrong number of arguments') . '</error>');
 			$this->out(__d('cake_resque', 'Usage : enqueue <queue> <jobclass> <comma-separated-args>'), 2);
 			return false;
 		}
 
-		$jobQueue = $this->args[0];
-		$jobClass = $this->args[1];
-		$params = explode(',', $this->args[2]);
-
-		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
+		$result = call_user_func_array(
+			self::$cakeResque . '::enqueue',
+			array($this->args[0], $this->args[1], explode(',', $this->args[2]))
+		);
 		$this->out('<success>' . __d('cake_resque', 'Succesfully enqueued Job #%s', $result) . '</success>');
 
 		$this->out('');
@@ -334,17 +333,17 @@ class CakeResqueShell extends Shell {
  */
 	public function enqueueIn() {
 		$this->out('<info>' . __d('cake_resque', 'Scheduling a job') . '</info>');
-		if (count($this->args) < 4) {
+		if (count($this->args) !== 4) {
 			$this->err('<error>' . __d('cake_resque', 'Wrong number of arguments') . '</error>');
 			$this->out(__d('cake_resque', 'Usage : enqueueIn <seconds> <queue> <jobclass> <comma-separated-args>'), 2);
 			return false;
 		}
 
-		$jobQueue = $this->args[1];
-		$jobClass = $this->args[2];
-		$params = explode(',', $this->args[3]);
+		$result = call_user_func_array(
+			self::$cakeResque . '::enqueueIn',
+			array($this->args[0], $this->args[1], $this->args[2], explode(',', $this->args[3]), (isset($this->args[4]) ? (bool)$this->args[4] : false))
+		);
 
-		$result = CakeResque::enqueueIn($this->args[0], $jobQueue, $jobClass, $params, (isset($this->args[4]) ? (bool)$this->args[4] : false));
 		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
 
 		$this->out('');
@@ -357,7 +356,7 @@ class CakeResqueShell extends Shell {
  */
 	public function enqueueAt() {
 		$this->out('<info>' . __d('cake_resque', 'Scheduling a job') . '</info>');
-		if (count($this->args) < 4) {
+		if (count($this->args) !== 4) {
 			$this->err('<error>' . __d('cake_resque', 'Wrong number of arguments') . '</error>');
 			$this->out(__d('cake_resque', 'Usage : enqueue <timestamp> <queue> <jobclass> <comma-separated-args>'), 2);
 			return false;
@@ -367,7 +366,10 @@ class CakeResqueShell extends Shell {
 		$jobClass = $this->args[2];
 		$params = explode(',', $this->args[3]);
 
-		$result = CakeResque::enqueueAt($this->args[0], $jobQueue, $jobClass, $params, (isset($this->args[4]) ? (bool)$this->args[4] : false));
+		$result = call_user_func_array(
+			self::$cakeResque . '::enqueueAt',
+			array($this->args[0], $this->args[1], $this->args[2], explode(',', $this->args[3]), (isset($this->args[4]) ? (bool)$this->args[4] : false))
+		);
 		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
 
 		$this->out('');
@@ -770,7 +772,7 @@ class CakeResqueShell extends Shell {
 
 		App::uses('CakeTime', 'Utility');
 		$this->out('<info>' . __d('cake_resque', 'Pausing workers') . '</info>');
-		$workers = Resque_Worker::all();
+		$workers = call_user_func(self::$cakeResque . '::getWorkers');
 
 		$pausedWorkers = $this->__getPausedWorker();
 		if (count($pausedWorkers) > 0) {
@@ -1237,7 +1239,7 @@ class CakeResqueShell extends Shell {
  * @return boolean        True if the scheduler worker is already running
  */
 	private function __isRunningSchedulerWorker($check = false) {
-		if ($this->params['debug']) {
+		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->_debug(__d('cake_resque', 'Checking if the scheduler worker is running'));
 		}
 
@@ -1264,14 +1266,14 @@ class CakeResqueShell extends Shell {
  * @return array An array of settings, by worker
  */
 	private function __getWorkers() {
-		if ($this->params['debug']) {
+		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->_debug(__d('cake_resque', 'Retrieving list of started workers'));
 		}
 
 		$listLength = Resque::Redis()->llen('ResqueWorker');
 		$workers = Resque::Redis()->lrange('ResqueWorker', 0, $listLength - 1);
 
-		if ($this->params['debug']) {
+		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->_debug(__d('cake_resque', 'Found ' . count($workers) . ' started workers'));
 		}
 
@@ -1321,13 +1323,13 @@ class CakeResqueShell extends Shell {
  * @return  array of workers name
  */
 	private function __getPausedWorker() {
-		if ($this->params['debug']) {
+		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->_debug(__d('cake_resque', 'Retrieving list of paused workers'));
 		}
 
 		$workers = (array)Resque::Redis()->smembers('PausedWorker');
 
-		if ($this->params['debug']) {
+		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->_debug(__d('cake_resque', 'Found ' . count($workers) . ' paused workers'));
 		}
 
