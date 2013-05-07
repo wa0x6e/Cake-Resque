@@ -33,6 +33,12 @@ class CakeResqueShell extends Shell {
 	protected $_runtime = array();
 
 /**
+ * CakeResque class, proxying the Resque library
+ * @var string
+ */
+	public static $cakeResque = 'CakeResque';
+
+/**
  * Plugin version
  */
 	const VERSION = '3.3.5';
@@ -1058,8 +1064,7 @@ class CakeResqueShell extends Shell {
 			return $this->out('<error>' . __d('cake_resque', 'Please provide a valid job ID') . "</error>\n");
 		}
 
-		$status = new Resque_Job_Status($jobId);
-		$jobStatus = $status->get();
+		$jobStatus = call_user_func(self::$cakeResque . '::getJobStatus', $jobId);
 
 		if ($jobStatus === false) {
 			$this->out(__d('cake_resque', 'Status') . ' : <warning>' . __d('cake_resque', 'Unknown') . '</warning>');
@@ -1092,7 +1097,7 @@ class CakeResqueShell extends Shell {
 			);
 
 			if ($jobStatus === Resque_Job_Status::STATUS_FAILED) {
-				$log = Resque_Failure_Redis::get($jobId);
+				$log = call_user_func(self::$cakeResque . '::getFailedJobLog', $jobId);
 				if (!empty($log)) {
 					$this->hr();
 					$this->out('<comment>' . __d('cake_resque', 'Failed job details') . '</comment>');

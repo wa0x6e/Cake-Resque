@@ -192,4 +192,14 @@ class CakeResque
 
 		return $r;
 	}
+
+	public static function getJobStatus($jobId) {
+		$status = new Resque_Job_Status($jobId);
+		return $status->get();
+	}
+
+	public static function getFailedJobLog($jobId) {
+		return Resque_Failure_Redis::get($jobId);
+	}
+
 }
