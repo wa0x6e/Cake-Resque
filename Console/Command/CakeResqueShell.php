@@ -318,7 +318,7 @@ class CakeResqueShell extends Shell {
 		$result = CakeResque::enqueue($jobQueue, $jobClass, $params);
 		$this->out('<success>' . __d('cake_resque', 'Succesfully enqueued Job #%s', $result) . '</success>');
 
-		$this->out("");
+		$this->out('');
 	}
 
 /**
@@ -341,7 +341,7 @@ class CakeResqueShell extends Shell {
 		$result = CakeResque::enqueueIn($this->args[0], $jobQueue, $jobClass, $params, (isset($this->args[4]) ? (bool)$this->args[4] : false));
 		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
 
-		$this->out("");
+		$this->out('');
 	}
 
 /**
@@ -364,7 +364,7 @@ class CakeResqueShell extends Shell {
 		$result = CakeResque::enqueueAt($this->args[0], $jobQueue, $jobClass, $params, (isset($this->args[4]) ? (bool)$this->args[4] : false));
 		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
 
-		$this->out("");
+		$this->out('');
 	}
 
 /**
@@ -424,7 +424,9 @@ class CakeResqueShell extends Shell {
 			$this->out('<info>' . __d('cake_resque', 'Creating workers') . '</info>');
 		}
 
-		if (!$this->__validate($args)) return;
+		if (!$this->__validate($args)) {
+			return;
+		}
 
 		if (file_exists(APP . 'Lib' . DS . 'CakeResqueBootstrap.php')) {
 			$bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
@@ -496,11 +498,10 @@ class CakeResqueShell extends Shell {
 			} else {
 				$this->out(' <warning>' . __d('cake_resque', 'Warning, could not start %d workers', (($workersCountBefore + $this->_runtime['workers']) - $workersCountAfter)) . '</warning>');
 			}
-
 		}
 
 		if ($args === null) {
-			$this->out("");
+			$this->out('');
 		}
 	}
 
@@ -526,7 +527,9 @@ class CakeResqueShell extends Shell {
 
 		$args['type'] = 'scheduler';
 
-		if (!$this->__validate($args)) return;
+		if (!$this->__validate($args)) {
+			return;
+		}
 
 		if (file_exists(APP . 'Lib' . DS . 'CakeResqueBootstrap.php')) {
 			$bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
@@ -596,7 +599,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		if ($args === null) {
-			$this->out("");
+			$this->out('');
 		}
 	}
 
@@ -617,7 +620,6 @@ class CakeResqueShell extends Shell {
 		if (empty($workers)) {
 			$this->out('   ' . __d('cake_resque', 'There is no active workers to kill ...'));
 		} else {
-
 			$workerIndex = array();
 			if (!$this->params['all'] && !$all && count($workers) > 1) {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
@@ -640,13 +642,11 @@ class CakeResqueShell extends Shell {
 				} else {
 					$workerIndex[] = $in;
 				}
-
 			} else {
 				$workerIndex = range(1, count($workers));
 			}
 
 			foreach ($workerIndex as $index) {
-
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
@@ -657,11 +657,11 @@ class CakeResqueShell extends Shell {
 					$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
 				}
 
-				$signal = $this->params['force'] ? 'SIGTERM' : 'SIGQUIT';	// Send signal to stop processing jobs
-				$worker->unregisterWorker();											// Remove jobs from resque environment
+				$worker->unregisterWorker();  // Remove jobs from resque environment
 
 				$output = array();
-				$message = exec('kill ' . $signal . ' ' . $pid . ' 2>&1', $output, $code);	// Kill all remaining system process
+				$signal = $this->params['force'] ? 'TERM' : 'QUIT';  // Send signal to stop processing jobs
+				$message = exec($this->__kill($signal, $pid), $output, $code);  // Kill all remaining system process
 
 				if ($code == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
@@ -671,8 +671,11 @@ class CakeResqueShell extends Shell {
 			}
 		}
 
-		if ($shutdown) $this->__clearWorker();
-		$this->out("");
+		if ($shutdown) {
+			$this->__clearWorker();
+		}
+
+		$this->out('');
 	}
 
 /**
@@ -696,7 +699,6 @@ class CakeResqueShell extends Shell {
 		if (empty($workers)) {
 			$this->out('   ' . __d('cake_resque', 'There is no active workers.'));
 		} else {
-
 			$workerIndex = array();
 			if (!$this->params['all'] && count($workers) > 1) {
 				$this->out(__d('cake_resque', 'Active workers list') . ':');
@@ -719,13 +721,11 @@ class CakeResqueShell extends Shell {
 				} else {
 					$workerIndex[] = $in;
 				}
-
 			} else {
 				$workerIndex = range(1, count($workers));
 			}
 
 			foreach ($workerIndex as $index) {
-
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
@@ -736,7 +736,7 @@ class CakeResqueShell extends Shell {
 				}
 
 				$output = array();
-				$message = exec('kill -USR1 ' . $pid . ' 2>&1', $output, $code);
+				$message = exec($this->__kill('USR1', $pid), $output, $code);
 
 				if ($code == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
@@ -745,7 +745,8 @@ class CakeResqueShell extends Shell {
 				}
 			}
 		}
-		$this->out("");
+
+		$this->out('');
 	}
 
 /**
@@ -807,7 +808,6 @@ class CakeResqueShell extends Shell {
 			}
 
 			foreach ($workerIndex as $index) {
-
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
@@ -818,7 +818,7 @@ class CakeResqueShell extends Shell {
 				}
 
 				$output = array();
-				$message = exec('kill -USR2 ' . $pid . ' 2>&1', $output, $code);
+				$message = exec($this->__kill('USR2', $pid), $output, $code);
 
 				if ($code == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
@@ -829,7 +829,7 @@ class CakeResqueShell extends Shell {
 			}
 		}
 
-		$this->out("");
+		$this->out('');
 	}
 
 /**
@@ -882,7 +882,6 @@ class CakeResqueShell extends Shell {
 			}
 
 			foreach ($workerIndex as $index) {
-
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
@@ -893,7 +892,7 @@ class CakeResqueShell extends Shell {
 				}
 
 				$output = array();
-				$message = exec('kill -CONT ' . $pid . ' 2>&1', $output, $code);
+				$message = exec($this->__kill('CONT', $pid), $output, $code);
 
 				if ($code == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
@@ -904,7 +903,7 @@ class CakeResqueShell extends Shell {
 			}
 		}
 
-		$this->out("");
+		$this->out('');
 	}
 
 /**
@@ -917,7 +916,6 @@ class CakeResqueShell extends Shell {
 		if (Configure::read('CakeResque.Queues') == null) {
 			$this->out('   ' . __d('cake_resque', 'You have no configured queues to load.'));
 		} else {
-
 			foreach (Configure::read('CakeResque.Queues') as $queue) {
 				$queue['debug'] = $debug;
 				$this->start($queue);
@@ -928,7 +926,7 @@ class CakeResqueShell extends Shell {
 			$this->startscheduler(array('debug' => $this->params['debug']));
 		}
 
-		$this->out("");
+		$this->out('');
 	}
 
 /**
@@ -947,9 +945,8 @@ class CakeResqueShell extends Shell {
 				} else {
 					$this->start($worker, false);
 				}
-
 			}
-			$this->out("");
+			$this->out('');
 		} else {
 			$this->out('<warning>' . __d('cake_resque', 'No active workers found, will start brand new worker') . '</warning>');
 			$this->start();
@@ -990,12 +987,11 @@ class CakeResqueShell extends Shell {
 			if (!in_array($queues[$i], $activeQueues) && $count[$queues[$i]] == 0) {
 				unset($queues[$i]);
 			}
-
 		}
 
 		$this->out('   ' . __d('cake_resque', 'Queues count : %d', count($queues)));
 		foreach ($queues as $queue) {
-			$this->out(sprintf("\t- %s \t : %12s %s", $queue, number_format($count[$queue]), __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : "")));
+			$this->out(sprintf("\t- %s \t : %12s %s", $queue, number_format($count[$queue]), __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : '')));
 		}
 
 		$this->out("\n");
@@ -1068,7 +1064,6 @@ class CakeResqueShell extends Shell {
 		if ($jobStatus === false) {
 			$this->out(__d('cake_resque', 'Status') . ' : <warning>' . __d('cake_resque', 'Unknown') . '</warning>');
 		} else {
-
 			$statusName = array(
 				Resque_Job_Status::STATUS_WAITING => __d('cake_resque', 'waiting'),
 				Resque_Job_Status::STATUS_RUNNING => __d('cake_resque', 'running'),
@@ -1107,7 +1102,7 @@ class CakeResqueShell extends Shell {
 						if (is_string($value)) {
 							$this->out($value);
 						} else {
-							$this->out("");
+							$this->out('');
 							foreach ($value as $sKey => $sValue) {
 								$this->out(sprintf("    <info>%5s : </info>", $sKey), 0);
 								if (is_string($sValue)) {
@@ -1121,7 +1116,8 @@ class CakeResqueShell extends Shell {
 				}
 			}
 		}
-		$this->out("");
+
+		$this->out('');
 	}
 
 /**
@@ -1445,4 +1441,14 @@ class CakeResqueShell extends Shell {
 		}
 	}
 
+/**
+ * Return kill command syntax, intended to be used with exec().
+ *
+ * @param string Kill Signal
+ * @param string Process id
+ * @return string
+ */
+	private function __kill($signal, $pid) {
+		return sprintf('/bin/kill -%s %s 2>&1', $signal, $pid);
+	}
 }
