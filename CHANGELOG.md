@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v3.3.5** [2012-05-07]
+
+* [fix] Call kill command using an absolute path [bar] 
+
 ###**v3.3.4** [2012-04-30]
 
 * [fix] Stop worker gracefully by sending it a SIGNAL, instead of killing the process 

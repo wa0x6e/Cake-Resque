@@ -35,7 +35,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.3.4';
+	const VERSION = '3.3.5';
 
 /**
  * Startup callback.
@@ -1444,6 +1444,7 @@ class CakeResqueShell extends Shell {
 /**
  * Return kill command syntax, intended to be used with exec().
  *
+ * @since  3.3.4
  * @param string Kill Signal
  * @param string Process id
  * @return string
