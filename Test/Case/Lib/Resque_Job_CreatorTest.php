@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Test class for Resque_Job_Creator
  *
@@ -28,8 +27,7 @@ App::uses('Folder', 'Utility');
 App::uses('File', 'Utility');
 App::uses('Resque_Job_Creator', 'CakeResque.Lib');
 
-class Resque_Job_CreatorTest extends CakeTestCase
-{
+class Resque_Job_CreatorTest extends CakeTestCase {
 
 /**
  * Path to the temporary directory for temporary files
@@ -68,8 +66,8 @@ class Resque_Job_CreatorTest extends CakeTestCase
  * Removing all temporary files created for testing
  */
 	public static function cleanTempDir() {
-		$folder = new Folder();
-		$folder->delete(self::$testDir);
+		$Folder = new Folder();
+		$Folder->delete(self::$testDir);
 	}
 
 /**
