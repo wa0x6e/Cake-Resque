@@ -657,11 +657,11 @@ class CakeResqueShell extends Shell {
 					$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
 				}
 
-				$worker->unregisterWorker();  // Remove jobs from resque environment
+				$worker->unregisterWorker(); // Remove jobs from resque environment
 
 				$output = array();
-				$signal = $this->params['force'] ? 'TERM' : 'QUIT';  // Send signal to stop processing jobs
-				$message = exec($this->__kill($signal, $pid), $output, $code);  // Kill all remaining system process
+				$signal = $this->params['force'] ? 'TERM' : 'QUIT'; // Send signal to stop processing jobs
+				$message = exec($this->__kill($signal, $pid), $output, $code); // Kill all remaining system process
 
 				if ($code == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
@@ -1055,7 +1055,7 @@ class CakeResqueShell extends Shell {
 		if (isset($this->args[0])) {
 			$jobId = $this->args[0];
 		} else {
-			return $this->out('<error>' . __d('cake_resque', 'Please provide a valid job ID') . '</error>');
+			return $this->out('<error>' . __d('cake_resque', 'Please provide a valid job ID') . "</error>\n");
 		}
 
 		$status = new Resque_Job_Status($jobId);
