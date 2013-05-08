@@ -26,6 +26,12 @@
 class ResqueStatus
 {
 
+	public $redis = null;
+
+	public function __construct($redis) {
+		$this->redis = $redis;
+	}
+
 /**
  * Save the workers arguments
  *
@@ -33,7 +39,7 @@ class ResqueStatus
  */
 	public function addWorker($args) {
 		unset($args['debug']);
-		Resque::Redis()->rpush('ResqueWorker', serialize($args));
+		$this->redis->rpush('ResqueWorker', serialize($args));
 	}
 
 /**
@@ -46,7 +52,7 @@ class ResqueStatus
 		$workers = Resque_Worker::all();
 		foreach ($workers as $worker) {
 			if (array_pop(explode(':', $worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
-				Resque::Redis()->set('ResqueSchedulerWorker', (string)$worker);
+				$this->redis->set('ResqueSchedulerWorker', (string)$worker);
 				return true;
 			}
 		}
@@ -79,10 +85,10 @@ class ResqueStatus
 		}
 
 		if ($check) {
-			$this->__unregisterSchedulerWorker();
-			return $this->__registerSchedulerWorker();
+			$this->unregisterSchedulerWorker();
+			return $this->registerSchedulerWorker();
 		}
-		return Resque::Redis()->exists('ResqueSchedulerWorker');
+		return $this->redis->exists('ResqueSchedulerWorker');
 	}
 
 /**
@@ -92,7 +98,7 @@ class ResqueStatus
  * @return boolean True if the scheduler worker existed and was successfully unregistered
  */
 	public function unregisterSchedulerWorker() {
-		return Resque::Redis()->del('ResqueSchedulerWorker') > 0;
+		return $this->redis->del('ResqueSchedulerWorker') > 0;
 	}
 
 /**
@@ -105,30 +111,26 @@ class ResqueStatus
 			$this->debug(__d('cake_resque', 'Retrieving list of started workers'));
 		}
 
-		$listLength = Resque::Redis()->llen('ResqueWorker');
-		$workers = Resque::Redis()->lrange('ResqueWorker', 0, $listLength - 1);
+		$listLength = $this->redis->llen('ResqueWorker');
+		$workers = $this->redis->lrange('ResqueWorker', 0, $listLength - 1);
 
 		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' started workers'));
 		}
 
-		if (empty($workers)) {
-			return false;
-		} else {
-			$temp = array();
-			foreach ($workers as $worker) {
-				$temp[] = unserialize($worker);
-			}
-			return $temp;
+		$temp = array();
+		foreach ($workers as $worker) {
+			$temp[] = unserialize($worker);
 		}
+		return $temp;
 	}
 
 /**
  * Clear all workers saved arguments
  */
 	public function clearWorker() {
-		Resque::Redis()->del('ResqueWorker');
-		Resque::Redis()->del('PausedWorker');
+		$this->redis->del('ResqueWorker');
+		$this->redis->del('PausedWorker');
 	}
 
 /**
@@ -138,7 +140,7 @@ class ResqueStatus
  * @param string $workerName Name of the paused worker
  */
 	public function setPausedWorker($workerName) {
-		Resque::Redis()->sadd('PausedWorker', $workerName);
+		$this->redis->sadd('PausedWorker', $workerName);
 	}
 
 /**
@@ -148,7 +150,7 @@ class ResqueStatus
  * @param string $workerName Name of the worker
  */
 	public function setActiveWorker($workerName) {
-		Resque::Redis()->srem('PausedWorker', $workerName);
+		$this->redis->srem('PausedWorker', $workerName);
 	}
 
 /**
@@ -162,7 +164,7 @@ class ResqueStatus
 			$this->debug(__d('cake_resque', 'Retrieving list of paused workers'));
 		}
 
-		$workers = (array)Resque::Redis()->smembers('PausedWorker');
+		$workers = (array)$this->redis->smembers('PausedWorker');
 
 		if (isset($this->params['debug']) && $this->params['debug']) {
 			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' paused workers'));
