@@ -21,13 +21,15 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->ResqueStatus = $this->getMock(
 			'ResqueStatus',
-			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker'));
+			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker'));
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
 			array('in', 'out', 'hr', '_kill'),
 			array($out, $out, $in)
 		);
+
+		$this->Shell->expects($this->any())->method('_kill')->will($this->returnValue(array('code' => 0, 'message' => '')));
 
 		$this->Shell->ResqueStatus = $this->ResqueStatus;
 	}
