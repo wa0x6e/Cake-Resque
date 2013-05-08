@@ -699,13 +699,14 @@ class CakeResqueShell extends Shell {
  */
 	public function cleanup() {
 		App::uses('CakeTime', 'Utility');
+		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
 			return __d('cake_resque', 'Cleaning up %s ... ', $pid);
 		};
 
-		$listItemFormatter = function ($worker, $i) {
-			return sprintf("    [%3d] - %s, started %s", $i, $this->ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
+			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
 		};
 
@@ -737,17 +738,18 @@ class CakeResqueShell extends Shell {
  */
 	public function pause() {
 		App::uses('CakeTime', 'Utility');
+		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
 			return __d('cake_resque', 'Pausing %s ... ', $pid);
 		};
 
-		$listItemFormatter = function ($worker, $i) {
-			return sprintf("    [%3d] - %s, started %s", $i, $this->ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
+			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
 		};
 
-		$ResqueStatus = $this->ResqueStatus;
+
 		$successCallback = function ($worker) use ($ResqueStatus) {
 			$ResqueStatus->setPausedWorker((string)$worker);
 		};
@@ -777,18 +779,19 @@ class CakeResqueShell extends Shell {
  */
 	public function resume() {
 		App::uses('CakeTime', 'Utility');
+		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
 			return __d('cake_resque', 'Resuming %s ... ', $pid);
 		};
 
-		$listItemFormatter = function ($worker, $i) {
-			return sprintf("    [%3d] - %s, started %s", $i, $this->ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
+		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
+			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
 		};
 
-		$successCallback = function ($worker) {
-			$this->ResqueStatus->setPausedWorker((string)$worker);
+		$successCallback = function ($worker) use ($ResqueStatus) {
+			$ResqueStatus->setPausedWorker((string)$worker);
 		};
 
 		return $this->_sendSignal(
