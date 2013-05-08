@@ -715,9 +715,9 @@ class CakeResqueShell extends Shell {
 		return $this->_sendSignal(
 			__d('cake_resque', 'Cleaning up workers'),
 			call_user_func(self::$cakeResque . '::getWorkers'),
-			__d('cake_resque', 'There is no active workers to pause ...'),
+			__d('cake_resque', 'There is no active workers to clean up ...'),
 			__d('cake_resque', 'Active workers list'),
-			__d('cake_resque', 'Cleanup all workers'),
+			__d('cake_resque', 'Clean up all workers'),
 			__d('cake_resque', 'Worker to Cleanup'),
 			__d('cake_resque', 'Cleaning up the Scheduler Worker ... '),
 			$actionMessage,
@@ -747,8 +747,9 @@ class CakeResqueShell extends Shell {
 					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
 		};
 
-		$successCallback = function ($worker) {
-			$this->ResqueStatus->setPausedWorker((string)$worker);
+		$ResqueStatus = $this->ResqueStatus;
+		$successCallback = function ($worker) use ($ResqueStatus) {
+			$ResqueStatus->setPausedWorker((string)$worker);
 		};
 
 		return $this->_sendSignal(
