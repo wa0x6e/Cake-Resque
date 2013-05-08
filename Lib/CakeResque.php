@@ -206,4 +206,8 @@ class CakeResque
 		return (array)Resque_Worker::all();
 	}
 
+	public static function getQueues() {
+		return Resque::Redis()->smembers('queues');
+	}
+
 }

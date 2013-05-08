@@ -62,7 +62,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		App::uses('ResqueStatus', 'CakeResque.Lib');
-		$this->ResqueStatus = new ResqueStatus();
+		$this->ResqueStatus = new ResqueStatus(Resque::Redis());
 
 		$this->stdout->styles('success', array('text' => 'green'));
 		$this->stdout->styles('bold', array('bold' => true));
@@ -390,7 +390,7 @@ class CakeResqueShell extends Shell {
 	public function tail() {
 		$logs = array();
 		$i = 1;
-		$workers = (array)$this->ResqueStatus->getWorkers();
+		$workers = $this->ResqueStatus->getWorkers();
 
 		foreach ($workers as $worker) {
 			if ($worker['log'] != '') {
@@ -671,7 +671,7 @@ class CakeResqueShell extends Shell {
 				$worker->unregisterWorker(); // Remove jobs from resque environment
 
 				$signal = $this->params['force'] ? 'TERM' : 'QUIT'; // Send signal to stop processing jobs
-				$message = $this->_kill($signal, $pid); // Kill all remaining system process
+				$killResponse = $this->_kill($signal, $pid); // Kill all remaining system process
 
 				if ($killResponse['code'] == 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
@@ -748,7 +748,6 @@ class CakeResqueShell extends Shell {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
 		};
-
 
 		$successCallback = function ($worker) use ($ResqueStatus) {
 			$ResqueStatus->setPausedWorker((string)$worker);
@@ -902,7 +901,7 @@ class CakeResqueShell extends Shell {
 		$this->stop(false, true);
 
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
-		if (array() !== $workers = call_user_func(self::$cakeResque . '::getWorkers')) {
+		if (array() !== $workers = $this->ResqueStatus->getWorkers()) {
 			$debug = $this->params['debug'];
 			foreach ($workers as $worker) {
 				$worker['debug'] = $debug;
@@ -920,9 +919,9 @@ class CakeResqueShell extends Shell {
 	}
 
 	public function stats() {
-		$workers = Resque_Worker::all();
+		$workers = call_user_func(self::$cakeResque . '::getWorkers');
 		// List of all queues
-		$queues = Resque::Redis()->smembers('queues');
+		$queues = call_user_func(self::$cakeResque . '::getQueues');
 		if (!empty($queues)) {
 			$queues = array_unique($queues);
 		}
@@ -1095,7 +1094,7 @@ class CakeResqueShell extends Shell {
  */
 	public function clear() {
 		// List of all queues
-		$queues = Resque::Redis()->smembers('queues');
+		$queues = call_user_func(self::$cakeResque . '::getQueues');
 		if (!empty($queues)) {
 			$queues = array_unique($queues);
 		} else {
