@@ -62,7 +62,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		App::uses('ResqueStatus', 'CakeResque.Lib');
-		$this->ResqueStatus = new stdClass();// new ResqueStatus();
+		$this->ResqueStatus = new ResqueStatus();
 
 		$this->stdout->styles('success', array('text' => 'green'));
 		$this->stdout->styles('bold', array('bold' => true));
@@ -435,7 +435,7 @@ class CakeResqueShell extends Shell {
 			$this->out('<info>' . __d('cake_resque', 'Creating workers') . '</info>');
 		}
 
-		if (!$this->__validate($args)) {
+		if (!$this->_validate($args)) {
 			return;
 		}
 
@@ -524,6 +524,10 @@ class CakeResqueShell extends Shell {
  * @since 2.3.0
  */
 	public function startScheduler($args = null, $new = true) {
+		if ($args === null) {
+			$this->out('<info>' . __d('cake_resque', 'Creating the scheduler worker') . '</info>');
+		}
+
 		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
 			return $this->out('<error>' . __d('cake_resque', 'Scheduler Worker is not enabled') . '</error>');
 		}
@@ -532,13 +536,9 @@ class CakeResqueShell extends Shell {
 			return $this->out('<warning>' . __d('cake_resque', 'The scheduler worker is already running') . '</warning>');
 		}
 
-		if ($args === null) {
-			$this->out('<info>' . __d('cake_resque', 'Creating the scheduler worker') . '</info>');
-		}
-
 		$args['type'] = 'scheduler';
 
-		if (!$this->__validate($args)) {
+		if (!$this->_validate($args)) {
 			return;
 		}
 
@@ -902,7 +902,7 @@ class CakeResqueShell extends Shell {
 		$this->stop(false, true);
 
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
-		if (false !== $workers = $this->ResqueStatus->getWorkers()) {
+		if (array() !== $workers = call_user_func(self::$cakeResque . '::getWorkers')) {
 			$debug = $this->params['debug'];
 			foreach ($workers as $worker) {
 				$worker['debug'] = $debug;
@@ -1156,7 +1156,7 @@ class CakeResqueShell extends Shell {
  * @since 1.0
  * @return true if all options are valid
  */
-	private function __validate($args = null) {
+	protected function _validate($args = null) {
 		$this->_runtime = ($args === null) ? $this->params : $args;
 
 		$errors = array();

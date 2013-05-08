@@ -21,7 +21,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->ResqueStatus = $this->getMock(
 			'ResqueStatus',
-			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker'));
+			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker', 'isRunningSchedulerWorker'));
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
@@ -645,6 +645,190 @@ class CakeResqueShellTest extends CakeTestCase
 		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+	// RESUME -------------------------------------------------------------------------------------------------
+
+/**
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeWithNotPausedWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeWithSomeWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeAllAtOnceWithAllOption() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeAllWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+	// START SCHEDULER WORKER -------------------------------------------------------------------------------------------------
+
+/**
+ * @covers CakeResqueShell::startscheduler
+ */
+	public function testStartScheduler() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+
+		Configure::write('CakeResque.Scheduler.enabled', true);
+	}
+
+/**
+ * @covers CakeResqueShell::startscheduler
+ */
+	public function testStartSchedulerWhenSchedulingIsDisabled() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/Scheduler Worker is not enabled/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/error/i'));
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		Configure::write('CakeResque.Scheduler.enabled', false);
+		$this->Shell->startscheduler();
+	}
+
+/**
+ * @covers CakeResqueShell::startscheduler
+ */
+	public function testStartSchedulerWhenSchedulerIsAlreadyStarted() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/The scheduler worker is already running/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/warning/i'));
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		$this->ResqueStatus->expects($this->once())->method('isRunningSchedulerWorker')->with(true)->will($this->returnValue(true));
+
+		Configure::write('CakeResque.Scheduler.enabled', true);
+		$this->Shell->startscheduler();
+	}
+
+	// RESTART -------------------------------------------------------------------------------------------------
+
+/**
+ * @covers CakeResqueShell::restart
+ */
+	public function testRestartWhenThereIsNoActiveWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->exactly(1))->method('getWorkers')->will($this->returnValue(array()));
+
+		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
+		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
+
+		$this->Shell = $this->getMock(
+			'CakeResqueShell',
+			array('in', 'out', 'hr', '_kill', 'start', 'startscheduler', 'stop'),
+			array($out, $out, $in)
+		);
+
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Restarting workers'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('No active workers found'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->matchesRegularExpression('/warning/i'));
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		$this->Shell->expects($this->once())->method('stop');
+		$this->Shell->expects($this->once())->method('start');
+		$this->Shell->expects($this->never())->method('startscheduler');
+
+		Configure::write('CakeResque.Scheduler.enabled', false);
+
+		$this->Shell->restart();
+	}
+
+/**
+ * @covers CakeResqueShell::restart
+ */
+	public function testRestartWhenThereIsActiveWorkers() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->exactly(1))->method('getWorkers')->will($this->returnValue(array('a' => array('type' => 'scheduler'), 'b' => array(), 'c' => array())));
+
+		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
+		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
+
+		$this->Shell = $this->getMock(
+			'CakeResqueShell',
+			array('in', 'out', 'hr', '_kill', 'start', 'startscheduler', 'stop'),
+			array($out, $out, $in)
+		);
+
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Restarting workers'));
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		$this->Shell->expects($this->exactly(2))->method('start');
+		$this->Shell->expects($this->once())->method('startscheduler');
+
+		Configure::write('CakeResque.Scheduler.enabled', false);
+
+
+		$this->Shell->params['debug'] = false;
+		$this->Shell->restart();
+	}
+
+	// START -------------------------------------------------------------------------------------------------
+
+/**
+ * @covers CakeResqueShell::start
+ */
+	public function testStart() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/creating/i'));
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::start
+ */
+	public function testStartWithInvalidArguments() {
+		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
+		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
+
+		$this->Shell = $this->getMock(
+			'CakeResqueShell',
+			array('in', 'out', 'hr', '_kill', 'startscheduler', 'stop', '_validate'),
+			array($out, $out, $in)
+		);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating workers'));
+		$this->Shell->expects($this->once())->method('_validate')->will($this->returnValue(false));
+		$this->Shell->expects($this->exactly(1))->method('out');
+
+
+		$this->Shell->start();
 	}
 
 }

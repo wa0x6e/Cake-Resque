@@ -203,7 +203,7 @@ class CakeResque
 	}
 
 	public static function getWorkers() {
-		return Resque_Worker::all();
+		return (array)Resque_Worker::all();
 	}
 
 }
