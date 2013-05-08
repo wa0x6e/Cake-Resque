@@ -21,7 +21,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->ResqueStatus = $this->getMock(
 			'ResqueStatus',
-			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker', 'isRunningSchedulerWorker'));
+			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker', 'isRunningSchedulerWorker', 'getWorkers'));
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
@@ -625,13 +625,52 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::load
  */
 	public function testLoad() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		Configure::write('CakeResque.Queues', null);
+		Configure::write('CakeResque.Queues', array(array(), array(), array()));
 		Configure::write('CakeResque.Scheduler.enabled', false);
-		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+
+		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
+		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
+
+		$this->Shell = $this->getMock(
+			'CakeResqueShell',
+			array('in', 'out', 'hr', '_kill', 'start', 'startscheduler', 'stop'),
+			array($out, $out, $in)
+		);
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$this->Shell->expects($this->exactly(3))->method('start');
+		$this->Shell->expects($this->never())->method('startscheduler');
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		Configure::write('CakeResque.Scheduler.enabled', false);
+
+		$this->Shell->load();
+	}
+
+/**
+ * @covers CakeResqueShell::load
+ */
+	public function testLoadWithSchedulerEnabled() {
+		Configure::write('CakeResque.Queues', array(array(), array(), array()));
+		Configure::write('CakeResque.Scheduler.enabled', false);
+
+		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
+		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
+
+		$this->Shell = $this->getMock(
+			'CakeResqueShell',
+			array('in', 'out', 'hr', '_kill', 'start', 'startscheduler', 'stop'),
+			array($out, $out, $in)
+		);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
+		$this->Shell->expects($this->exactly(3))->method('start');
+		$this->Shell->expects($this->once())->method('startscheduler');
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		Configure::write('CakeResque.Scheduler.enabled', true);
+
+		$this->Shell->load();
 	}
 
 /**
@@ -741,10 +780,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::restart
  */
 	public function testRestartWhenThereIsNoActiveWorkers() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		$CakeResque::staticExpects($this->exactly(1))->method('getWorkers')->will($this->returnValue(array()));
-
 		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
 		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
 
@@ -753,6 +788,13 @@ class CakeResqueShellTest extends CakeTestCase
 			array('in', 'out', 'hr', '_kill', 'start', 'startscheduler', 'stop'),
 			array($out, $out, $in)
 		);
+
+		$this->Shell->ResqueStatus = $this->ResqueStatus;
+
+		$this->ResqueStatus
+		->expects($this->once())
+		->method('getWorkers')
+		->will($this->returnValue(array()));
 
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Restarting workers'));
 		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('No active workers found'));
@@ -772,10 +814,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::restart
  */
 	public function testRestartWhenThereIsActiveWorkers() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		$CakeResque::staticExpects($this->exactly(1))->method('getWorkers')->will($this->returnValue(array('a' => array('type' => 'scheduler'), 'b' => array(), 'c' => array())));
-
 		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
 		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
 
@@ -785,6 +823,13 @@ class CakeResqueShellTest extends CakeTestCase
 			array($out, $out, $in)
 		);
 
+		$this->Shell->ResqueStatus = $this->ResqueStatus;
+
+		$this->ResqueStatus
+		->expects($this->once())
+		->method('getWorkers')
+		->will($this->returnValue(array('a' => array('type' => 'scheduler'), 'b' => array(), 'c' => array())));
+
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Restarting workers'));
 		$this->Shell->expects($this->exactly(2))->method('out');
 
@@ -792,7 +837,6 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->once())->method('startscheduler');
 
 		Configure::write('CakeResque.Scheduler.enabled', false);
-
 
 		$this->Shell->params['debug'] = false;
 		$this->Shell->restart();
@@ -826,7 +870,6 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating workers'));
 		$this->Shell->expects($this->once())->method('_validate')->will($this->returnValue(false));
 		$this->Shell->expects($this->exactly(1))->method('out');
-
 
 		$this->Shell->start();
 	}
