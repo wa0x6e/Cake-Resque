@@ -19,11 +19,17 @@ class CakeResqueShellTest extends CakeTestCase
 			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers')
 		);
 
+		$this->ResqueStatus = $this->getMock(
+			'ResqueStatus',
+			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker'));
+
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
-			array('in', 'out', 'hr'),
+			array('in', 'out', 'hr', '_kill'),
 			array($out, $out, $in)
 		);
+
+		$this->Shell->ResqueStatus = $this->ResqueStatus;
 	}
 
 	public function tearDown() {
@@ -241,7 +247,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->args = array('queue', 'class', 'args');
 
-		$id = md5(time());
+		$id = md5(time() / 10);
 
 		$CakeResque::staticExpects($this->once())->method('enqueue')->will($this->returnValue($id));
 
@@ -277,7 +283,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->args = array(0, 'queue', 'class', 'args');
 
-		$id = md5(time());
+		$id = md5(time() / 10);
 
 		$CakeResque::staticExpects($this->once())->method('enqueueIn')->will($this->returnValue($id));
 
@@ -313,7 +319,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->args = array(0, 'queue', 'class', 'args');
 
-		$id = md5(time());
+		$id = md5(time() / 10);
 
 		$CakeResque::staticExpects($this->once())->method('enqueueAt')->will($this->returnValue($id));
 
@@ -339,6 +345,8 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no active workers to pause'));
 
+		$this->ResqueStatus->expects($this->never())->method('setPausedWorker');
+
 		$this->Shell->pause();
 	}
 
@@ -348,9 +356,15 @@ class CakeResqueShellTest extends CakeTestCase
 	public function testPauseWorkerWhenThereIsOnlyOneWorkers() {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename")));
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Pausing 956 ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->matchesRegularExpression('/done/i'));
+
+		$this->ResqueStatus->expects($this->once())->method('setPausedWorker');
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->pause();
 	}
 
 /**
@@ -359,9 +373,22 @@ class CakeResqueShellTest extends CakeTestCase
 	public function testPauseWorkerWhenThereIsMultipleWorkers() {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Active workers list'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:956:queuename'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:957:queuename'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
+
+		$this->Shell->expects($this->once())->method('in')->will($this->returnValue(2));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Pausing 957 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->exactly(1))->method('setPausedWorker')->with('host:957:queuename');
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->pause();
 	}
 
 /**
@@ -378,12 +405,43 @@ class CakeResqueShellTest extends CakeTestCase
 /**
  * @covers CakeResqueShell::pause
  */
-	public function testPauseWorkerAllAtOnce() {
+	public function testPauseWorkerAllAtOnceWithAllOption() {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Pausing 956 ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('Pausing 957 ...'));
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->exactly(2))->method('setPausedWorker');
+
+		$this->Shell->params['all'] = true;
+		$this->Shell->pause();
+	}
+
+/**
+ * @covers CakeResqueShell::pause
+ */
+	public function testPauseAllWorker() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
+
+		$this->Shell->expects($this->once())->method('in')->will($this->returnValue("all"));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Pausing 956 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('Pausing 957 ...'));
+		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->exactly(2))->method('setPausedWorker');
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->pause();
 	}
 
 	// STOP -------------------------------------------------------------------------------------------------
@@ -396,7 +454,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 
-		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$CakeResque::staticExpects($this->any())->method('getWorkers')->will($this->returnValue(array()));
 
 		$this->Shell->expects($this->exactly(3))->method('out');
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
