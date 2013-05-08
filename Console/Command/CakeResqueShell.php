@@ -408,7 +408,7 @@ class CakeResqueShell extends Shell {
 
 		$this->out('<info>' . __d('cake_resque', 'Tailing log file') . '</info>');
 		if (empty($logs)) {
-			$this->err('    ' . __d('cake_resque', 'No log file to tail'), 2);
+			$this->out('    <error>' . __d('cake_resque', 'No log file to tail') . '</error>', 2);
 			return;
 		} elseif (count($logs) == 1) {
 			$index = 1;
@@ -421,7 +421,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		$this->out('<warning>' . __d('cake_resque', 'Tailing %s', $logs[$index - 1]) . '</warning>');
-		passthru('tail -f ' . escapeshellarg($logs[$index - 1]));
+		$this->_tail($logs[$index - 1]);
 	}
 
 /**
@@ -790,7 +790,7 @@ class CakeResqueShell extends Shell {
 		};
 
 		$successCallback = function ($worker) use ($ResqueStatus) {
-			$ResqueStatus->setPausedWorker((string)$worker);
+			$ResqueStatus->setActiveWorker((string)$worker);
 		};
 
 		return $this->_sendSignal(
@@ -1093,12 +1093,14 @@ class CakeResqueShell extends Shell {
  * @since 3.3.0
  */
 	public function clear() {
+		$this->out('<info>' . __d('cake_resque', 'Clearing queues') . '</info>');
+
 		// List of all queues
 		$queues = call_user_func(self::$cakeResque . '::getQueues');
 		if (!empty($queues)) {
 			$queues = array_unique($queues);
 		} else {
-			return $this->out(__d('cake_resque', 'There is no queue to clear'));
+			return $this->out(__d('cake_resque', 'There is no queues to clear'));
 		}
 
 		if (isset($this->args[0])) {
@@ -1272,5 +1274,14 @@ class CakeResqueShell extends Shell {
 		$output = array();
 		$message = exec(sprintf('/bin/kill -%s %s 2>&1', $signal, $pid), $output, $code);
 		return array('code' => $code, 'message' => $message);
+	}
+
+/**
+ *
+ * @since 3.3.6
+ * @param  String $path Path to the file to tail
+ */
+	protected function _tail($path) {
+		passthru('tail -f ' . escapeshellarg($path));
 	}
 }

@@ -16,7 +16,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->CakeResque = $this->getMockClass(
 			'CakeResque',
-			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers')
+			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers', 'getQueues')
 		);
 
 		$this->ResqueStatus = $this->getMock(
@@ -25,7 +25,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
-			array('in', 'out', 'hr', '_kill'),
+			array('in', 'out', 'hr', '_kill', '_validate', '_tail'),
 			array($out, $out, $in)
 		);
 
@@ -446,6 +446,161 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->pause();
 	}
 
+	// RESUME -------------------------------------------------------------------------------------------------
+
+/**
+ * Test resuming worker when there is not paused worker
+ * Will display a "No paused worker" message
+ *
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeWorkerWhenThereIsNoPausedWorkers() {
+		$this->Shell->expects($this->exactly(3))->method('out');
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no paused workers to resume'));
+
+		$this->ResqueStatus->expects($this->once())->method('getPausedWorker')->will($this->returnValue(array()));
+		$this->ResqueStatus->expects($this->never())->method('setActiveWorker');
+
+		$this->Shell->resume();
+	}
+
+/**
+ * Test resuming worker with only one paused worker
+ * Will immediatly paused the only worker
+ *
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeWorkerWhenThereIsOnlyOnePausedWorker() {
+		$this->Shell->expects($this->exactly(4))->method('out');
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Resuming 123 ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->once())->method('getPausedWorker')->will($this->returnValue(array("host:123:queuename")));
+		$this->ResqueStatus->expects($this->once())->method('setActiveWorker');
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->resume();
+	}
+
+/**
+ * Test resuming worker, with multiple paused workers :
+ * will display a list of all paused workers
+ *
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeWorkerWhenThereIsMultiplePausedWorker() {
+		$this->ResqueStatus->expects($this->once())
+			->method('getPausedWorker')
+			->will($this->returnValue(array("host:100:queue1", "host:101:queue2")));
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('paused workers list'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:100:queue1'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:101:queue2'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
+
+		$this->Shell->expects($this->once())->method('in')->will($this->returnValue(2));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('resuming 101 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->resume();
+	}
+
+/**
+ * Test resuming all workers by choosing the --all option
+ *
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeAllWorkerAtOnceWithAllOption() {
+		$this->ResqueStatus->expects($this->once())
+			->method('getPausedWorker')
+			->will($this->returnValue(array("host:100:queue1", "host:101:queue2")));
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming workers/i'));
+
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Resuming 100 ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('Resuming 101 ...'));
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->exactly(2))->method('setActiveWorker');
+
+		$this->Shell->params['all'] = true;
+		$this->Shell->resume();
+	}
+
+/**
+ * Test resuming all workers using the [all] option
+ * when prompt which worker to resume
+ *
+ * @covers CakeResqueShell::resume
+ */
+	public function testResumeAllWorker() {
+		$this->ResqueStatus->expects($this->once())
+			->method('getPausedWorker')
+			->will($this->returnValue(array("host:100:queue1", "host:101:queue2")));
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming worker/i'));
+
+		$this->Shell->expects($this->once())->method('in')->will($this->returnValue("all"));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Resuming 100 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('Resuming 101 ...'));
+		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->exactly(2))->method('setActiveWorker');
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->resume();
+	}
+
+	// CLEAR -------------------------------------------------------------------------------------------------
+
+/**
+ * Test clearing a queue when there is not queues
+ *
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearQueueWhenThereIsNoQueue() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+
+		$CakeResque::staticExpects($this->once())
+			->method('getQueues')
+			->will($this->returnValue(array()));
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Clearing queues'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('there is no queues to clear'));
+		$this->Shell->expects($this->exactly(2))->method('out');
+
+		$this->Shell->clear();
+	}
+
+/**
+ * Test clearing a queue when there is only one queue
+ * Will immediatly clear that only queue
+ *
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearQueueWhenThereIsOnlyOneQueue() {
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * Test clearing a queue when there multiple queues
+ * Will display a list of queues to choose from
+ *
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearQueueWheThereIsMultipleQueue() {
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
 	// STOP -------------------------------------------------------------------------------------------------
 
 /**
@@ -702,8 +857,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::resume
  */
 	public function testResumeWithSomeWorkers() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
@@ -712,8 +865,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::resume
  */
 	public function testResumeAllAtOnceWithAllOption() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
@@ -722,8 +873,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::resume
  */
 	public function testResumeAllWorkers() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/resuming/i'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
@@ -734,8 +883,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::startscheduler
  */
 	public function testStartScheduler() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
 
@@ -743,11 +890,23 @@ class CakeResqueShellTest extends CakeTestCase
 	}
 
 /**
+ * Test starting scheduler worker with invalid arguments
+ *
+ * @covers CakeResqueShell::startscheduler
+ */
+	public function testStartSchedulerWithInvalidArguments() {
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
+		$this->Shell->expects($this->once())->method('_validate')->will($this->returnValue(false));
+		$this->Shell->expects($this->once())->method('out');
+
+		Configure::write('CakeResque.Scheduler.enabled', true);
+		$this->Shell->startscheduler();
+	}
+
+/**
  * @covers CakeResqueShell::startscheduler
  */
 	public function testStartSchedulerWhenSchedulingIsDisabled() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/Scheduler Worker is not enabled/i'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/error/i'));
@@ -761,8 +920,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::startscheduler
  */
 	public function testStartSchedulerWhenSchedulerIsAlreadyStarted() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/The scheduler worker is already running/i'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/warning/i'));
@@ -848,8 +1005,6 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::start
  */
 	public function testStart() {
-		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/creating/i'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
@@ -863,7 +1018,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
-			array('in', 'out', 'hr', '_kill', 'startscheduler', 'stop', '_validate'),
+			array('in', 'out', 'hr', '_kill', '_tail', 'startscheduler', 'stop', '_validate'),
 			array($out, $out, $in)
 		);
 
@@ -872,6 +1027,146 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->exactly(1))->method('out');
 
 		$this->Shell->start();
+	}
+
+	// TAIL -------------------------------------------------------------------------------------------------
+
+/**
+ * Test tailing when there is no workers
+ *
+ * @covers CakeResqueShell::tail
+ */
+	public function testTailWhenThereIsNoWorkers() {
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Tailing log file'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('no log file to tail'));
+		$this->ResqueStatus->expects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->Shell->expects($this->exactly(2))->method('out');
+		$this->Shell->expects($this->never())->method('_tail');
+
+		$this->Shell->tail();
+	}
+
+/**
+ * Test tailing when there is only one worker
+ * Will immediatly tail that worker's log
+ *
+ * @covers CakeResqueShell::tail
+ */
+	public function testTailWhenThereIsOnlyOneWorker() {
+		$filename = '/path/log.log';
+		$this->ResqueStatus
+			->expects($this->once())
+			->method('getWorkers')
+			->will($this->returnValue(array(0 => array('log' => $filename, 'Log' => array('handler' => null)))));
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Tailing log file'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('tailing ' . $filename));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('warning'));
+
+		$this->Shell->expects($this->exactly(2))->method('out');
+		$this->Shell->expects($this->once())->method('_tail');
+
+		$this->Shell->tail();
+	}
+
+/**
+ * Test tailing when there is multiple worker
+ * Will display a list of log to choose from
+ *
+ * @covers CakeResqueShell::tail
+ */
+	public function testTailWhenThereIsMultipleWorkers() {
+		$this->markTestIncomplete('This test has not been implemented yet.');
+	}
+
+/**
+ * @covers CakeResqueShell::getOptionParser
+ */
+	public function testgetOptionParser() {
+		$commands = array('start', 'startscheduler', 'stop', 'pause', 'resume', 'cleanup', 'restart',
+			'clear', 'stats', 'tail', 'track', 'load');
+
+		$parser = $this->Shell->getOptionParser();
+		$this->assertInstanceOf('ConsoleOptionParser', $parser);
+		$this->assertEquals(array_keys($parser->subcommands()), $commands);
+	}
+
+/**
+ * @covers CakeResqueShell::startup
+ */
+	public function testStartupResqueStatusInstance() {
+		$this->assertInstanceOf('ResqueStatus', $this->Shell->ResqueStatus);
+		$this->Shell->startup();
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalWithMultipleWorkers() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$workers = array("host:100:queue", "host:101:queue");
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG');
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains($args[3]));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('>> ' . $workers[0]));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('>> ' . $workers[1]));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - ' . $args[4]));
+
+		$this->Shell->expects($this->once())->method('in')->with($args[5] . ': ')->will($this->returnValue(2));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Happy doing 101 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(8))->method('out');
+
+		$this->Shell->params['all'] = false;
+		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalWithNoWorkers() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$workers = array();
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG');
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains($args[2]));
+		$this->Shell->expects($this->exactly(3))->method('out');
+
+		$this->Shell->params['all'] = false;
+		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
 	}
 
 }
