@@ -627,7 +627,7 @@ class CakeResqueShell extends Shell {
 	public function stop($shutdown = true, $all = false) {
 		App::uses('CakeTime', 'Utility');
 		$this->out('<info>' . __d('cake_resque', 'Stopping workers') . '</info>');
-		$workers = call_user_func(self::$cakeResque . '::getWorkers');
+		$workers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
 		if (empty($workers)) {
 			$this->out('   ' . __d('cake_resque', 'There is no active workers to kill ...'));
 		} else {
@@ -637,7 +637,7 @@ class CakeResqueShell extends Shell {
 				$i = 1;
 				foreach ($workers as $worker) {
 					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-						CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker))));
+						CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker))));
 				}
 
 				$options = range(1, $i - 1);
@@ -707,7 +707,7 @@ class CakeResqueShell extends Shell {
 
 		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-					CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker)));
+					CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker)));
 		};
 
 		$successCallback = function ($worker) {
@@ -715,7 +715,7 @@ class CakeResqueShell extends Shell {
 
 		return $this->_sendSignal(
 			__d('cake_resque', 'Cleaning up workers'),
-			call_user_func(self::$cakeResque . '::getWorkers'),
+			call_user_func(CakeResqueShell::$cakeResque . '::getWorkers'),
 			__d('cake_resque', 'There is no active workers to clean up ...'),
 			__d('cake_resque', 'Active workers list'),
 			__d('cake_resque', 'Clean up all workers'),
@@ -746,7 +746,7 @@ class CakeResqueShell extends Shell {
 
 		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-					CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker)));
+					CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker)));
 		};
 
 		$successCallback = function ($worker) use ($ResqueStatus) {
@@ -754,7 +754,7 @@ class CakeResqueShell extends Shell {
 		};
 
 		// Compute list of pause workers
-		$activeWorkers = call_user_func(self::$cakeResque . '::getWorkers');
+		$activeWorkers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
 		foreach ($activeWorkers as &$worker) {
 			$worker = (string)$worker;
 		}
@@ -793,7 +793,7 @@ class CakeResqueShell extends Shell {
 
 		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-					CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker)));
+					CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker)));
 		};
 
 		$successCallback = function ($worker) use ($ResqueStatus) {
@@ -926,9 +926,9 @@ class CakeResqueShell extends Shell {
 	}
 
 	public function stats() {
-		$workers = call_user_func(self::$cakeResque . '::getWorkers');
+		$workers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
 		// List of all queues
-		$queues = call_user_func(self::$cakeResque . '::getQueues');
+		$queues = call_user_func(CakeResqueShell::$cakeResque . '::getQueues');
 		if (!empty($queues)) {
 			$queues = array_unique($queues);
 		}
@@ -981,7 +981,7 @@ class CakeResqueShell extends Shell {
 					continue;
 				}
 				$this->out("\t* <bold>" . (string)$worker . '</bold>' . (in_array((string)$worker, $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . ')</warning>' : ''));
-				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker));
+				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker));
 				$this->out("\t   - " . __d('cake_resque', 'Processed Jobs') . " : " . $worker->getStat('processed'));
 				$worker->getStat('failed') == 0
 					? $this->out("\t   - " . __d('cake_resque', 'Failed Jobs') . "    : " . $worker->getStat('failed'))
@@ -996,7 +996,7 @@ class CakeResqueShell extends Shell {
 			foreach ($schedulerWorkers as $worker) {
 				$schedulerWorker = new ResqueScheduler\ResqueScheduler();
 				$delayedJobCount = $schedulerWorker->getDelayedQueueScheduleSize();
-				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker));
+				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker));
 				$this->out("\t   - " . __d('cake_resque', 'Delayed Jobs') . "   : " . $delayedJobCount);
 
 				if ($delayedJobCount > 0) {
@@ -1030,7 +1030,7 @@ class CakeResqueShell extends Shell {
 			return $this->out('<error>' . __d('cake_resque', 'Please provide a valid job ID') . "</error>\n");
 		}
 
-		$jobStatus = call_user_func(self::$cakeResque . '::getJobStatus', $jobId);
+		$jobStatus = call_user_func(CakeResqueShell::$cakeResque . '::getJobStatus', $jobId);
 
 		if ($jobStatus === false) {
 			$this->out(__d('cake_resque', 'Status') . ' : <warning>' . __d('cake_resque', 'Unknown') . '</warning>');
@@ -1063,7 +1063,7 @@ class CakeResqueShell extends Shell {
 			);
 
 			if ($jobStatus === Resque_Job_Status::STATUS_FAILED) {
-				$log = call_user_func(self::$cakeResque . '::getFailedJobLog', $jobId);
+				$log = call_user_func(CakeResqueShell::$cakeResque . '::getFailedJobLog', $jobId);
 				if (!empty($log)) {
 					$this->hr();
 					$this->out('<comment>' . __d('cake_resque', 'Failed job details') . '</comment>');
@@ -1103,7 +1103,7 @@ class CakeResqueShell extends Shell {
 		$this->out('<info>' . __d('cake_resque', 'Clearing queues') . '</info>');
 
 		// List of all queues
-		$queues = call_user_func(self::$cakeResque . '::getQueues');
+		$queues = call_user_func(CakeResqueShell::$cakeResque . '::getQueues');
 		if (!empty($queues)) {
 			$queues = array_unique($queues);
 		} else {
