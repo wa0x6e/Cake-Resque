@@ -22,6 +22,9 @@
 		"kamisama/php-resque-ex": ">=1.2.4",
 		"kamisama/php-resque-ex-scheduler": ">=1.1.1"
 	},
+	"require-dev": {
+        "satooshi/php-coveralls": "dev-master"
+    },
 	"support": {
 		"email": "kami@kamisama.me",
 		"issues": "https://github.com/kamisama/Cake-Resque/issues",

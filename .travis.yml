@@ -19,8 +19,12 @@ before_script:
     CakePlugin::loadAll(array('CakeResque' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
   - cd app/Plugin/CakeResque
   - composer self-update
-  - composer install --prefer-source
+  - composer install --prefer-source --dev
   - cd ../../Console
 
 script:
-  - ./cake test CakeResque AllCakeResque --stderr
+  - mkdir -p build/logs
+  - ./cake test CakeResque AllCakeResque --stderr --configuration ../Plugin/CakeResque/Test/phpunit.xml
+
+after_script:
+  - php ../Plugin/CakeResque/vendor/bin/coveralls -v

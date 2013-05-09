@@ -3,7 +3,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON("package.json"),
         clean: {
-            coverage: ['Test/Coverage']
+            coverage: ['build']
         },
         shell: {
             caketest: {
@@ -13,12 +13,12 @@ module.exports = function(grunt) {
                 }
             },
             coverage: {
-                command: '../../Console/cake test CakeResque AllCakeResque --configuration Test/phpunit.xml --coverage-html Test/Coverage'
+                command: '../../Console/cake test CakeResque AllCakeResque --configuration Test/phpunit.xml'
             }
         },
         watch: {
           scripts: {
-            files: ['Console/**/*.php', 'Test/**/*.php'],
+            files: ['Console/**/*.php', 'Test/**/*.php', 'Lib/*.php'],
             tasks: ['caketest'],
             options: {
               nospawn: true
