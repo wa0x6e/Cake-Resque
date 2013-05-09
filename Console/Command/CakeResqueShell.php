@@ -365,10 +365,6 @@ class CakeResqueShell extends Shell {
 			return false;
 		}
 
-		$jobQueue = $this->args[1];
-		$jobClass = $this->args[2];
-		$params = explode(',', $this->args[3]);
-
 		$result = call_user_func_array(
 			self::$cakeResque . '::enqueueAt',
 			array($this->args[0], $this->args[1], $this->args[2], explode(',', $this->args[3]), (isset($this->args[4]) ? (bool)$this->args[4] : false))
@@ -953,6 +949,7 @@ class CakeResqueShell extends Shell {
 
 		$this->out("\n");
 
+		$count = array();
 		$this->out('<info>' . __d('cake_resque', 'Queues Stats') . '</info>');
 		for ($i = count($queues) - 1; $i >= 0; --$i) {
 			$count[$queues[$i]] = Resque::Redis()->llen('queue:' . $queues[$i]);
@@ -1110,12 +1107,12 @@ class CakeResqueShell extends Shell {
 			return $this->out(__d('cake_resque', 'There is no queues to clear'));
 		}
 
+		$queueIndex = array();
 		if (isset($this->args[0])) {
 			if (in_array($this->args[0], $queues)) {
 				$queueIndex[] = array_search($this->args[0], $queues) + 1;
 			}
 		} else {
-			$queueIndex = array();
 			if (!$this->params['all'] && count($queues) > 1) {
 				$this->out(__d('cake_resque', 'Queues list') . ':');
 				$i = 1;
@@ -1146,7 +1143,6 @@ class CakeResqueShell extends Shell {
 
 			$this->out(__d('cake_resque', 'Clearing %s ... ', $queues[$index - 1]), 0);
 
-			$output = array();
 			$code = Resque::Redis()->ltrim('queue:' . $queues[$index - 1], 1, 0);
 
 			if ($code) {
