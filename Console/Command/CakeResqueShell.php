@@ -637,7 +637,7 @@ class CakeResqueShell extends Shell {
 				$i = 1;
 				foreach ($workers as $worker) {
 					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-						CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started'))));
+						CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker))));
 				}
 
 				$options = range(1, $i - 1);
@@ -707,7 +707,7 @@ class CakeResqueShell extends Shell {
 
 		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
+					CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker)));
 		};
 
 		$successCallback = function ($worker) {
@@ -746,16 +746,23 @@ class CakeResqueShell extends Shell {
 
 		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
+					CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker)));
 		};
 
 		$successCallback = function ($worker) use ($ResqueStatus) {
 			$ResqueStatus->setPausedWorker((string)$worker);
 		};
 
+		// Compute list of pause workers
+		$activeWorkers = call_user_func(self::$cakeResque . '::getWorkers');
+		foreach ($activeWorkers as &$worker) {
+			$worker = (string)$worker;
+		}
+		$pausedWorkers = $this->ResqueStatus->getPausedWorker();
+
 		return $this->_sendSignal(
 			__d('cake_resque', 'Pausing workers'),
-			call_user_func(self::$cakeResque . '::getWorkers'),
+			array_diff($activeWorkers, $pausedWorkers),
 			__d('cake_resque', 'There is no active workers to pause ...'),
 			__d('cake_resque', 'Active workers list'),
 			__d('cake_resque', 'Pause all workers'),
@@ -786,7 +793,7 @@ class CakeResqueShell extends Shell {
 
 		$listItemFormatter = function ($worker, $i) use ($ResqueStatus) {
 			return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-					CakeTime::timeAgoInWords(Resque::Redis()->get('worker:' . $worker . ':started')));
+					CakeTime::timeAgoInWords(call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker)));
 		};
 
 		$successCallback = function ($worker) use ($ResqueStatus) {
@@ -974,7 +981,7 @@ class CakeResqueShell extends Shell {
 					continue;
 				}
 				$this->out("\t* <bold>" . (string)$worker . '</bold>' . (in_array((string)$worker, $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . ')</warning>' : ''));
-				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
+				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker));
 				$this->out("\t   - " . __d('cake_resque', 'Processed Jobs') . " : " . $worker->getStat('processed'));
 				$worker->getStat('failed') == 0
 					? $this->out("\t   - " . __d('cake_resque', 'Failed Jobs') . "    : " . $worker->getStat('failed'))
@@ -989,7 +996,7 @@ class CakeResqueShell extends Shell {
 			foreach ($schedulerWorkers as $worker) {
 				$schedulerWorker = new ResqueScheduler\ResqueScheduler();
 				$delayedJobCount = $schedulerWorker->getDelayedQueueScheduleSize();
-				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . Resque::Redis()->get('worker:' . $worker . ':started'));
+				$this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(self::$cakeResque . '::getWorkerStartDate', $worker));
 				$this->out("\t   - " . __d('cake_resque', 'Delayed Jobs') . "   : " . $delayedJobCount);
 
 				if ($delayedJobCount > 0) {

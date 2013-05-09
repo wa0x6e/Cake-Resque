@@ -342,6 +342,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+		$this->ResqueStatus->expects($this->any())->method('getPausedWorker')->will($this->returnValue(array()));
 
 		$this->Shell->expects($this->exactly(3))->method('out');
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
@@ -359,6 +360,8 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename")));
+		$this->ResqueStatus->expects($this->any())->method('getPausedWorker')->will($this->returnValue(array()));
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Pausing 956 ...'));
 		$this->Shell->expects($this->at(3))->method('out')->with($this->matchesRegularExpression('/done/i'));
@@ -376,6 +379,8 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
+		$this->ResqueStatus->expects($this->any())->method('getPausedWorker')->will($this->returnValue(array()));
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Active workers list'));
 		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:956:queuename'));
@@ -399,9 +404,28 @@ class CakeResqueShellTest extends CakeTestCase
 	public function testPauseWorkerWhenThereIsAlreadySomePausedWorkers() {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
-		//$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
+
+		$activeWorkers = array("host:100:queuename", "host:900:queuename");
+		$pausedWorkers = array("host:600:queuename", "host:300:queuename");
+
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue($activeWorkers));
+		$this->ResqueStatus->expects($this->any())->method('getPausedWorker')->will($this->returnValue($pausedWorkers));
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Active workers list'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:100:queuename'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:900:queuename'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
+
+		$this->Shell->expects($this->once())->method('in')->will($this->returnValue(2));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Pausing 900 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+
+		$this->ResqueStatus->expects($this->exactly(1))->method('setPausedWorker')->with('host:900:queuename');
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->pause();
 	}
 
 /**
@@ -411,6 +435,8 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
+		$this->ResqueStatus->expects($this->any())->method('getPausedWorker')->will($this->returnValue(array()));
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
 
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Pausing 956 ...'));
@@ -431,6 +457,8 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
+		$this->ResqueStatus->expects($this->any())->method('getPausedWorker')->will($this->returnValue(array()));
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/pausing/i'));
 
 		$this->Shell->expects($this->once())->method('in')->will($this->returnValue("all"));
@@ -1136,6 +1164,169 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell->params['all'] = false;
 		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalWithMultipleWorkersWithAllOptions() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$workers = array("host:100:queue", "host:101:queue");
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG');
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Happy doing 100 ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('Happy doing 101 ...'));
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(6))->method('out');
+
+		$this->Shell->params['all'] = true;
+		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalWithMultipleWorkersByChoosingAllOption() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$workers = array("host:100:queue", "host:101:queue");
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG');
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains($args[3]));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('>> ' . $workers[0]));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('>> ' . $workers[1]));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - ' . $args[4]));
+
+		$this->Shell->expects($this->once())->method('in')->with($args[5] . ': ')->will($this->returnValue('all'));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Happy doing 100 ...'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('Happy doing 101 ...'));
+		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(10))->method('out');
+
+		$this->Shell->params['all'] = false;
+		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalWithOnlyOneWorkers() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$workers = array("host:100:queue");
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG');
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Happy doing 100 ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(4))->method('out');
+
+		$this->Shell->params['all'] = false;
+		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalThatFail() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$workers = array("host:100:queue");
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG');
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$errorMessage = 'An error happened';
+
+		$out = $this->getMock('ConsoleOutput', array(), array(), '', false);
+		$in = $this->getMock('ConsoleInput', array(), array(), '', false);
+
+		$this->CakeResque = $this->getMockClass(
+			'CakeResque',
+			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers', 'getQueues')
+		);
+
+		$shell = $this->getMock(
+			'CakeResqueShell',
+			array('in', 'out', 'hr', '_kill', '_validate', '_tail'),
+			array($out, $out, $in)
+		);
+
+		$shell->ResqueStatus = $this->ResqueStatus = $this->getMock(
+			'ResqueStatus',
+			array('getPausedWorker', 'clearWorker', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker', 'isRunningSchedulerWorker', 'getWorkers'));
+
+		$shell->expects($this->once())->method('_kill')->will($this->returnValue(array('code' => 1, 'message' => $errorMessage)));
+
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+		//$shell->expects($this->at(1))->method('out')->with($this->stringContains($errorMessage));
+		//$shell->expects($this->at(3))->method('out')->with($this->stringContains('error'));
+		//$shell->expects($this->exactly(4))->method('out');
+
+		$shell->params['all'] = false;
+		$method->invoke($shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+		$this->markTestIncomplete('This test has not been implemented yet.');
 	}
 
 /**

@@ -210,4 +210,7 @@ class CakeResque
 		return Resque::Redis()->smembers('queues');
 	}
 
+	public static function getWorkerStartDate($worker) {
+		return Resque::Redis()->get('worker:' . $worker . ':started');
+	}
 }
