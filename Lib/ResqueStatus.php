@@ -80,10 +80,6 @@ class ResqueStatus
  * @return boolean        True if the scheduler worker is already running
  */
 	public function isRunningSchedulerWorker($check = false) {
-		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->debug(__d('cake_resque', 'Checking if the scheduler worker is running'));
-		}
-
 		if ($check) {
 			$this->unregisterSchedulerWorker();
 			return $this->registerSchedulerWorker();
@@ -107,16 +103,8 @@ class ResqueStatus
  * @return array An array of settings, by worker
  */
 	public function getWorkers() {
-		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->debug(__d('cake_resque', 'Retrieving list of started workers'));
-		}
-
 		$listLength = $this->redis->llen('ResqueWorker');
 		$workers = $this->redis->lrange('ResqueWorker', 0, $listLength - 1);
-
-		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' started workers'));
-		}
 
 		$temp = array();
 		foreach ($workers as $worker) {
@@ -160,17 +148,7 @@ class ResqueStatus
  * @return  array of workers name
  */
 	public function getPausedWorker() {
-		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->debug(__d('cake_resque', 'Retrieving list of paused workers'));
-		}
-
-		$workers = (array)$this->redis->smembers('PausedWorker');
-
-		if (isset($this->params['debug']) && $this->params['debug']) {
-			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' paused workers'));
-		}
-
-		return $workers;
+		return (array)$this->redis->smembers('PausedWorker');
 	}
 
 }
