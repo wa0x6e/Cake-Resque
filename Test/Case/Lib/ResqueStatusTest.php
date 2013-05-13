@@ -25,8 +25,7 @@
  */
 
 App::uses('ResqueStatus', 'CakeResque.Lib');
-class ResqueStatusTest extends CakeTestCase
-{
+class ResqueStatusTest extends CakeTestCase {
 
 	public function setUp() {
 		parent::setUp();
@@ -207,7 +206,7 @@ class ResqueStatusTest extends CakeTestCase
 		$this->redis->set(ResqueStatus::$workerStatusPrefix, 'one');
 		$this->redis->set(ResqueStatus::$pausedWorkerKeyPrefix, 'two');
 
-		$pausedWorkers = $this->ResqueStatus->clearWorkers();
+		$this->ResqueStatus->clearWorkers();
 
 		$this->assertFalse($this->redis->exists(ResqueStatus::$workerStatusPrefix));
 		$this->assertFalse($this->redis->exists(ResqueStatus::$pausedWorkerKeyPrefix));
@@ -216,6 +215,10 @@ class ResqueStatusTest extends CakeTestCase
 }
 
 class Worker {
+
+	public $name;
+
+	public $interval;
 
 	public function __construct($name, $interval) {
 		$this->name = $name;
