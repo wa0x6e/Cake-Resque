@@ -30,6 +30,7 @@ class AllCakeResqueTest extends CakeTestSuite
 		$suite = new CakeTestSuite('All model tests');
 		$suite->addTestDirectory(__DIR__ . DS . 'Lib');
 		$suite->addTestDirectory(__DIR__ . DS . 'Console' . DS . 'Command');
+		$suite->addTestDirectory(__DIR__ . DS . 'Config');
 		return $suite;
 	}
 }

@@ -193,23 +193,46 @@ class CakeResque
 		return $r;
 	}
 
+/**
+ * @codeCoverageIgnore
+ * @param  [type] $jobId [description]
+ * @return [type]        [description]
+ */
 	public static function getJobStatus($jobId) {
 		$status = new Resque_Job_Status($jobId);
 		return $status->get();
 	}
 
+/**
+ * @codeCoverageIgnore
+ * @param  [type] $jobId [description]
+ * @return [type]        [description]
+ */
 	public static function getFailedJobLog($jobId) {
 		return Resque_Failure_Redis::get($jobId);
 	}
 
+/**
+ * @codeCoverageIgnore
+ * @return [type] [description]
+ */
 	public static function getWorkers() {
 		return (array)Resque_Worker::all();
 	}
 
+/**
+ * @codeCoverageIgnore
+ * @return [type] [description]
+ */
 	public static function getQueues() {
 		return Resque::Redis()->smembers('queues');
 	}
 
+/**
+ * @codeCoverageIgnore
+ * @param  [type] $worker [description]
+ * @return [type]         [description]
+ */
 	public static function getWorkerStartDate($worker) {
 		return Resque::Redis()->get('worker:' . $worker . ':started');
 	}

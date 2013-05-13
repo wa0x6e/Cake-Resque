@@ -528,7 +528,12 @@ class CakeResqueShell extends Shell {
 			return $this->out('<error>' . __d('cake_resque', 'Scheduler Worker is not enabled') . '</error>');
 		}
 
-		if ($this->ResqueStatus->isRunningSchedulerWorker(true)) {
+		// Some cleaning, in case previous scheduler worker
+		// didn't stop properly
+		$this->ResqueStatus->unregisterSchedulerWorker();
+		$this->ResqueStatus->registerSchedulerWorker(CakeResque::getWorkers());
+
+		if ($this->ResqueStatus->isRunningSchedulerWorker()) {
 			return $this->out('<warning>' . __d('cake_resque', 'The scheduler worker is already running') . '</warning>');
 		}
 
@@ -657,7 +662,7 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				if ($this->ResqueStatus->isSchedulerWorker($worker)) {
+				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
 					$this->ResqueStatus->unregisterSchedulerWorker();
 					$this->out(__d('cake_resque', 'Killing the Scheduler Worker ... '), 0);
 				} else {
@@ -678,7 +683,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		if ($shutdown) {
-			$this->ResqueStatus->clearWorker();
+			$this->ResqueStatus->clearWorkers();
 		}
 
 		$this->out('');
@@ -854,7 +859,7 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				if ($this->ResqueStatus->isSchedulerWorker($worker)) {
+				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
 					$this->out($schedulerWorkerActionMessage, 0);
 				} else {
 					$this->out($workerActionMessage($pid), 0);
@@ -973,7 +978,7 @@ class CakeResqueShell extends Shell {
 		if (!empty($workers)) {
 			$this->out("\t<info>" . strtoupper(__d('cake_resque', 'regular workers')) . "</info>");
 			foreach ($workers as $worker) {
-				if ($this->ResqueStatus->isSchedulerWorker($worker)) {
+				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
 					$schedulerWorkers[] = $worker;
 					continue;
 				}
@@ -1157,8 +1162,8 @@ class CakeResqueShell extends Shell {
  * Validate command line options
  * And print the errors
  *
- * @since 1.0
- * @return true if all options are valid
+ * @since 	1.0
+ * @return 	true if all options are valid
  */
 	protected function _validate($args = null) {
 		$this->_runtime = ($args === null) ? $this->params : $args;
@@ -1251,27 +1256,33 @@ class CakeResqueShell extends Shell {
  * Maintain backward compatibility, as newer version of
  * php-resque has that file in another location
  *
- * @since  3.3.2
- * @param  String $base Php-resque folder path
- * @return String Relative path to php-resque executable file
+ * @since  	3.3.2
+ * @param  	String 	$base 	Php-resque folder path
+ * @return 	String 			Relative path to php-resque executable file
  */
 	private function __getResqueBinFile($base) {
-		if (file_exists($base . DS . 'bin' . DS . 'resque')) {
-			return '.' . DS . 'bin' . DS . 'resque';
-		} elseif (file_exists($base . 'bin' . DS . 'resque.php')) {
-			return '.' . DS . 'bin' . DS . 'resque.php';
-		} else {
-			return '.' . DS . 'resque.php';
+		$paths = array(
+			'bin' . DS . 'resque',
+			'bin' . DS . 'resque.php',
+			'resque.php'
+		);
+
+		foreach ($paths as $key => $path) {
+			if (file_exists($base . DS . $path)) {
+				return '.' . DS . $path;
+			}
 		}
+		return '.' . DS . 'resque.php';
 	}
 
 /**
  * Return kill command syntax, intended to be used with exec().
  *
- * @since  3.3.4
- * @param string Kill Signal
- * @param string Process id
- * @return array
+ * @since  	3.3.4
+ * @codeCoverageIgnore
+ * @param 	string 	Kill Signal
+ * @param 	string 	Process id
+ * @return 	array
  */
 	protected function _kill($signal, $pid) {
 		$output = array();
@@ -1282,6 +1293,7 @@ class CakeResqueShell extends Shell {
 /**
  *
  * @since 3.3.6
+ * @codeCoverageIgnore
  * @param  String $path Path to the file to tail
  */
 	protected function _tail($path) {

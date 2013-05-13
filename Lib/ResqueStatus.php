@@ -2,7 +2,7 @@
 /**
  * ResqueStatus File
  *
- * Proxy class to Resque
+ * Saving the workers statuses
  *
  * PHP version 5
  *
@@ -21,38 +21,51 @@
 /**
  * ResqueStatus Class
  *
- * Saving the workers status
+ * Saving the workers statuses
  */
 class ResqueStatus
 {
 
-	public $redis = null;
+	public static $workerStatusPrefix = 'ResqueWorker';
+
+	public static $schedulerWorkerStatusPrefix = 'ResqueSchedulerWorker';
+
+	public static $pausedWorkerKeyPrefix = 'PausedWorker';
+
+/**
+ * Redis instance
+ * @var Resque_Redis|Redis
+ */
+	protected $_redis = null;
 
 	public function __construct($redis) {
-		$this->redis = $redis;
+		$this->_redis = $redis;
 	}
 
 /**
  * Save the workers arguments
  *
  * Used when restarting the worker
+ *
+ * @param  array $args Worker settings
+ * @return  boolean True if the worker was saved
  */
 	public function addWorker($args) {
 		unset($args['debug']);
-		$this->redis->rpush('ResqueWorker', serialize($args));
+		return $this->_redis->rpush(self::$workerStatusPrefix, serialize($args)) > 0;
 	}
 
 /**
  * Register a Scheduler Worker
  *
- * @since  2.3.0
- * @return boolean True if a Scheduler worker is found among the list of active workers
+ * @since  	2.3.0
+ * @params 	array 	$workers 	List of active workers
+ * @return 	boolean 			True if a Scheduler worker is found among the list of active workers
  */
-	public function registerSchedulerWorker() {
-		$workers = Resque_Worker::all();
+	public function registerSchedulerWorker($workers) {
 		foreach ($workers as $worker) {
-			if (array_pop(explode(':', $worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
-				$this->redis->set('ResqueSchedulerWorker', (string)$worker);
+			if (array_pop(explode(':', (string)$worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
+				$this->_redis->set(self::$schedulerWorkerStatusPrefix, (string)$worker);
 				return true;
 			}
 		}
@@ -62,15 +75,11 @@ class ResqueStatus
 /**
  * Test if a given worker is a scheduler worker
  *
- * @param 	Worker|string	$worker	Worker to test
  * @since 	2.3.0
- * @return 	boolean True if the worker is a scheduler worker
+ * @param 	Worker|string	$worker	Worker to test
+ * @return 	boolean 				True if the worker is a scheduler worker
  */
 	public function isSchedulerWorker($worker) {
-		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
-			return false;
-		}
-
 		return array_pop(explode(':', (string)$worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME;
 	}
 
@@ -80,11 +89,7 @@ class ResqueStatus
  * @return boolean        True if the scheduler worker is already running
  */
 	public function isRunningSchedulerWorker($check = false) {
-		if ($check) {
-			$this->unregisterSchedulerWorker();
-			return $this->registerSchedulerWorker();
-		}
-		return $this->redis->exists('ResqueSchedulerWorker');
+		return $this->_redis->exists(self::$schedulerWorkerStatusPrefix);
 	}
 
 /**
@@ -94,7 +99,7 @@ class ResqueStatus
  * @return boolean True if the scheduler worker existed and was successfully unregistered
  */
 	public function unregisterSchedulerWorker() {
-		return $this->redis->del('ResqueSchedulerWorker') > 0;
+		return $this->_redis->del(self::$schedulerWorkerStatusPrefix) > 0;
 	}
 
 /**
@@ -103,8 +108,8 @@ class ResqueStatus
  * @return array An array of settings, by worker
  */
 	public function getWorkers() {
-		$listLength = $this->redis->llen('ResqueWorker');
-		$workers = $this->redis->lrange('ResqueWorker', 0, $listLength - 1);
+		$listLength = $this->_redis->llen(self::$workerStatusPrefix);
+		$workers = $this->_redis->lrange(self::$workerStatusPrefix, 0, $listLength - 1);
 
 		$temp = array();
 		foreach ($workers as $worker) {
@@ -116,9 +121,9 @@ class ResqueStatus
 /**
  * Clear all workers saved arguments
  */
-	public function clearWorker() {
-		$this->redis->del('ResqueWorker');
-		$this->redis->del('PausedWorker');
+	public function clearWorkers() {
+		$this->_redis->del(self::$workerStatusPrefix);
+		$this->_redis->del(self::$pausedWorkerKeyPrefix);
 	}
 
 /**
@@ -128,7 +133,7 @@ class ResqueStatus
  * @param string $workerName Name of the paused worker
  */
 	public function setPausedWorker($workerName) {
-		$this->redis->sadd('PausedWorker', $workerName);
+		$this->_redis->sadd(self::$pausedWorkerKeyPrefix, $workerName);
 	}
 
 /**
@@ -138,17 +143,17 @@ class ResqueStatus
  * @param string $workerName Name of the worker
  */
 	public function setActiveWorker($workerName) {
-		$this->redis->srem('PausedWorker', $workerName);
+		$this->_redis->srem(self::$pausedWorkerKeyPrefix, $workerName);
 	}
 
 /**
  * Return a list of paused workers
  *
  * @since 2.0.0
- * @return  array of workers name
+ * @return  array 	An array of paused workers' name
  */
 	public function getPausedWorker() {
-		return (array)$this->redis->smembers('PausedWorker');
+		return (array)$this->_redis->smembers(self::$pausedWorkerKeyPrefix);
 	}
 
 }

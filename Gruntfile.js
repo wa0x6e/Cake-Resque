@@ -18,7 +18,7 @@ module.exports = function(grunt) {
         },
         watch: {
           scripts: {
-            files: ['Console/**/*.php', 'Test/**/*.php', 'Lib/*.php'],
+            files: ['Console/**/*.php', 'Test/Case/**/*.php', 'Lib/*.php'],
             tasks: ['caketest'],
             options: {
               nospawn: true
