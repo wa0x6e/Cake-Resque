@@ -186,6 +186,9 @@ class ResqueStatusTest extends CakeTestCase
 
 		$pausedWorkers = $this->ResqueStatus->getPausedWorker();
 
+		sort($pausedWorkers);
+		sort($workers);
+
 		$this->assertEquals($workers, $pausedWorkers);
 	}
 

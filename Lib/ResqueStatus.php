@@ -64,7 +64,8 @@ class ResqueStatus
  */
 	public function registerSchedulerWorker($workers) {
 		foreach ($workers as $worker) {
-			if (array_pop(explode(':', (string)$worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
+			$tokens = explode(':', (string)$worker);
+			if (array_pop($tokens) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
 				$this->_redis->set(self::$schedulerWorkerStatusPrefix, (string)$worker);
 				return true;
 			}
@@ -80,7 +81,8 @@ class ResqueStatus
  * @return 	boolean 				True if the worker is a scheduler worker
  */
 	public function isSchedulerWorker($worker) {
-		return array_pop(explode(':', (string)$worker)) === ResqueScheduler\ResqueScheduler::QUEUE_NAME;
+		$tokens = explode(':', (string)$worker);
+		return array_pop($tokens) === ResqueScheduler\ResqueScheduler::QUEUE_NAME;
 	}
 
 /**
