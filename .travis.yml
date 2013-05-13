@@ -19,6 +19,7 @@ before_script:
   - make && make install
   - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ../
+  - rm -R phpredis-2.2.3/
   - git clone git://github.com/cakephp/cakephp ../cakephp && cd ../cakephp && git checkout $CAKE_VERSION
   - cp -R ../Cake-Resque app/Plugin/CakeResque
   - chmod -R 777 ../cakephp/app/tmp
