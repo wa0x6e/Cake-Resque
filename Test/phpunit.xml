@@ -5,6 +5,8 @@
             <exclude>
                 <directory suffix=".php">../vendor/</directory>
                 <directory suffix=".php">./</directory>
+                <directory suffix=".php">../Config/</directory>
+                <file>../Lib/CakeResqueBootstrap.php</file>
             </exclude>
         </whitelist>
     </filter>
