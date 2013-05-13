@@ -181,6 +181,8 @@ class CakeResqueTest extends CakeTestCase
 	public function testEnqueueInWithSuccessWithArgsStringValue() {
 		$id = md5(time());
 
+		$time = time();
+
 		$ResqueScheduler = $this->ResqueScheduler;
 		$ResqueScheduler::staticExpects($this->any())
 			->method('enqueueIn')
@@ -196,7 +198,7 @@ class CakeResqueTest extends CakeTestCase
 
 		$this->assertEqual($id, $response);
 		$this->_testLogs(CakeResque::$logs[$queue][0], $id);
-		$this->assertEqual(time() + $in, CakeResque::$logs[$queue][0]['time']);
+		$this->assertEqual($time + $in, CakeResque::$logs[$queue][0]['time']);
 	}
 
 	public function testEnqueueInReturnFalseWhenDisabled() {
