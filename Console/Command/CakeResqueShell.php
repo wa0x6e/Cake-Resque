@@ -485,7 +485,7 @@ class CakeResqueShell extends Shell {
 		$pidFile = App::pluginPath('CakeResque') . 'tmp' . DS . str_replace('.', '', microtime(true));
 		$count = $this->_runtime['workers'];
 
-		if ($this->_runtime['debug']) {
+		if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
 			$this->debug(__d('cake_resque', 'Will start ' . $count . ' workers'));
 		}
 
@@ -518,15 +518,15 @@ class CakeResqueShell extends Shell {
 				"2>&1\" >/dev/null 2>&1 &"
 			));
 
-			if ($this->_runtime['debug']) {
+			if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
 				$this->debug(__d('cake_resque', 'Starting worker (' . $i . ')'));
 			}
 
-			if ($this->_runtime['debug']) {
+			if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
 				$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
 			}
 
-			passthru($cmd);
+			$this->_exec($cmd);
 
 			$success = false;
 			$attempt = 7;
@@ -537,19 +537,19 @@ class CakeResqueShell extends Shell {
 			while ($attempt-- > 0) {
 				for ($j = 0; $j < 3;$j++) {
 					$this->out(".", 0);
-					usleep(150000);
+					usleep(100000);
 				}
-				if (file_exists($pidFile) && false !== $pid = file_get_contents($pidFile)) {
+				if (false !== $pid = $this->_checkStartedWorker($pidFile)) {
 
 					$success = true;
 					$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>');
 
-					if ($this->_runtime['debug']) {
+					if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
 						$this->debug(__d('cake_resque', 'Registering worker #' . $pid . ' to list of active workers'));
 					}
 					unset($this->_runtime['debug']);
 					if ($scheduler) {
-						$this->registerSchedulerWorker($pid);
+						$this->ResqueStatus->registerSchedulerWorker($pid);
 					}
 					$this->ResqueStatus->addWorker($pid, $this->_runtime);
 
@@ -642,7 +642,7 @@ class CakeResqueShell extends Shell {
 	}
 
 /**
- * Clean up worker *
+ * Clean up worker
  * On supported system, will ask the user to choose the worker to clean up, from a list of worker,
  * if more than one worker is running, or if --all is not passed
  *
@@ -1253,5 +1253,29 @@ class CakeResqueShell extends Shell {
  */
 	protected function _tail($path) {
 		passthru('tail -f ' . escapeshellarg($path));
+	}
+
+/**
+ * @since 3.3.6
+ * @codeCoverageIgnore
+ * @param  String $cmd Command to execute
+ */
+	protected function _exec($cmd) {
+		passthru($cmd);
+	}
+
+/**
+ * @since 3.3.6
+ * @codeCoverageIgnore
+ * @param  String $pidFile 	Path to the file containing the worker PID
+ * @return bool|int 		Worker PID if worker is started, else false
+ */
+	protected function _checkStartedWorker($pidFile) {
+		$pid = false;
+		if (file_exists($pidFile) && false !== $pid = file_get_contents($pidFile)) {
+			unlink($pidFile);
+			return (int)$pid;
+		}
+		return false;
 	}
 }

@@ -19,11 +19,11 @@ class CakeResqueShellTest extends CakeTestCase
 			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers', 'getQueues')
 		);
 
-		$this->ResqueStatus = $this->getMock( 'ResqueStatus', array(), array(new stdClass()));
+		$this->ResqueStatus = $this->getMock('ResqueStatus', array(), array(new stdClass()));
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
-			array('in', 'out', 'hr', '_kill', '_validate', '_tail'),
+			array('in', 'out', 'hr', 'debug', '_kill', '_tail', '_exec', '_checkStartedWorker'),
 			array($out, $out, $in)
 		);
 
@@ -41,8 +41,9 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::debug
  */
 	public function testDebug() {
-		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('<success>[DEBUG] test string</success>'));
-		$this->Shell->debug('test string');
+		$shell = $this->getMock('CakeResqueShell', array('out'));
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains('<success>[DEBUG] test string</success>'));
+		$shell->debug('test string');
 	}
 
 /**
@@ -913,7 +914,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$shell->expects($this->once())->method('start')->with($this->equalTo(null), $this->isTrue());
 
 		Configure::write('CakeResque.Scheduler.enabled', true);
-		$shell->startscheduler(null, true);
+		$shell->startscheduler(null);
 	}
 
 /**
@@ -921,9 +922,25 @@ class CakeResqueShellTest extends CakeTestCase
  */
 	public function testStartScheduler() {
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+
+		$pid = rand(0, 100);
+
+		$this->ResqueStatus = $this->getMock(
+			'ResqueStatus',
+			array('isRunningSchedulerWorker', 'registerSchedulerWorker', 'addWorker'), array(new stdClass()));
+
+		$this->ResqueStatus->expects($this->once())->method('isRunningSchedulerWorker')->will($this->returnValue(false));
+		$this->ResqueStatus->expects($this->once())->method('registerSchedulerWorker')->with($this->equalTo($pid));
+		$this->ResqueStatus->expects($this->once())->method('addWorker');
+
+		$this->Shell->expects($this->once())->method('_exec')->will($this->returnValue(true));
+		$this->Shell->expects($this->once())->method('_checkStartedWorker')->will($this->returnValue($pid));
+
 
 		Configure::write('CakeResque.Scheduler.enabled', true);
+		$this->Shell->startup();
+		$this->Shell->ResqueStatus = $this->ResqueStatus;
+		$this->Shell->startscheduler();
 	}
 
 /**
@@ -932,12 +949,13 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::startscheduler
  */
 	public function testStartSchedulerWithInvalidArguments() {
-		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
-		$this->Shell->expects($this->once())->method('_validate')->will($this->returnValue(false));
-		$this->Shell->expects($this->once())->method('out');
+		$shell = $this->getMock('CakeResqueShell', array('in', 'out', 'hr', '_validate'));
+		$shell->ResqueStatus = $this->ResqueStatus;
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
+		$shell->expects($this->once())->method('_validate')->will($this->returnValue(false));
 
 		Configure::write('CakeResque.Scheduler.enabled', true);
-		$this->assertFalse($this->Shell->start(null, true));
+		$this->assertFalse($shell->start(null, true));
 	}
 
 /**
@@ -1013,7 +1031,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
-			array('in', 'out', 'hr', '_kill', 'start', 'startscheduler', 'stop'),
+			array('in', 'out', 'hr', 'debug', '_kill', 'start', 'startscheduler', 'stop'),
 			array($out, $out, $in)
 		);
 
@@ -1026,13 +1044,14 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Restarting workers'));
 		$this->Shell->expects($this->exactly(2))->method('out');
+		$this->Shell->expects($this->exactly(1))->method('debug');
 
 		$this->Shell->expects($this->exactly(2))->method('start');
 		$this->Shell->expects($this->once())->method('startscheduler');
 
 		Configure::write('CakeResque.Scheduler.enabled', false);
 
-		$this->Shell->params['debug'] = false;
+		$this->Shell->params['debug'] = true;
 		$this->Shell->restart();
 	}
 
@@ -1042,8 +1061,53 @@ class CakeResqueShellTest extends CakeTestCase
  * @covers CakeResqueShell::start
  */
 	public function testStart() {
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/creating/i'));
-		$this->markTestIncomplete('This test has not been implemented yet.');
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating worker'));
+
+		$this->Shell->expects($this->once())->method('_exec')->will($this->returnValue(true));
+		$this->Shell->expects($this->once())->method('_checkStartedWorker')->will($this->returnValue(true));
+
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('done'));
+
+		$this->Shell->startup();
+		$this->ResqueStatus = $this->getMock(
+			'ResqueStatus',
+			array('isRunningSchedulerWorker', 'addWorker'), array(new stdClass()));
+
+		$this->ResqueStatus->expects($this->once())->method('addWorker');
+		$this->Shell->ResqueStatus = $this->ResqueStatus;
+
+		$this->Shell->start();
+	}
+
+/**
+ * @covers CakeResqueShell::start
+ */
+	public function testStartMultipleWorker() {
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating worker'));
+
+		$this->Shell->expects($this->exactly(2))->method('_exec')->will($this->returnValue(true));
+		$this->Shell->expects($this->exactly(2))->method('_checkStartedWorker')->will($this->returnValue(true));
+
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('done'));
+
+		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(10))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(12))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(14))->method('out')->with($this->stringContains('done'));
+
+		$this->Shell->params = array('workers' => 2, 'debug' => false);
+
+		$this->Shell->startup();
+		$this->Shell->start();
 	}
 
 /**
