@@ -908,6 +908,17 @@ class CakeResqueShellTest extends CakeTestCase
 /**
  * @covers CakeResqueShell::startscheduler
  */
+	public function testStartSchedulerIsCallingStart() {
+		$shell = $this->getMock('CakeResqueShell', array('start'));
+		$shell->expects($this->once())->method('start')->with($this->equalTo(null), $this->isTrue());
+
+		Configure::write('CakeResque.Scheduler.enabled', true);
+		$shell->startscheduler(null, true);
+	}
+
+/**
+ * @covers CakeResqueShell::startscheduler
+ */
 	public function testStartScheduler() {
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
 		$this->markTestIncomplete('This test has not been implemented yet.');
@@ -926,7 +937,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->once())->method('out');
 
 		Configure::write('CakeResque.Scheduler.enabled', true);
-		$this->Shell->startscheduler();
+		$this->assertFalse($this->Shell->start(null, true));
 	}
 
 /**
@@ -939,7 +950,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->exactly(2))->method('out');
 
 		Configure::write('CakeResque.Scheduler.enabled', false);
-		$this->Shell->startscheduler();
+		$this->assertFalse($this->Shell->start(null, true));
 	}
 
 /**
@@ -954,7 +965,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->ResqueStatus->expects($this->once())->method('isRunningSchedulerWorker')->will($this->returnValue(true));
 
 		Configure::write('CakeResque.Scheduler.enabled', true);
-		$this->Shell->startscheduler();
+		$this->assertFalse($this->Shell->start(null, true));
 	}
 
 	// RESTART -------------------------------------------------------------------------------------------------

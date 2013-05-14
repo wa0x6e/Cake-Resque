@@ -79,21 +79,10 @@ class ResqueStatusTest extends CakeTestCase {
  * @covers ResqueStatus::registerSchedulerWorker
  */
 	public function testRegisterSchedulerWorker() {
-		$res = $this->ResqueStatus->registerSchedulerWorker((object)$this->workers);
+		$res = $this->ResqueStatus->registerSchedulerWorker(100);
 
 		$this->assertTrue($res);
-		$this->assertEquals('Three:' . ResqueScheduler\ResqueScheduler::QUEUE_NAME, $this->redis->get(ResqueStatus::$schedulerWorkerStatusPrefix));
-	}
-
-/**
- * @covers ResqueStatus::registerSchedulerWorker
- */
-	public function testRegisterSchedulerWorkerWhenThereIsNoSchedulerWorker() {
-		unset($this->workers[102]);
-		$res = $this->ResqueStatus->registerSchedulerWorker((object)$this->workers);
-
-		$this->assertFalse($res);
-		$this->assertFalse($this->redis->exists(ResqueStatus::$schedulerWorkerStatusPrefix));
+		$this->assertEquals(100, $this->redis->get(ResqueStatus::$schedulerWorkerStatusPrefix));
 	}
 
 /**
@@ -114,7 +103,8 @@ class ResqueStatusTest extends CakeTestCase {
  * @covers ResqueStatus::isRunningSchedulerWorker
  */
 	public function testIsRunningSchedulerWorker() {
-		$this->redis->set(ResqueStatus::$schedulerWorkerStatusPrefix, 'workerName');
+		$this->redis->set(ResqueStatus::$schedulerWorkerStatusPrefix, '100');
+		$this->redis->hSet(ResqueStatus::$workerStatusPrefix, 100, '');
 		$this->assertTrue($this->ResqueStatus->isRunningSchedulerWorker());
 	}
 

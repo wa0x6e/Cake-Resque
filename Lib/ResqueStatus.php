@@ -59,15 +59,8 @@ class ResqueStatus {
  * @params 	array 	$workers 	List of active workers
  * @return 	boolean 			True if a Scheduler worker is found among the list of active workers
  */
-	public function registerSchedulerWorker($workers) {
-		foreach ($workers as $worker) {
-			$tokens = explode(':', (string)$worker);
-			if (array_pop($tokens) === ResqueScheduler\ResqueScheduler::QUEUE_NAME) {
-				$this->_redis->set(self::$schedulerWorkerStatusPrefix, (string)$worker);
-				return true;
-			}
-		}
-		return false;
+	public function registerSchedulerWorker($pid) {
+		return $this->_redis->set(self::$schedulerWorkerStatusPrefix, $pid);
 	}
 
 /**
@@ -84,11 +77,22 @@ class ResqueStatus {
 
 /**
  * Check if the Scheduler Worker is already running
- * @param  boolean $check Check agains list of all active workers, in case the previous scheduler worker was not stopped properly
+ *
  * @return boolean        True if the scheduler worker is already running
  */
-	public function isRunningSchedulerWorker($check = false) {
-		return $this->_redis->exists(self::$schedulerWorkerStatusPrefix);
+	public function isRunningSchedulerWorker() {
+		$pids = $this->_redis->hKeys(self::$workerStatusPrefix);
+		$schedulerPid = $this->_redis->exists(self::$schedulerWorkerStatusPrefix);
+
+		if ($schedulerPid !== false) {
+			if (in_array($schedulerPid, $pids)) {
+				return true;
+			}
+			// Pid is outdated, remove it
+			$this->unregisterSchedulerWorker();
+			return false;
+		}
+		return false;
 	}
 
 /**
