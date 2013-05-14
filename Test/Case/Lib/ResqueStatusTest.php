@@ -41,9 +41,9 @@ class ResqueStatusTest extends CakeTestCase {
 		ResqueStatus::$pausedWorkerKeyPrefix . 'test_' . ResqueStatus::$pausedWorkerKeyPrefix;
 
 		$this->workers = array();
-		$this->workers[] = new Worker('One:queue5', 5);
-		$this->workers[] = new Worker('Two:queue1', 10);
-		$this->workers[] = new Worker('Three:' . ResqueScheduler\ResqueScheduler::QUEUE_NAME, 145);
+		$this->workers[100] = new Worker('One:queue5', 5);
+		$this->workers[101] = new Worker('Two:queue1', 10);
+		$this->workers[102] = new Worker('Three:' . ResqueScheduler\ResqueScheduler::QUEUE_NAME, 145);
 	}
 
 	public function tearDown() {
@@ -58,21 +58,21 @@ class ResqueStatusTest extends CakeTestCase {
  */
 	public function testAddWorker() {
 		$workers = array(
-			array('name' => 'WorkerZero'),
-			array('name' => 'workerOne', 'debug' => true)
+			"0125" => array('name' => 'WorkerZero'),
+			"6523" => array('name' => 'workerOne', 'debug' => true)
 		);
-		$this->redis->rpush(ResqueStatus::$workerStatusPrefix, serialize($workers[0]));
+		$this->redis->hSet(ResqueStatus::$workerStatusPrefix, "0125", serialize($workers["0125"]));
 
-		$res = $this->ResqueStatus->addWorker($workers[1]);
+		$res = $this->ResqueStatus->addWorker(6523, $workers["6523"]);
 
 		$this->assertTrue($res);
 
-		$this->assertEquals(2, $this->redis->lSize(ResqueStatus::$workerStatusPrefix));
-		$datas = $this->redis->lrange(ResqueStatus::$workerStatusPrefix, 0, 2);
+		$this->assertEquals(2, $this->redis->hLen(ResqueStatus::$workerStatusPrefix));
+		$datas = $this->redis->hGetAll(ResqueStatus::$workerStatusPrefix);
 
-		$this->assertEquals($workers[0], unserialize($datas[0]));
+		$this->assertEquals($workers["0125"], unserialize($datas["0125"]));
 		unset($workers[1]['debug']);
-		$this->assertEquals($workers[1], unserialize($datas[1]));
+		$this->assertEquals($workers["6523"], unserialize($datas["6523"]));
 	}
 
 /**
@@ -89,7 +89,7 @@ class ResqueStatusTest extends CakeTestCase {
  * @covers ResqueStatus::registerSchedulerWorker
  */
 	public function testRegisterSchedulerWorkerWhenThereIsNoSchedulerWorker() {
-		unset($this->workers[2]);
+		unset($this->workers[102]);
 		$res = $this->ResqueStatus->registerSchedulerWorker((object)$this->workers);
 
 		$this->assertFalse($res);
@@ -100,14 +100,14 @@ class ResqueStatusTest extends CakeTestCase {
  * @covers ResqueStatus::isSchedulerWorker
  */
 	public function testIsSchedulerWoker() {
-		$this->assertTrue($this->ResqueStatus->isSchedulerWorker($this->workers[2]));
+		$this->assertTrue($this->ResqueStatus->isSchedulerWorker($this->workers[102]));
 	}
 
 /**
  * @covers ResqueStatus::isSchedulerWorker
  */
 	public function testIsSchedulerWokerWhenFalse() {
-		$this->assertFalse($this->ResqueStatus->isSchedulerWorker($this->workers[0]));
+		$this->assertFalse($this->ResqueStatus->isSchedulerWorker($this->workers[100]));
 	}
 
 /**
@@ -140,8 +140,8 @@ class ResqueStatusTest extends CakeTestCase {
  * @covers ResqueStatus::getWorkers
  */
 	public function testGetWorkers() {
-		foreach ($this->workers as $worker) {
-			$this->redis->rpush(ResqueStatus::$workerStatusPrefix, serialize($worker));
+		foreach ($this->workers as $pid => $worker) {
+			$this->redis->hSet(ResqueStatus::$workerStatusPrefix, $pid, serialize($worker));
 		}
 
 		$this->assertEquals($this->workers, $this->ResqueStatus->getWorkers());
@@ -159,7 +159,7 @@ class ResqueStatusTest extends CakeTestCase {
 	}
 
 /**
- * @covers ResqueStatus::setActiveWorker
+ * @covers ResqueStatus::setPausedWorker
  */
 	public function testSetActiveWorker() {
 		$workers = array('workerOne', 'workerTwo');
@@ -167,7 +167,7 @@ class ResqueStatusTest extends CakeTestCase {
 		$this->redis->sAdd(ResqueStatus::$pausedWorkerKeyPrefix, $workers[0]);
 		$this->redis->sAdd(ResqueStatus::$pausedWorkerKeyPrefix, $workers[1]);
 
-		$this->ResqueStatus->setActiveWorker($workers[0]);
+		$this->ResqueStatus->setPausedWorker($workers[0], false);
 
 		$pausedWorkers = $this->redis->sMembers(ResqueStatus::$pausedWorkerKeyPrefix);
 		$this->assertCount(1, $pausedWorkers);
@@ -197,6 +197,22 @@ class ResqueStatusTest extends CakeTestCase {
  */
 	public function testGetPausedWorkerWhenThereIsNoPausedWorkers() {
 		$this->assertEquals(array(), $this->ResqueStatus->getPausedWorker());
+	}
+
+/**
+ * @covers ResqueStatus::removeWorker
+ */
+	public function testRemoveWorker() {
+		foreach ($this->workers as $pid => $worker) {
+			$this->redis->hSet(ResqueStatus::$workerStatusPrefix, $pid, serialize($worker));
+		}
+
+		$this->ResqueStatus->removeWorker(100);
+
+		$w = $this->workers;
+		unset($w[100]);
+
+		$this->assertEquals(array_keys($w), $this->redis->hKeys(ResqueStatus::$workerStatusPrefix));
 	}
 
 /**

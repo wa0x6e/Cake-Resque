@@ -486,7 +486,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no paused workers to resume'));
 
 		$this->ResqueStatus->expects($this->once())->method('getPausedWorker')->will($this->returnValue(array()));
-		$this->ResqueStatus->expects($this->never())->method('setActiveWorker');
+		$this->ResqueStatus->expects($this->never())->method('setPausedWorker');
 
 		$this->Shell->resume();
 	}
@@ -504,7 +504,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
 
 		$this->ResqueStatus->expects($this->once())->method('getPausedWorker')->will($this->returnValue(array("host:123:queuename")));
-		$this->ResqueStatus->expects($this->once())->method('setActiveWorker');
+		$this->ResqueStatus->expects($this->once())->method('setPausedWorker');
 
 		$this->Shell->params['all'] = false;
 		$this->Shell->resume();
@@ -553,7 +553,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('Resuming 101 ...'));
 		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
 
-		$this->ResqueStatus->expects($this->exactly(2))->method('setActiveWorker');
+		$this->ResqueStatus->expects($this->exactly(2))->method('setPausedWorker');
 
 		$this->Shell->params['all'] = true;
 		$this->Shell->resume();
@@ -579,7 +579,7 @@ class CakeResqueShellTest extends CakeTestCase
 		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('Resuming 101 ...'));
 		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
 
-		$this->ResqueStatus->expects($this->exactly(2))->method('setActiveWorker');
+		$this->ResqueStatus->expects($this->exactly(2))->method('setPausedWorker');
 
 		$this->Shell->params['all'] = false;
 		$this->Shell->resume();
@@ -1313,7 +1313,7 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$shell->ResqueStatus = $this->ResqueStatus = $this->getMock(
 			'ResqueStatus',
-			array('getPausedWorker', 'clearWorkers', 'isSchedulerWorker', 'setPausedWorker', 'setActiveWorker', 'isRunningSchedulerWorker', 'getWorkers'), array(new stdClass()));
+			array('getPausedWorker', 'clearWorkers', 'isSchedulerWorker', 'setPausedWorker', 'isRunningSchedulerWorker', 'getWorkers'), array(new stdClass()));
 
 		$shell->expects($this->once())->method('_kill')->will($this->returnValue(array('code' => 1, 'message' => $errorMessage)));
 

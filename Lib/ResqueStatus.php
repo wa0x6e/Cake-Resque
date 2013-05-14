@@ -23,8 +23,7 @@
  *
  * Saving the workers statuses
  */
-class ResqueStatus
-{
+class ResqueStatus {
 
 	public static $workerStatusPrefix = 'ResqueWorker';
 
@@ -48,11 +47,9 @@ class ResqueStatus
  * Used when restarting the worker
  *
  * @param  array $args Worker settings
- * @return  boolean True if the worker was saved
  */
-	public function addWorker($args) {
-		unset($args['debug']);
-		return $this->_redis->rpush(self::$workerStatusPrefix, serialize($args)) > 0;
+	public function addWorker($pid, $args) {
+		return $this->_redis->hSet(self::$workerStatusPrefix, $pid, serialize($args)) !== false;
 	}
 
 /**
@@ -110,14 +107,20 @@ class ResqueStatus
  * @return array An array of settings, by worker
  */
 	public function getWorkers() {
-		$listLength = $this->_redis->llen(self::$workerStatusPrefix);
-		$workers = $this->_redis->lrange(self::$workerStatusPrefix, 0, $listLength - 1);
-
+		$workers = $this->_redis->hGetAll(self::$workerStatusPrefix);
 		$temp = array();
-		foreach ($workers as $worker) {
-			$temp[] = unserialize($worker);
+
+		foreach ($workers as $name => $value) {
+			$temp[$name] = unserialize($value);
 		}
 		return $temp;
+	}
+
+/**
+ *
+ */
+	public function removeWorker($pid) {
+		$this->_redis->hDel(self::$workerStatusPrefix, $pid);
 	}
 
 /**
@@ -129,23 +132,18 @@ class ResqueStatus
 	}
 
 /**
- * Mark a worker as paused
+ * Mark a worker as paused/active
  *
  * @since 2.0.0
- * @param string $workerName Name of the paused worker
+ * @param string 	$workerName Name of the paused worker
+ * @param bool 		$paused 	Whether to mark the worker as paused or active
  */
-	public function setPausedWorker($workerName) {
-		$this->_redis->sadd(self::$pausedWorkerKeyPrefix, $workerName);
-	}
-
-/**
- * Mark a worker as active
- *
- * @since 2.0.0
- * @param string $workerName Name of the worker
- */
-	public function setActiveWorker($workerName) {
-		$this->_redis->srem(self::$pausedWorkerKeyPrefix, $workerName);
+	public function setPausedWorker($workerName, $paused = true) {
+		if ($paused) {
+			$this->_redis->sadd(self::$pausedWorkerKeyPrefix, $workerName);
+		} else {
+			$this->_redis->srem(self::$pausedWorkerKeyPrefix, $workerName);
+		}
 	}
 
 /**
