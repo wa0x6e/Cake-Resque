@@ -674,15 +674,15 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('stopping the scheduler worker ...'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('stopping the scheduler worker ...'));
+		$shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
 		$this->ResqueStatus->expects($this->once())->method('unregisterSchedulerWorker');
 		$this->ResqueStatus->expects($this->once())->method('isSchedulerWorker')->will($this->returnValue(true));
 
-		$this->Shell->params['all'] = false;
-		$this->Shell->params['force'] = false;
-		$this->Shell->stop();
+		$shell->params['all'] = false;
+		$shell->params['force'] = false;
+		$shell->stop();
 	}
 
 /**
@@ -692,20 +692,20 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping worker'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('workers list'));
-		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:956:queuename'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:957:queuename'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping worker'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('workers list'));
+		$shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:956:queuename'));
+		$shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:957:queuename'));
+		$shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
 
-		$this->Shell->expects($this->once())->method('in')->will($this->returnValue(2));
+		$shell->expects($this->once())->method('in')->will($this->returnValue(2));
 
-		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('stopping 957 ...'));
-		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(6))->method('out')->with($this->stringContains('stopping 957 ...'));
+		$shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->params['all'] = false;
-		$this->Shell->params['force'] = false;
-		$this->Shell->stop();
+		$shell->params['all'] = false;
+		$shell->params['force'] = false;
+		$shell->stop();
 	}
 
 /**
@@ -715,18 +715,18 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
 
-		$this->Shell->expects($this->once())->method('in')->will($this->returnValue("all"));
+		$shell->expects($this->once())->method('in')->will($this->returnValue("all"));
 
-		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('stopping 956 ...'));
-		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
-		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('stopping 957 ...'));
-		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(6))->method('out')->with($this->stringContains('stopping 956 ...'));
+		$shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(9))->method('out')->with($this->stringContains('stopping 957 ...'));
+		$shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->params['all'] = false;
-		$this->Shell->params['force'] = false;
-		$this->Shell->stop();
+		$shell->params['all'] = false;
+		$shell->params['force'] = false;
+		$shell->stop();
 	}
 
 /**
@@ -736,16 +736,16 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
+		$shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
 
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('stopping 956 ...'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('stopping 957 ...'));
-		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('stopping 956 ...'));
+		$shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(4))->method('out')->with($this->stringContains('stopping 957 ...'));
+		$shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->params['all'] = true;
-		$this->Shell->params['force'] = true;
-		$this->Shell->stop();
+		$shell->params['all'] = true;
+		$shell->params['force'] = true;
+		$shell->stop();
 	}
 
 	// CLEANUP -------------------------------------------------------------------------------------------------
@@ -760,11 +760,11 @@ class CakeResqueShellTest extends CakeTestCase {
 
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array()));
 
-		$this->Shell->expects($this->exactly(3))->method('out');
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no active workers to clean up'));
+		$shell->expects($this->exactly(3))->method('out');
+		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no active workers to clean up'));
 
-		$this->Shell->cleanup();
+		$shell->cleanup();
 	}
 
 /**
@@ -774,12 +774,12 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Cleaning up 956 ...'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->matchesRegularExpression('/done/i'));
+		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('Cleaning up 956 ...'));
+		$shell->expects($this->at(3))->method('out')->with($this->matchesRegularExpression('/done/i'));
 
-		$this->Shell->params['all'] = false;
-		$this->Shell->cleanup();
+		$shell->params['all'] = false;
+		$shell->cleanup();
 	}
 
 /**
@@ -789,19 +789,19 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Active workers list'));
-		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:956:queuename'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:957:queuename'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
+		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('Active workers list'));
+		$shell->expects($this->at(2))->method('out')->with($this->stringContains('    [  1] - host:956:queuename'));
+		$shell->expects($this->at(3))->method('out')->with($this->stringContains('    [  2] - host:957:queuename'));
+		$shell->expects($this->at(4))->method('out')->with($this->stringContains('    [all] - '));
 
-		$this->Shell->expects($this->once())->method('in')->will($this->returnValue(2));
+		$shell->expects($this->once())->method('in')->will($this->returnValue(2));
 
-		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Cleaning up 957 ...'));
-		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(6))->method('out')->with($this->stringContains('Cleaning up 957 ...'));
+		$shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->params['all'] = false;
-		$this->Shell->cleanup();
+		$shell->params['all'] = false;
+		$shell->cleanup();
 	}
 
 /**
@@ -811,15 +811,15 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
+		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
 
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Cleaning up 956 ...'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('Cleaning up 957 ...'));
-		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('Cleaning up 956 ...'));
+		$shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(4))->method('out')->with($this->stringContains('Cleaning up 957 ...'));
+		$shell->expects($this->at(6))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->params['all'] = true;
-		$this->Shell->cleanup();
+		$shell->params['all'] = true;
+		$shell->cleanup();
 	}
 
 /**
@@ -829,17 +829,17 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename", "host:957:queuename")));
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
+		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/Cleaning up/i'));
 
-		$this->Shell->expects($this->once())->method('in')->will($this->returnValue("all"));
+		$shell->expects($this->once())->method('in')->will($this->returnValue("all"));
 
-		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('Cleaning up 956 ...'));
-		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
-		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('Cleaning up 957 ...'));
-		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(6))->method('out')->with($this->stringContains('Cleaning up 956 ...'));
+		$shell->expects($this->at(8))->method('out')->with($this->stringContains('done'));
+		$shell->expects($this->at(9))->method('out')->with($this->stringContains('Cleaning up 957 ...'));
+		$shell->expects($this->at(11))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->params['all'] = false;
-		$this->Shell->cleanup();
+		$shell->params['all'] = false;
+		$shell->cleanup();
 	}
 
 	// LOAD -------------------------------------------------------------------------------------------------
@@ -853,11 +853,11 @@ class CakeResqueShellTest extends CakeTestCase {
 		Configure::write('CakeResque.Queues', null);
 		Configure::write('CakeResque.Scheduler.enabled', false);
 
-		$this->Shell->expects($this->exactly(3))->method('out');
-		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('no configured queues to load'));
+		$shell->expects($this->exactly(3))->method('out');
+		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('no configured queues to load'));
 
-		$this->Shell->load();
+		$shell->load();
 	}
 
 /**
