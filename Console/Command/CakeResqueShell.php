@@ -573,72 +573,41 @@ class CakeResqueShell extends Shell {
  * Will ask the user to choose the worker to stop, from a list of worker,
  * if more than one worker is running, or if --all is not passed
  *
- * @param bool $shutdown Whether to force shutdown, or wait for all the jobs to finish first
  * @param bool $all True to directly stop all workers, false will ask the user
  * for the worker to stop, from a list
  */
 	public function stop($all = false) {
 		App::uses('CakeTime', 'Utility');
-		$this->out('<info>' . __d('cake_resque', 'Stopping workers') . '</info>');
-		$workers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
-		if (empty($workers)) {
-			$this->out('   ' . __d('cake_resque', 'There is no active workers to kill ...'));
-		} else {
-			$workerIndex = array();
-			if (!$this->params['all'] && !$all && count($workers) > 1) {
-				$this->out(__d('cake_resque', 'Active workers list') . ':');
-				$i = 1;
-				foreach ($workers as $worker) {
-					$this->out(sprintf("    [%3d] - %s, started %s", $i++, $this->ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-						CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker))));
-				}
+		$ResqueStatus = $this->ResqueStatus;
 
-				$options = range(1, $i - 1);
+		$actionMessage = function ($pid) {
+			return __d('cake_resque', 'Stopping %s ... ', $pid);
+		};
 
-				if ($i > 2) {
-					$this->out('    [all] - ' . __d('cake_resque', 'Stop all workers'));
-					$options[] = 'all';
-				}
+		$schedulerWorkerAction = function($worker) use ($ResqueStatus) {
+			$ResqueStatus->unregisterSchedulerWorker();
+		};
 
-				$in = $this->in(__d('cake_resque', 'Worker to kill') . ': ', $options);
-				if ($in == 'all') {
-					$workerIndex = range(1, count($workers));
-				} else {
-					$workerIndex[] = $in;
-				}
-			} else {
-				$workerIndex = range(1, count($workers));
-			}
+		$successCallback = function ($worker) use ($ResqueStatus) {
+			list($host, $pid, $queue) = explode(':', (string)$worker);
+			$ResqueStatus->setPausedWorker((string)$worker, false);
+			$ResqueStatus->removeWorker($pid);
+		};
 
-			foreach ($workerIndex as $index) {
-				$worker = $workers[$index - 1];
-
-				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
-					$this->ResqueStatus->unregisterSchedulerWorker();
-					$this->out(__d('cake_resque', 'Killing the Scheduler Worker ... '), 0);
-				} else {
-					$this->out(__d('cake_resque', 'Killing %s ... ', $pid), 0);
-				}
-
-				$worker->unregisterWorker(); // Remove jobs from resque environment
-
-				$signal = $this->params['force'] ? 'TERM' : 'QUIT'; // Send signal to stop processing jobs
-				$killResponse = $this->_kill($signal, $pid); // Kill all remaining system process
-
-				if ($killResponse['code'] == 0) {
-
-					$this->ResqueStatus->setPausedWorker((string)$worker, false);
-					$this->ResqueStatus->removeWorker($pid);
-
-					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
-				} else {
-					$this->out('<error>' . $killResponse['message'] . '</error>');
-				}
-			}
-		}
-
-		$this->out('');
+		return $this->_sendSignal(
+			__d('cake_resque', 'Stopping workers') . ($this->params['force'] ? ' (' . __d('cake_resque', 'force') . ')' : ''),
+			call_user_func(CakeResqueShell::$cakeResque . '::getWorkers'),
+			__d('cake_resque', 'There is no workers to stop ...'),
+			__d('cake_resque', 'Workers list'),
+			__d('cake_resque', 'Stop all workers'),
+			__d('cake_resque', 'Worker to stop'),
+			__d('cake_resque', 'Stopping the Scheduler Worker ... '),
+			$actionMessage,
+			null,
+			$successCallback,
+			$this->params['force'] ? 'TERM' : 'QUIT',
+			$schedulerWorkerAction
+		);
 	}
 
 /**
@@ -754,7 +723,8 @@ class CakeResqueShell extends Shell {
 	}
 
 	protected function _sendSignal($title, $workers, $noWorkersMessage, $listTitle,
-		$allActionMessage, $promptMessage, $schedulerWorkerActionMessage, $workerActionMessage, $formatListItem, $successCallback, $signal) {
+		$allActionMessage, $promptMessage, $schedulerWorkerActionMessage,
+		$workerActionMessage, $formatListItem, $successCallback, $signal, $schedulerWorkerAction = null) {
 		if (!function_exists('pcntl_signal')) {
 			return $this->out('<error>' .
 				__d('cake_resque', "This function requires the PCNTL extension") . '</error>');
@@ -805,6 +775,7 @@ class CakeResqueShell extends Shell {
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
 				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
+					$schedulerWorkerAction($worker);
 					$this->out($schedulerWorkerActionMessage, 0);
 				} else {
 					$this->out($workerActionMessage($pid), 0);

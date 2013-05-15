@@ -642,8 +642,9 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell->expects($this->exactly(3))->method('out');
 		$this->Shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/stopping/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no active workers to kill'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('There is no workers to stop'));
 
+		$this->Shell->params['force'] = false;
 		$this->Shell->stop();
 	}
 
@@ -935,7 +936,6 @@ class CakeResqueShellTest extends CakeTestCase
 
 		$this->Shell->expects($this->once())->method('_exec')->will($this->returnValue(true));
 		$this->Shell->expects($this->once())->method('_checkStartedWorker')->will($this->returnValue($pid));
-
 
 		Configure::write('CakeResque.Scheduler.enabled', true);
 		$this->Shell->startup();
