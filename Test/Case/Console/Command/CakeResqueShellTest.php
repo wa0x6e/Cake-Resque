@@ -680,6 +680,7 @@ class CakeResqueShellTest extends CakeTestCase {
 		$this->ResqueStatus->expects($this->once())->method('unregisterSchedulerWorker');
 		$this->ResqueStatus->expects($this->once())->method('isSchedulerWorker')->will($this->returnValue(true));
 
+		Configure::write('CakeResque.Scheduler.enabled', true);
 		$shell->params['all'] = false;
 		$shell->params['force'] = false;
 		$shell->stop();
