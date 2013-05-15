@@ -199,10 +199,12 @@ class ResqueStatusTest extends CakeTestCase {
 
 		$this->ResqueStatus->removeWorker(100);
 
-		$w = $this->workers;
+		$w = array_keys($this->workers);
 		unset($w[100]);
 
-		$this->assertEquals(array_keys($w), $this->redis->hKeys(ResqueStatus::$workerStatusPrefix));
+		$ww = $this->redis->hKeys(ResqueStatus::$workerStatusPrefix);
+
+		$this->assertEquals(sort($w), sort($ww));
 	}
 
 /**
