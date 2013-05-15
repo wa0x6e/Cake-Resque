@@ -39,6 +39,13 @@ class CakeResqueShell extends Shell {
 	public static $cakeResque = 'CakeResque';
 
 /**
+ * Pause time before rechecking if a worker is started
+ * in microseconds
+ * @var integer
+ */
+	public static $checkStartedWorkerBufferTime = 100000;
+
+/**
  * Plugin version
  */
 	const VERSION = '3.3.5';
@@ -537,7 +544,7 @@ class CakeResqueShell extends Shell {
 			while ($attempt-- > 0) {
 				for ($j = 0; $j < 3;$j++) {
 					$this->out(".", 0);
-					usleep(100000);
+					usleep(self::$checkStartedWorkerBufferTime);
 				}
 				if (false !== $pid = $this->_checkStartedWorker($pidFile)) {
 
@@ -851,10 +858,8 @@ class CakeResqueShell extends Shell {
 	public function stats() {
 		$workers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
 		// List of all queues
-		$queues = call_user_func(CakeResqueShell::$cakeResque . '::getQueues');
-		if (!empty($queues)) {
-			$queues = array_unique($queues);
-		}
+		$queues = array_unique(call_user_func(CakeResqueShell::$cakeResque . '::getQueues'));
+
 		// List of queues monitored by a worker
 		$activeQueues = array();
 		foreach ($workers as $worker) {
@@ -1027,11 +1032,10 @@ class CakeResqueShell extends Shell {
 		$this->out('<info>' . __d('cake_resque', 'Clearing queues') . '</info>');
 
 		// List of all queues
-		$queues = call_user_func(CakeResqueShell::$cakeResque . '::getQueues');
-		if (!empty($queues)) {
-			$queues = array_unique($queues);
-		} else {
-			return $this->out(__d('cake_resque', 'There is no queues to clear'));
+		$queues = array_unique(call_user_func(CakeResqueShell::$cakeResque . '::getQueues'));
+		if (empty($queues)) {
+			$this->out(__d('cake_resque', 'There is no queues to clear'));
+			return false;
 		}
 
 		$queueIndex = array();
@@ -1078,6 +1082,8 @@ class CakeResqueShell extends Shell {
 				$this->out('<error>' . __d('cake_resque', 'An unexpected error occured while clearing the queue') . '</error>');
 			}
 		}
+
+		return true;
 	}
 
 /**
