@@ -82,7 +82,7 @@ class ResqueStatus {
  */
 	public function isRunningSchedulerWorker() {
 		$pids = $this->_redis->hKeys(self::$workerStatusPrefix);
-		$schedulerPid = $this->_redis->exists(self::$schedulerWorkerStatusPrefix);
+		$schedulerPid = $this->_redis->get(self::$schedulerWorkerStatusPrefix);
 
 		if ($schedulerPid !== false) {
 			if (in_array($schedulerPid, $pids)) {
