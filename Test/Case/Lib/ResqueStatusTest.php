@@ -116,6 +116,20 @@ class ResqueStatusTest extends CakeTestCase {
 	}
 
 /**
+ * @covers ResqueStatus::isRunningSchedulerWorker
+ */
+	public function testIsRunningSchedulerWorkerCleanUpOldWorker() {
+		$this->redis->set(ResqueStatus::$schedulerWorkerStatusPrefix, '102');
+		$this->redis->hSet(ResqueStatus::$workerStatusPrefix, 100, '');
+		$this->redis->hSet(ResqueStatus::$workerStatusPrefix, 101, '');
+
+		$status = $this->getMock('ResqueStatus', array('unregisterSchedulerWorker'), array($this->redis));
+
+		$status->expects($this->once())->method('unregisterSchedulerWorker');
+		$this->assertFalse($status->isRunningSchedulerWorker());
+	}
+
+/**
  * @covers ResqueStatus::unregisterSchedulerWorker
  */
 	public function testUnregisterSchedulerWorker() {

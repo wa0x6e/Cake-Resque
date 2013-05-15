@@ -670,6 +670,24 @@ class CakeResqueShellTest extends CakeTestCase {
 /**
  * @covers CakeResqueShell::stop
  */
+	public function testStopWorkerWhenThereIsOneSchedulerWorker() {
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getWorkers')->will($this->returnValue(array("host:956:queuename")));
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('stopping workers'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('stopping the scheduler worker ...'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$this->ResqueStatus->expects($this->once())->method('unregisterSchedulerWorker');
+		$this->ResqueStatus->expects($this->once())->method('isSchedulerWorker')->will($this->returnValue(true));
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->params['force'] = false;
+		$this->Shell->stop();
+	}
+
+/**
+ * @covers CakeResqueShell::stop
+ */
 	public function testStopWorkerWhenThereIsMultipleWorkers() {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
@@ -1444,6 +1462,43 @@ class CakeResqueShellTest extends CakeTestCase {
 
 		$this->Shell->params['all'] = false;
 		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10]);
+	}
+
+/**
+ * @covers CakeResqueShell::_sendSignal
+ */
+	public function testSendSignalWithSchedulerWorker() {
+		$listFormatter = function($worker) {
+			return '>> ' . $worker;
+		};
+		$successcallback = function() {
+
+		};
+
+		$actionMessage = function ($pid) {
+			return sprintf('Happy doing %s ... ', $pid);
+		};
+
+		$schedulerAction = function ($worker) {
+		};
+
+		$workers = array("host:100:queue");
+
+		$args = array('title', $workers, 'no workers', 'list title', 'do this on all', 'choose', 'do this on scheduler',
+			$actionMessage, $listFormatter, $successcallback, 'SIG', $schedulerAction);
+
+		$method = new ReflectionMethod('CakeResqueShell', '_sendSignal');
+		$method->setAccessible(true);
+
+		$this->ResqueStatus->expects($this->once())->method('isSchedulerWorker')->will($this->returnValue(true));
+		Configure::write('CakeResque.Scheduler.enabled', true);
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains($args[0]));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('do this on scheduler'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(4))->method('out');
+
+		$this->Shell->params['all'] = false;
+		$method->invoke($this->Shell, $args[0], $args[1], $args[2], $args[3], $args[4], $args[5], $args[6], $args[7], $args[8], $args[9], $args[10], $args[11]);
 	}
 
 /**
