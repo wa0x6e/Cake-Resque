@@ -229,6 +229,24 @@ class CakeResque
 	}
 
 /**
+ * Clear all the queue jobs'
+ * @param  String 	$queue 	Name of the queue to empty
+ * @return bool 	False if clearing the queue fail
+ */
+	public static function clearQueue($queue) {
+		return Resque::Redis()->ltrim('queue:' . $queue, 1, 0) !== false;
+	}
+
+/**
+ * Return the number of jobs inside a queue
+ * @param  String 	$queue 	Queue name
+ * @return int 				Number of jobs
+ */
+	public static function getQueueLength($queue) {
+		return Resque::Redis()->llen('queue:' . $queue);
+	}
+
+/**
  * @codeCoverageIgnore
  * @param  [type] $worker [description]
  * @return [type]         [description]

@@ -15,7 +15,7 @@ class CakeResqueShellTest extends CakeTestCase {
 
 		$this->CakeResque = $this->getMockClass(
 			'CakeResque',
-			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers', 'getQueues')
+			array('enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers', 'getQueues', 'clearQueue')
 		);
 
 		$this->ResqueStatus = $this->getMock('ResqueStatus', array(), array(new stdClass()));
@@ -1032,7 +1032,7 @@ class CakeResqueShellTest extends CakeTestCase {
 		Configure::write('CakeResque.Scheduler.enabled', true);
 		$this->Shell->startup();
 		$this->Shell->ResqueStatus = $this->ResqueStatus;
-		$this->Shell->startscheduler();
+		$this->Shell->start(null, true);
 	}
 
 /**
@@ -1628,8 +1628,141 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->Shell;
 		$shell::$cakeResque = $CakeResque = $this->CakeResque;
 		$CakeResque::staticExpects($this->once())->method('getQueues')->will($this->returnValue(array('queueName')));
+		$CakeResque::staticExpects($this->once())->method('clearQueue')->with($this->equalTo('queueName'))->will($this->returnValue(true));
 
 		$this->Shell->params['all'] = false;
+		$this->assertTrue($this->Shell->clear());
+	}
+
+/**
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearWhenMultipleQueues() {
+		$queues = array('queueOne', 'queueTwo');
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('clearing queues'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('queues list'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('[  1]'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains($queues[0]));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('[  2]'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains($queues[1]));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('[all] - Clear all queues'));
+
+		$this->Shell->expects($this->once())->method('in')->with($this->equalTo('Queue to clear: '))->will($this->returnValue(2));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('clearing queueTwo ...'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(7))->method('out');
+
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getQueues')->will($this->returnValue($queues));
+		$CakeResque::staticExpects($this->once())->method('clearQueue')->with($this->equalTo($queues[1]))->will($this->returnValue(true));
+
+		$this->Shell->params['all'] = false;
+		$this->assertTrue($this->Shell->clear());
+	}
+
+/**
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearWhenMultipleQueuesAndFail() {
+		$queues = array('queueOne', 'queueTwo');
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('clearing queues'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('queues list'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('[  1]'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains($queues[0]));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('[  2]'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains($queues[1]));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('[all] - Clear all queues'));
+
+		$this->Shell->expects($this->once())->method('in')->with($this->equalTo('Queue to clear: '))->will($this->returnValue(2));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('clearing queueTwo ...'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('fail'));
+		$this->Shell->expects($this->exactly(7))->method('out');
+
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getQueues')->will($this->returnValue($queues));
+		$CakeResque::staticExpects($this->once())->method('clearQueue')->with($this->equalTo($queues[1]))->will($this->returnValue(false));
+
+		$this->Shell->params['all'] = false;
+		$this->assertTrue($this->Shell->clear());
+	}
+
+/**
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearAllQueuesAtOnceWithAllOption() {
+		$queues = array('queueOne', 'queueTwo');
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('clearing queues'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('clearing queueOne ...'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('clearing queueTwo ...'));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(5))->method('out');
+
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getQueues')->will($this->returnValue($queues));
+		$CakeResque::staticExpects($this->exactly(2))->method('clearQueue')->will($this->returnValue(true));
+
+		$this->Shell->params['all'] = true;
+		$this->assertTrue($this->Shell->clear());
+	}
+
+/**
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearAllQueuesAtOnce() {
+		$queues = array('queueOne', 'queueTwo');
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('clearing queues'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('queues list'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('[  1]'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains($queues[0]));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('[  2]'));
+		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains($queues[1]));
+		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('[all] - Clear all queues'));
+
+		$this->Shell->expects($this->once())->method('in')->with($this->equalTo('Queue to clear: '))->will($this->returnValue('all'));
+
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('clearing queueOne ...'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('clearing queueTwo ...'));
+		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(9))->method('out');
+
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getQueues')->will($this->returnValue($queues));
+		$CakeResque::staticExpects($this->exactly(2))->method('clearQueue')->will($this->returnValue(true));
+
+		$this->Shell->params['all'] = false;
+		$this->assertTrue($this->Shell->clear());
+	}
+
+/**
+ * @covers CakeResqueShell::clear
+ */
+	public function testClearWithPassedArgument() {
+		$queues = array('queueOne', 'queueTwo');
+
+		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('clearing queues'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('clearing queueTwo ...'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(3))->method('out');
+
+		$shell = $this->Shell;
+		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$CakeResque::staticExpects($this->once())->method('getQueues')->will($this->returnValue($queues));
+		$CakeResque::staticExpects($this->exactly(1))->method('clearQueue')->with($this->equalTo('queueTwo'))->will($this->returnValue(true));
+
+		$this->Shell->params['all'] = false;
+		$this->Shell->args[] = 'queueTwo';
 		$this->assertTrue($this->Shell->clear());
 	}
 

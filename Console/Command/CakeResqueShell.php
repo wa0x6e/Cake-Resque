@@ -884,8 +884,7 @@ class CakeResqueShell extends Shell {
 		$count = array();
 		$this->out('<info>' . __d('cake_resque', 'Queues Stats') . '</info>');
 		for ($i = count($queues) - 1; $i >= 0; --$i) {
-			$count[$queues[$i]] = Resque::Redis()->llen('queue:' . $queues[$i]);
-			if (!in_array($queues[$i], $activeQueues) && $count[$queues[$i]] == 0) {
+			$count[$queues[$i]] = call_user_func_array(CakeResqueShell::$cakeResque . '::getQueueLength', $queues[$i]);			if (!in_array($queues[$i], $activeQueues) && $count[$queues[$i]] == 0) {
 				unset($queues[$i]);
 			}
 		}
@@ -1048,7 +1047,7 @@ class CakeResqueShell extends Shell {
 				$this->out(__d('cake_resque', 'Queues list') . ':');
 				$i = 1;
 				foreach ($queues as $queue) {
-					$this->out(sprintf("    [%3d] - %-'.20s<bold>%'.9s</bold> jobs", $i++, $queue, number_format(Resque::Redis()->llen('queue:' . $queue))));
+					$this->out(sprintf("    [%3d] - %-'.20s<bold>%'.9s</bold> jobs", $i++, $queue, number_format(call_user_func_array(CakeResqueShell::$cakeResque . '::getQueueLength', array($queue)))));
 				}
 
 				$options = range(1, $i - 1);
@@ -1074,12 +1073,12 @@ class CakeResqueShell extends Shell {
 
 			$this->out(__d('cake_resque', 'Clearing %s ... ', $queues[$index - 1]), 0);
 
-			$code = Resque::Redis()->ltrim('queue:' . $queues[$index - 1], 1, 0);
+			$code = call_user_func_array(CakeResqueShell::$cakeResque . '::clearQueue', array($queues[$index - 1]));
 
 			if ($code) {
 				$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
 			} else {
-				$this->out('<error>' . __d('cake_resque', 'An unexpected error occured while clearing the queue') . '</error>');
+				$this->out('<error>' . __d('cake_resque', 'Fail') . '</error>');
 			}
 		}
 
