@@ -6,6 +6,8 @@ App::uses('ShellDispatcher', 'Console');
 App::uses('Shell', 'Console');
 App::uses('CakeResqueShell', 'CakeResque.Console/Command');
 
+require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . 'kamisama' . DS . 'resque-status' . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
+
 class CakeResqueShellTest extends CakeTestCase {
 
 	public function setUp() {
