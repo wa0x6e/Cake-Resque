@@ -18,6 +18,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+require_once 'vfsStream/vfsStream.php';
 class CakeResqueShell extends Shell {
 
 	public $uses = array();
@@ -498,7 +499,7 @@ class CakeResqueShell extends Shell {
 
 			$libraryPath = $scheduler ? $this->_ResqueSchedulerLibrary : $this->_resqueLibrary;
 			$logFile = $scheduler ? Configure::read('CakeResque.Scheduler.log') : $this->_runtime['log'];
-			$resqueBin = $scheduler ? './bin/resque-scheduler.php' : $this->__getResqueBinFile($this->_resqueLibrary);
+			$resqueBin = $scheduler ? './bin/resque-scheduler.php' : $this->_getResqueBinFile($this->_resqueLibrary);
 
 			$cmd = implode(' ', array(
 				sprintf("nohup sudo -u %s \\\n", $this->_runtime['user']),
@@ -1183,7 +1184,7 @@ class CakeResqueShell extends Shell {
  * @param  	String 	$base 	Php-resque folder path
  * @return 	String 			Relative path to php-resque executable file
  */
-	private function __getResqueBinFile($base) {
+	protected function _getResqueBinFile($base) {
 		$paths = array(
 			'bin' . DS . 'resque',
 			'bin' . DS . 'resque.php',

@@ -1066,8 +1066,8 @@ class CakeResqueShellTest extends CakeTestCase {
  */
 	public function testStartSchedulerWhenSchedulingIsDisabled() {
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/Scheduler Worker is not enabled/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/error/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Scheduler Worker is not enabled'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('error'));
 		$this->Shell->expects($this->exactly(2))->method('out');
 
 		Configure::write('CakeResque.Scheduler.enabled', false);
@@ -1079,8 +1079,8 @@ class CakeResqueShellTest extends CakeTestCase {
  */
 	public function testStartSchedulerWhenSchedulerIsAlreadyStarted() {
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating the scheduler worker'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/The scheduler worker is already running/i'));
-		$this->Shell->expects($this->at(1))->method('out')->with($this->matchesRegularExpression('/warning/i'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('The scheduler worker is already running'));
+		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('warning'));
 		$this->Shell->expects($this->exactly(2))->method('out');
 
 		$this->ResqueStatus->expects($this->once())->method('isRunningSchedulerWorker')->will($this->returnValue(true));
@@ -1113,7 +1113,7 @@ class CakeResqueShellTest extends CakeTestCase {
 
 		$this->Shell->expects($this->at(1))->method('out')->with($this->stringContains('Restarting workers'));
 		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('No active workers found'));
-		$this->Shell->expects($this->at(2))->method('out')->with($this->matchesRegularExpression('/warning/i'));
+		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('warning'));
 		$this->Shell->expects($this->exactly(2))->method('out');
 
 		$this->Shell->expects($this->once())->method('stop');
@@ -1776,6 +1776,53 @@ class CakeResqueShellTest extends CakeTestCase {
 		$this->Shell->params['all'] = false;
 		$this->Shell->args[] = 'queueTwo';
 		$this->assertTrue($this->Shell->clear());
+	}
+
+/**
+ * Check if a resque bin file is in the bin folder
+ * @covers CakeResqueShell::_getResqueBinFile
+ */
+	public function testGetResqueBin() {
+		$method = new ReflectionMethod('CakeResqueShell', '_getResqueBinFile');
+		$method->setAccessible(true);
+
+		$root = vfsStream::setup('resque');
+		$root->addChild(vfsStream::newDirectory('bin'));
+		$root->getChild('bin')->addChild(vfsStream::newFile('resque'));
+
+		$this->assertTrue($root->hasChild('bin'));
+		$this->assertTrue($root->getChild('bin')->hasChild('resque'));
+		$this->assertEquals('./bin/resque', $method->invoke($this->Shell, vfsStream::url('resque')));
+	}
+
+/**
+ * Check if a resque bin file is in the bin folder,
+ * but with a .php extension
+ * @covers CakeResqueShell::_getResqueBinFile
+ */
+	public function testGetResqueBinWithExtension() {
+		$method = new ReflectionMethod('CakeResqueShell', '_getResqueBinFile');
+		$method->setAccessible(true);
+
+		$root = vfsStream::setup('resque');
+		$root->addChild(vfsStream::newDirectory('bin'));
+		$root->getChild('bin')->addChild(vfsStream::newFile('resque.php'));
+
+		$this->assertTrue($root->hasChild('bin'));
+		$this->assertTrue($root->getChild('bin')->hasChild('resque.php'));
+		$this->assertEquals('./bin/resque.php', $method->invoke($this->Shell, vfsStream::url('resque')));
+	}
+
+/**
+ * For old version of php-resque, when the file is in the root
+ * @covers CakeResqueShell::_getResqueBinFile
+ */
+	public function testGetResqueBinFallbackInRoot() {
+		$method = new ReflectionMethod('CakeResqueShell', '_getResqueBinFile');
+		$method->setAccessible(true);
+
+		$root = vfsStream::setup('resque');
+		$this->assertEquals('./resque.php', $method->invoke($this->Shell, vfsStream::url('resque')));
 	}
 
 }

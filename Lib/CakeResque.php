@@ -230,6 +230,8 @@ class CakeResque
 
 /**
  * Clear all the queue jobs'
+ *
+ * @codeCoverageIgnore
  * @param  String 	$queue 	Name of the queue to empty
  * @return bool 	False if clearing the queue fail
  */
@@ -239,6 +241,8 @@ class CakeResque
 
 /**
  * Return the number of jobs inside a queue
+ *
+ * @codeCoverageIgnore
  * @param  String 	$queue 	Queue name
  * @return int 				Number of jobs
  */
