@@ -492,9 +492,7 @@ class CakeResqueShell extends Shell {
 		$pidFile = App::pluginPath('CakeResque') . 'tmp' . DS . str_replace('.', '', microtime(true));
 		$count = $this->_runtime['workers'];
 
-		if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
-			$this->debug(__d('cake_resque', 'Will start ' . $count . ' workers'));
-		}
+		$this->debug(__d('cake_resque', 'Will start ' . $count . ' workers'));
 
 		for ($i = 1; $i <= $count; $i++) {
 
@@ -525,13 +523,8 @@ class CakeResqueShell extends Shell {
 				"2>&1\" >/dev/null 2>&1 &"
 			));
 
-			if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
-				$this->debug(__d('cake_resque', 'Starting worker (' . $i . ')'));
-			}
-
-			if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
-				$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
-			}
+			$this->debug(__d('cake_resque', 'Starting worker (' . $i . ')'));
+			$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
 
 			$this->_exec($cmd);
 
@@ -551,9 +544,8 @@ class CakeResqueShell extends Shell {
 					$success = true;
 					$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>');
 
-					if (isset($this->_runtime['debug']) && $this->_runtime['debug']) {
-						$this->debug(__d('cake_resque', 'Registering worker #' . $pid . ' to list of active workers'));
-					}
+					$this->debug(__d('cake_resque', 'Registering worker #' . $pid . ' to list of active workers'));
+
 					unset($this->_runtime['debug']);
 					if ($scheduler) {
 						$this->ResqueStatus->registerSchedulerWorker($pid);
@@ -836,9 +828,7 @@ class CakeResqueShell extends Shell {
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
 		if (!empty($workers)) {
 			$debug = $this->params['debug'];
-			if ($this->params['debug']) {
-				$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' workers to restart'));
-			}
+			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' workers to restart'));
 
 			foreach ($workers as $worker) {
 				$worker['debug'] = $debug;
@@ -1178,7 +1168,9 @@ class CakeResqueShell extends Shell {
 	}
 
 	public function debug($string) {
-		return $this->out('<success>[DEBUG] ' . $string . '</success>');
+		if ((isset($this->_runtime['debug']) && $this->_runtime['debug'] === true) || (isset($this->params['debug']) && $this->params['debug'] === true)) {
+			$this->out('<success>[DEBUG] ' . $string . '</success>');
+		}
 	}
 
 /**

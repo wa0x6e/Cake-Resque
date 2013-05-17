@@ -45,6 +45,17 @@ class CakeResqueShellTest extends CakeTestCase {
 	public function testDebug() {
 		$shell = $this->getMock('CakeResqueShell', array('out'));
 		$shell->expects($this->at(0))->method('out')->with($this->stringContains('<success>[DEBUG] test string</success>'));
+		$shell->params['debug'] = true;
+		$shell->debug('test string');
+	}
+
+/**
+ * @covers CakeResqueShell::debug
+ */
+	public function testDebugWhenDisabled() {
+		$shell = $this->getMock('CakeResqueShell', array('out'));
+		$shell->expects($this->never())->method('out');
+		$shell->params['debug'] = false;
 		$shell->debug('test string');
 	}
 
@@ -1158,12 +1169,12 @@ class CakeResqueShellTest extends CakeTestCase {
 		$this->Shell->expects($this->once())->method('_exec')->will($this->returnValue(true));
 		$this->Shell->expects($this->once())->method('_checkStartedWorker')->will($this->returnValue(true));
 
-		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('starting worker'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('done'));
-
+		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(10))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->exactly(7))->method('out');
 		$this->Shell->startup();
 		$this->ResqueStatus = $this->getMock(
 			'ResqueStatus',
@@ -1172,6 +1183,7 @@ class CakeResqueShellTest extends CakeTestCase {
 		$this->ResqueStatus->expects($this->once())->method('addWorker');
 		$this->Shell->ResqueStatus = $this->ResqueStatus;
 
+		Configure::write('CakeResque.Scheduler.enabled', false);
 		$this->Shell->start();
 	}
 
@@ -1184,11 +1196,11 @@ class CakeResqueShellTest extends CakeTestCase {
 		$this->Shell->expects($this->once())->method('_exec')->will($this->returnValue(true));
 		$this->Shell->expects($this->exactly(7))->method('_checkStartedWorker')->will($this->returnValue(false));
 
-		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('starting worker'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(31))->method('out')->with($this->stringContains('fail'));
+		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(34))->method('out')->with($this->stringContains('fail'));
 
 		$this->Shell->startup();
 		$this->ResqueStatus = $this->getMock(
@@ -1210,17 +1222,17 @@ class CakeResqueShellTest extends CakeTestCase {
 		$this->Shell->expects($this->exactly(2))->method('_exec')->will($this->returnValue(true));
 		$this->Shell->expects($this->exactly(2))->method('_checkStartedWorker')->will($this->returnValue(true));
 
-		$this->Shell->expects($this->at(2))->method('out')->with($this->stringContains('starting worker'));
-		$this->Shell->expects($this->at(3))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(4))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(5))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(6))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(7))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(8))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(10))->method('out')->with($this->stringContains('done'));
 
-		$this->Shell->expects($this->at(9))->method('out')->with($this->stringContains('starting worker'));
-		$this->Shell->expects($this->at(10))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(11))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(12))->method('out')->with($this->stringContains('.'));
-		$this->Shell->expects($this->at(14))->method('out')->with($this->stringContains('done'));
+		$this->Shell->expects($this->at(15))->method('out')->with($this->stringContains('starting worker'));
+		$this->Shell->expects($this->at(16))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(17))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(18))->method('out')->with($this->stringContains('.'));
+		$this->Shell->expects($this->at(20))->method('out')->with($this->stringContains('done'));
 
 		$this->Shell->params = array('workers' => 2, 'debug' => false);
 
