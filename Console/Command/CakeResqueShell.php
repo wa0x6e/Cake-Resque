@@ -18,7 +18,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-require_once 'vfsStream/vfsStream.php';
+
 class CakeResqueShell extends Shell {
 
 	public $uses = array();
@@ -49,7 +49,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '3.3.5';
+	const VERSION = '3.3.6';
 
 /**
  * Startup callback.
@@ -70,7 +70,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		App::uses('ResqueStatus', 'CakeResque.Lib');
-		$this->ResqueStatus = new ResqueStatus(Resque::Redis());
+		$this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::Redis());
 
 		$this->stdout->styles('success', array('text' => 'green'));
 		$this->stdout->styles('bold', array('bold' => true));
@@ -547,11 +547,14 @@ class CakeResqueShell extends Shell {
 
 					$this->debug(__d('cake_resque', 'Registering worker #' . $pid . ' to list of active workers'));
 
-					unset($this->_runtime['debug']);
+					$workerSettings = $this->_runtime;
+
+					$workerSettings['workers'] = 1;
+					unset($workerSettings['debug']);
 					if ($scheduler) {
 						$this->ResqueStatus->registerSchedulerWorker($pid);
 					}
-					$this->ResqueStatus->addWorker($pid, $this->_runtime);
+					$this->ResqueStatus->addWorker($pid, $workerSettings);
 
 					break;
 				}
@@ -572,11 +575,8 @@ class CakeResqueShell extends Shell {
  *
  * Will ask the user to choose the worker to stop, from a list of worker,
  * if more than one worker is running, or if --all is not passed
- *
- * @param bool $all True to directly stop all workers, false will ask the user
- * for the worker to stop, from a list
  */
-	public function stop($all = false) {
+	public function stop() {
 		App::uses('CakeTime', 'Utility');
 		$ResqueStatus = $this->ResqueStatus;
 
@@ -666,6 +666,7 @@ class CakeResqueShell extends Shell {
 		};
 
 		// Compute list of pause workers
+		$this->debug(__d('cake_resque', 'Fetching list of active workers'));
 		$activeWorkers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
 		foreach ($activeWorkers as &$worker) {
 			$worker = (string)$worker;
@@ -775,7 +776,9 @@ class CakeResqueShell extends Shell {
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
 				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
-					$schedulerWorkerAction($worker);
+					if ($schedulerWorkerAction !== null) {
+						$schedulerWorkerAction($worker);
+					}
 					$this->out($schedulerWorkerActionMessage, 0);
 				} else {
 					$this->out($workerActionMessage($pid), 0);
@@ -824,7 +827,8 @@ class CakeResqueShell extends Shell {
 	public function restart() {
 		$workers = $this->ResqueStatus->getWorkers();
 
-		$this->stop(true);
+		$this->params['all'] = true;
+		$this->stop();
 
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
 		if (!empty($workers)) {
@@ -875,7 +879,8 @@ class CakeResqueShell extends Shell {
 		$count = array();
 		$this->out('<info>' . __d('cake_resque', 'Queues Stats') . '</info>');
 		for ($i = count($queues) - 1; $i >= 0; --$i) {
-			$count[$queues[$i]] = call_user_func_array(CakeResqueShell::$cakeResque . '::getQueueLength', $queues[$i]);			if (!in_array($queues[$i], $activeQueues) && $count[$queues[$i]] == 0) {
+			$count[$queues[$i]] = call_user_func_array(CakeResqueShell::$cakeResque . '::getQueueLength', array($queues[$i]));
+			if (!in_array($queues[$i], $activeQueues) && $count[$queues[$i]] == 0) {
 				unset($queues[$i]);
 			}
 		}
