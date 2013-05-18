@@ -531,7 +531,6 @@ class CakeResqueShell extends Shell {
 
 			$success = false;
 			$attempt = 7;
-			$pid = false;
 
 			$this->out($scheduler ? __d('cake_resque', 'Starting scheduler worker ') : __d('cake_resque', 'Starting worker '), 0);
 
@@ -621,7 +620,6 @@ class CakeResqueShell extends Shell {
  */
 	public function cleanup() {
 		App::uses('CakeTime', 'Utility');
-		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
 			return __d('cake_resque', 'Cleaning up %s ... ', $pid);
@@ -1196,7 +1194,7 @@ class CakeResqueShell extends Shell {
 			'resque.php'
 		);
 
-		foreach ($paths as $key => $path) {
+		foreach ($paths as $path) {
 			if (file_exists($base . DS . $path)) {
 				return '.' . DS . $path;
 			}

@@ -18,8 +18,7 @@
  * @author kamisama
  *
  */
-class Resque_Job_Creator
-{
+class Resque_Job_Creator {
 
 /**
  * Application Root Folder path
