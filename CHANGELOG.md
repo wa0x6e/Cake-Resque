@@ -1,5 +1,15 @@
 ##Changelog
 
+###**v3.3.6** [2012-05-18]
+
+* [new] `restart` now takes into account the workers your stopped and started just before. 
+* [new] More reliable worker detection on `start` and `startscheduler`
+* [fix] Upgrade CakeResqueBootstrap file with Cake2 version
+* [new] Add unit tests. Code coverage can be tracked on coveralls.io
+
+> **NOTE**: Workers status are stocked in a different format. Please *stop all your workers* first before updating.
+
+
 ###**v3.3.5** [2012-05-07]
 
 * [fix] Call kill command using an absolute path [bar] 
