@@ -18,6 +18,7 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+
 if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
 	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
 	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php';
@@ -37,6 +38,7 @@ if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
 	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php');
 }
 
+require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . 'kamisama' . DS . 'resque-status' . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
 
 Resque::setBackend(
 	Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'),
