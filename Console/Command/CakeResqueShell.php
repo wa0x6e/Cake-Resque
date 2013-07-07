@@ -300,6 +300,10 @@ class CakeResqueShell extends Shell {
 				'help' => __d('cake_resque', 'Clear all jobs inside a queue'),
 				'parser' => $clearParserArguments
 			))
+			->addSubcommand('reset', array(
+				'help' => __d('cake_resque', 'Reset CakeResque internal worker\'s saved status'),
+				'parser' => $clearParserArguments
+			))
 			->addSubcommand('stats', array(
 				'help' => __d('cake_resque', 'View stats about processed/failed jobs.'),
 				'parser' => $debugOptions
@@ -1077,6 +1081,19 @@ class CakeResqueShell extends Shell {
 		}
 
 		return true;
+	}
+
+/**
+ * Reset worker statuses
+ *
+ * @since 3.3.7
+ */
+	public function reset() {
+		$this->debug(__d('cake_resque', 'Emptying the worker database'));
+		$this->ResqueStatus->clearWorkers();
+		$this->debug(__d('cake_resque', 'Unregistering the scheduler worker'));
+		$this->ResqueStatus->unregisterSchedulerWorker();
+		$this->out('<success>' . __d('cake_resque', 'CakeResque state has been reseted') . '</success>');
 	}
 
 /**
