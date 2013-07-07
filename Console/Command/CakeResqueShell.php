@@ -1182,7 +1182,9 @@ class CakeResqueShell extends Shell {
 	}
 
 	public function debug($string) {
-		$this->out('<success>[DEBUG] ' . $string . '</success>', 1, Shell::VERBOSE);
+		if ($this->params['verbose']) {
+			$this->out('<success>[DEBUG] ' . $string . '</success>', 1, Shell::VERBOSE);
+		}
 	}
 
 /**

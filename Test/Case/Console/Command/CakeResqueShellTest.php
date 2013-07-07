@@ -50,7 +50,7 @@ class CakeResqueShellTest extends CakeTestCase {
 	public function testDebug() {
 		$shell = $this->getMock('CakeResqueShell', array('out'));
 		$shell->expects($this->at(0))->method('out')->with($this->stringContains('<success>[DEBUG] test string</success>'));
-		$shell->params['debug'] = true;
+		$shell->params['verbose'] = true;
 		$shell->debug('test string');
 	}
 
@@ -60,7 +60,7 @@ class CakeResqueShellTest extends CakeTestCase {
 	public function testDebugWhenDisabled() {
 		$shell = $this->getMock('CakeResqueShell', array('out'));
 		$shell->expects($this->never())->method('out');
-		$shell->params['debug'] = false;
+		$shell->params['verbose'] = false;
 		$shell->debug('test string');
 	}
 
@@ -872,7 +872,7 @@ class CakeResqueShellTest extends CakeTestCase {
 
 		$shell->expects($this->exactly(3))->method('out');
 		$shell->expects($this->at(0))->method('out')->with($this->matchesRegularExpression('/loading/i'));
-		$shell->expects($this->at(1))->method('out')->with($this->stringContains('no configured queues to load'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('no configured workers to load'));
 
 		$shell->load();
 	}
@@ -936,7 +936,7 @@ class CakeResqueShellTest extends CakeTestCase {
 		$shell = $this->getMock('CakeResqueShell', array('startscheduler', 'out'));
 
 		$shell->expects($this->at(0))->method('out')->with($this->stringContains('loading predefined workers'));
-		$shell->expects($this->at(1))->method('out')->with($this->stringContains('you have no configured queues to load'));
+		$shell->expects($this->at(1))->method('out')->with($this->stringContains('you have no configured workers to load'));
 		$shell->expects($this->exactly(3))->method('out');
 
 		Configure::write('CakeResque.Queues', null);
@@ -1322,7 +1322,7 @@ class CakeResqueShellTest extends CakeTestCase {
  */
 	public function testgetOptionParser() {
 		$commands = array('start', 'startscheduler', 'stop', 'pause', 'resume', 'cleanup', 'restart',
-			'clear', 'stats', 'tail', 'track', 'load');
+			'clear', 'reset', 'stats', 'tail', 'track', 'load');
 
 		$parser = $this->Shell->getOptionParser();
 		$this->assertInstanceOf('ConsoleOptionParser', $parser);
@@ -1830,6 +1830,12 @@ class CakeResqueShellTest extends CakeTestCase {
 
 		$root = vfsStream::setup('resque');
 		$this->assertEquals('./resque.php', $method->invoke($this->Shell, vfsStream::url('resque')));
+	}
+
+	public function testReset() {
+		$this->ResqueStatus->expects($this->at(0))->method('clearWorkers');
+		$this->ResqueStatus->expects($this->at(1))->method('unregisterSchedulerWorker');
+		$this->Shell->reset();
 	}
 
 }
