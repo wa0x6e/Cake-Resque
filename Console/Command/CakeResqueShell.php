@@ -69,7 +69,6 @@ class CakeResqueShell extends Shell {
 			$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
 		}
 
-		App::uses('ResqueStatus', 'CakeResque.Lib');
 		$this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::Redis());
 
 		$this->stdout->styles('success', array('text' => 'green'));
@@ -783,10 +782,11 @@ class CakeResqueShell extends Shell {
 				}
 
 				$killResponse = $this->_kill($signal, $pid);
+				$successCallback($worker);
 
 				if ($killResponse['code'] === 0) {
 					$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
-					$successCallback($worker);
+
 				} else {
 					$this->out('<error>' . $killResponse['message'] . '</error>');
 				}
@@ -804,7 +804,7 @@ class CakeResqueShell extends Shell {
 		$debug = isset($this->params['debug']) ? $this->params['debug'] : false;
 
 		if (Configure::read('CakeResque.Queues') == null) {
-			$this->out('   ' . __d('cake_resque', 'You have no configured queues to load.'));
+			$this->out('   ' . __d('cake_resque', 'You have no configured workers to load.'));
 		} else {
 			foreach (Configure::read('CakeResque.Queues') as $queue) {
 				$queue['debug'] = $debug;
@@ -885,7 +885,7 @@ class CakeResqueShell extends Shell {
 
 		$this->out('   ' . __d('cake_resque', 'Queues count : %d', count($queues)));
 		foreach ($queues as $queue) {
-			$this->out(sprintf("\t- %s \t : %12s %s", $queue, number_format($count[$queue]), __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : '')));
+			$this->out(sprintf("\t- %-15s : %12s %s", $queue, number_format($count[$queue]), __dn('cake_resque', 'pending job', 'pending jobs', $count[$queue]) . (!in_array($queue, $activeQueues) ? " <error>(unmonitored queue)</error>" : '')));
 		}
 
 		$this->out("\n");
