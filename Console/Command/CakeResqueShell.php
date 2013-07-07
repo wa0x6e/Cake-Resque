@@ -141,11 +141,6 @@ class CakeResqueShell extends Shell {
 					'short' => 'v',
 					'help' => __d('cake_resque', 'Log more verbose informations'),
 					'boolean' => true
-				),
-				'debug' => array(
-					'short' => 'd',
-					'help' => __d('cake_resque', 'Print debug informations'),
-					'boolean' => true
 				)
 			)
 		);
@@ -305,8 +300,7 @@ class CakeResqueShell extends Shell {
 				'parser' => $clearParserArguments
 			))
 			->addSubcommand('stats', array(
-				'help' => __d('cake_resque', 'View stats about processed/failed jobs.'),
-				'parser' => $debugOptions
+				'help' => __d('cake_resque', 'View stats about processed/failed jobs.')
 			))
 			->addSubcommand('tail', array(
 				'help' => __d('cake_resque', 'Tail the workers logs.')
@@ -315,8 +309,7 @@ class CakeResqueShell extends Shell {
 				'help' => __d('cake_resque', 'Track a job status.')
 			))
 			->addSubcommand('load', array(
-				'help' => __d('cake_resque', 'Load a set of predefined workers.'),
-				'parser' => $debugOptions
+				'help' => __d('cake_resque', 'Load a set of predefined workers.')
 		));
 	}
 
@@ -1189,9 +1182,7 @@ class CakeResqueShell extends Shell {
 	}
 
 	public function debug($string) {
-		if ((isset($this->_runtime['debug']) && $this->_runtime['debug'] === true) || (isset($this->params['debug']) && $this->params['debug'] === true)) {
-			$this->out('<success>[DEBUG] ' . $string . '</success>');
-		}
+		$this->out('<success>[DEBUG] ' . $string . '</success>', 1, Shell::VERBOSE);
 	}
 
 /**
