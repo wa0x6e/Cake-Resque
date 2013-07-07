@@ -1,5 +1,11 @@
 ##Changelog
 
+###**v3.3.7** [2012-07-07]
+
+* [new] Add `reset` to reset CakeResque internal state
+* [removed] Remove `--debug` option, in favor of `--verbose`
+* [fix] Some text formatting and other minor fixes
+
 ###**v3.3.6** [2012-05-18]
 
 * [new] `restart` now takes into account the workers your stopped and started just before. 
