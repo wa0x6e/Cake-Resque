@@ -88,6 +88,17 @@
 			)
 		)
 		*/
+		'Vendor' => array(
+			// If the CakeResque plugin was added directly or as a submodule, the dependencies
+			// were installed internally in /Plugin/CakeResque/vendor by Composer.
+			'path' => App::pluginPath('CakeResque') . 'vendor'
+
+			// If the CakeResque plugin AND dependencies were installed using Composer, everything
+			// was installed in the standard Composer location /Vendor. The CakeResque plugin
+			// is still installed in /Plugin/CakeResque but does not have an internal /vendor
+			// folder for the dependencies.
+			// 'path' => APP . 'Vendor'
+		),
 		'Resque' => array(
 
 			// Path to the php-resque library
