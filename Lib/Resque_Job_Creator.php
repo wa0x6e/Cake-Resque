@@ -21,6 +21,13 @@
 class Resque_Job_Creator {
 
 /**
+ * Application Root Folder path
+ *
+ * @var String
+ */
+	static $rootFolder = null;
+
+/**
  * Create and return a job instance
  *
  * @param string $className className of the job to instanciate
@@ -29,8 +36,12 @@ class Resque_Job_Creator {
  */
 	public static function createJob($className, $args) {
 		list($plugin, $model) = pluginSplit($className);
-		$appRoot = dirname(dirname(dirname(__DIR__)));
-		$classpath = $appRoot . DS . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Console' . DS . 'Command' . DS . $model . '.php';
+
+		if (self::$rootFolder === null) {
+			self::$rootFolder = dirname(dirname(dirname(__DIR__))) . DS;
+		}
+
+		$classpath = self::$rootFolder . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Console' . DS . 'Command' . DS . $model . '.php';
 
 		if (file_exists($classpath)) {
 			require_once $classpath;

@@ -52,7 +52,7 @@ class Resque_Job_CreatorTest extends CakeTestCase {
 		$shellClassFile = new File(self::$testDir . DS . 'Console' . DS . 'Command' . DS . 'NotAJobShellClass.php', true, 0755);
 		$shellClassFile->append('<?php class NotAJobShellClass { public function funcOne() {} }');
 
-		Resque_Job_Creator::$rootFolder = dirname(dirname((dirname(dirname(__DIR__))))) . DS;
+		Resque_Job_Creator::$rootFolder = self::$testDir . DS;
 
 		parent::setUpBeforeClass();
 	}
