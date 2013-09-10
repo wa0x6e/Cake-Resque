@@ -25,7 +25,7 @@ class Resque_Job_Creator {
  *
  * @var String
  */
-	static $rootFolder = null;
+	public static $rootFolder = null;
 
 /**
  * Create and return a job instance
