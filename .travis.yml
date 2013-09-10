@@ -6,9 +6,10 @@ php:
   - 5.5
 
 env:
-  - CAKE_VERSION=2.2.8 DB=mysql
+  - CAKE_VERSION=2.2.0 DB=mysql
+  - CAKE_VERSION=2.3.0 DB=mysql
+  - CAKE_VERSION=2.4.0 DB=mysql
   - CAKE_VERSION=master DB=mysql
-  - CAKE_VERSION=2.4 DB=mysql
 
 before_script:
   - wget https://github.com/nicolasff/phpredis/archive/2.2.3.zip -O php-redis.zip
