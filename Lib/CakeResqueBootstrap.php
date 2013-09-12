@@ -3,7 +3,7 @@
  * Bootstrap file
  *
  * Use to bootstrap the job classes
- * All code are from CakePHP bootstrap files
+ * All code is from CakePHP bootstrap files
  *
  * PHP version 5
  *
