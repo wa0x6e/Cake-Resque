@@ -43,7 +43,7 @@
 	Configure::write('CakeResque', array(
 		'Redis' => array(
 			'host' => 'localhost',		// Redis server hostname
-			'port' => 6379 ,			// Redis server port
+			'port' => 6379,				// Redis server port
 			'database' => 0,			// Redis database number
 			'namespace' => 'resque'		// Redis keys namespace
 		),

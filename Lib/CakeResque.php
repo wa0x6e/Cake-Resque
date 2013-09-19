@@ -51,8 +51,7 @@ Resque::setBackend(
  *
  * Proxy to Resque, enabling logging function
  */
-class CakeResque
-{
+class CakeResque {
 
 /**
  * Array containing all the queuing activity
