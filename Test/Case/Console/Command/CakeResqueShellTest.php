@@ -866,7 +866,7 @@ class CakeResqueShellTest extends CakeTestCase {
  */
 	public function testLoadEmpty() {
 		$shell = $this->Shell;
-		$shell::$cakeResque = $CakeResque = $this->CakeResque;
+		$shell::$cakeResque = $this->CakeResque;
 		Configure::write('CakeResque.Queues', null);
 		Configure::write('CakeResque.Scheduler.enabled', false);
 

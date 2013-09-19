@@ -247,16 +247,6 @@ class CakeResqueShell extends Shell {
 			)
 		);
 
-		$debugOptions = array(
-			'options' => array(
-				'debug' => array(
-					'short' => 'd',
-					'help' => __d('cake_resque', 'Print debug informations'),
-					'boolean' => true
-				)
-			)
-		);
-
 		return parent::getOptionParser()
 			->description(
 				__d('cake_resque', "A Shell to manage PHP Resque") . "\n" .
