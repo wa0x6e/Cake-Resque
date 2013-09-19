@@ -56,7 +56,7 @@ before_script:
   - cd ../../Console
 
 script:
-  - sh -c "if [ "$PHPCS" != '1' ]; then
+  - sh -c "if [ '$PHPCS' != '1' ]; then
       mkdir -p build/logs
       ./cake test $REPO_NAME All$REPO_NAME --stderr --configuration ../Plugin/$REPO_NAME/Test/phpunit.xml;
     else
@@ -64,4 +64,4 @@ script:
     fi"
 
 after_script:
-  - if [ "$COVERALLS" = '1' ]; then php ../Plugin/$REPO_NAME/vendor/bin/coveralls -v; fi
+  - sh -c "if [ '$COVERALLS' = '1' ]; then php ../Plugin/$REPO_NAME/vendor/bin/coveralls -v; fi"
