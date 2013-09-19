@@ -6,39 +6,62 @@ php:
   - 5.5
 
 env:
-  - CAKE_VERSION=2.2.0 DB=mysql
-  - CAKE_VERSION=2.3.0 DB=mysql
-  - CAKE_VERSION=2.4.0 DB=mysql
-  - CAKE_VERSION=master DB=mysql
+  global:
+    - REPO_NAME=CakeResque
+    - PHPREDIS_VERSION=2.2.4
+  matrix:
+    - CAKE_VERSION=2.2.0 DB=mysql
+    - CAKE_VERSION=2.3.0 DB=mysql
+    - CAKE_VERSION=2.4.0 DB=mysql
+    - CAKE_VERSION=2.5 DB=mysql
+    - CAKE_VERSION=master DB=mysql
+
+matrix:
+  include:
+    - php: 5.4
+      env:
+        - CAKE_VERSION=master DB=mysql COVERALLS=1
+    - php: 5.4
+      env:
+        - CAKE_VERSION=master DB=mysql PHPCS=1
 
 before_script:
-  - wget https://github.com/nicolasff/phpredis/archive/2.2.3.zip -O php-redis.zip
+  - wget https://github.com/nicolasff/phpredis/archive/$PHPREDIS_VERSION.zip -O php-redis.zip
   - unzip php-redis.zip
-  - cd phpredis-2.2.3/
+  - cd phpredis-$PHPREDIS_VERSION/
   - phpize
   - ./configure
   - make && make install
   - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - cd ../
-  - rm -R phpredis-2.2.3/
+  - rm -R phpredis-$PHPREDIS_VERSION/
   - git clone git://github.com/cakephp/cakephp ../cakephp && cd ../cakephp && git checkout $CAKE_VERSION
-  - cp -R ../Cake-Resque app/Plugin/CakeResque
+  - cp -R ../Cake-Resque app/Plugin/$REPO_NAME
   - chmod -R 777 ../cakephp/app/tmp
   - set +H
   - echo "
 
-    CakePlugin::loadAll(array('CakeResque' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
-  - cd app/Plugin/CakeResque
+    CakePlugin::loadAll(array('$REPO_NAME' => array('bootstrap' => true)));" >> ../cakephp/app/Config/bootstrap.php
+  - cd app/Plugin/$REPO_NAME
   - composer self-update
-  - composer install --prefer-source --dev
+  - composer install --prefer-source --dev --no-interaction
   - pear channel-discover pear.bovigo.org
   - pear install bovigo/vfsStream-beta
+  - sh -c "if [ '$COVERALLS' = '1' ]; then composer require --dev satooshi/php-coveralls:dev-master; fi"
+  - sh -c "if [ '$PHPCS' = '1' ]; then pear channel-discover pear.cakephp.org; fi"
+  - sh -c "if [ '$PHPCS' = '1' ]; then pear install --alldeps cakephp/CakePHP_CodeSniffer; fi"
+  - echo "# for php-coveralls
+    src_dir:./" > .coveralls.yml
   - phpenv rehash
   - cd ../../Console
 
 script:
-  - mkdir -p build/logs
-  - ./cake test CakeResque AllCakeResque --stderr --configuration ../Plugin/CakeResque/Test/phpunit.xml
+  - sh -c "if [ "$PHPCS" != '1' ]; then
+      mkdir -p build/logs
+      ./cake test $REPO_NAME All$REPO_NAME --stderr --configuration ../Plugin/$REPO_NAME/Test/phpunit.xml;
+    else
+      phpcs -p --ignore='Test/*,vendor/*' --extensions=php --standard=CakePHP ../Plugin/$REPO_NAME;
+    fi"
 
 after_script:
-  - php ../Plugin/CakeResque/vendor/bin/coveralls -v
+  - if [ "$COVERALLS" = '1' ]; then php ../Plugin/$REPO_NAME/vendor/bin/coveralls -v; fi
