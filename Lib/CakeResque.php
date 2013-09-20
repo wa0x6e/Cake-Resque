@@ -106,9 +106,29 @@ class CakeResque {
 		if ($config !== null) {
 			Configure::write('CakeResque', $config);
 		}
-		if (!Configure::check('CakeResque')) {
+
+		if (
+			($hasCheck = method_exists('Configure', 'check')) && !Configure::check('CakeResque') ||
+			!$hasCheck && !self::checkConfig('CakeResque')
+		) {
 			Configure::load('CakeResque.config');
 		}
+	}
+
+/**
+ * Returns true if given variable is set in Configure.
+ *
+ * Note: This is a mere port of Configure::check() implemented since CakePHP 2.3.
+ *
+ * @param string $var Variable name to check for
+ * @return boolean True if variable is there
+ * @see Configure::check()
+ */
+	public static function checkConfig($var = null) {
+		if (empty($var)) {
+			return false;
+		}
+		return Configure::read($var) !== null;
 	}
 
 /**
