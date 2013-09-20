@@ -1,6 +1,6 @@
 <?php
 /**
- * CakeResque bootstrap file
+ * CakeResque bootstrap file.
  *
  * Used to load CakeResque class and initialize it.
  *

@@ -46,6 +46,7 @@ class CakeResque {
 /**
  * Initialization.
  *
+ * @throws ConfigureException if needed configuration parameters are not found.
  * @param array $config Configuration options.
  * @return void
  */

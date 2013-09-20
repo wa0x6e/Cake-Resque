@@ -2,7 +2,7 @@
 /**
  * CakeResque configuration file
  *
- * Used to set the default values for the workers settings
+ * Default settings for Resque workers and queues.
  *
  * PHP version 5
  *
@@ -23,11 +23,11 @@
  *
  * ## Mandatory indexes :
  * Redis
- * 		default values used to connect to redis server
+ * 		Redis server settings
  * Worker
- * 		default values used for creating new worker
+ * 		Workers default settings
  * Resque
- * 		default values to init the php-resque library path
+ * 		Default values used to init the php-resque library path
  *
  * ## Optional indexes :
  * Queues
@@ -47,23 +47,13 @@
  *
  *   CakePlugin::load('CakeResque', array('bootstrap' => true));
  *
- * 2. If a 'CakeResque' configuration key already exists, then no default configuration is done
- * and the configuration file loaded must have all the necessary keys to work.
+ * 2. If a 'CakeResque' configuration key already exists, the default configuration will not be loaded,
+ * and the 'CakeResque' key is expected to contain all the values present in the default configuration.
  *
  *   Configure::load('my_cakeresque_config');
  *   CakePlugin::load('CakeResque', array('bootstrap' => true));
  *
- * 3. The default configuration file, can also be loaded from the App's bootstrap file, and
- * later modified (on demand) if needed. For this to work, the bootstrapping must be disabled
- * when loading the plugin (before loading the configuration file), and later be done explicitly
- * (after loading, and possibly modifying, the configuration file).
- *
- *   CakePlugin::load('CakeResque');
- *   Configure::load('CakeResque.config');
- *   // Edit configuration here
- *   CakePlugin::load('CakeResque', array('bootstrap' => true));
- *
- * 4. Another way to configure the plugin is to load it using a custom bootstrap file.
+ * 3. Another way to configure the plugin is to load it using a custom bootstrap file.
  *
  *   CakePlugin::load('CakeResque', array('bootstrap' => 'my_bootstrap'));
  *
