@@ -24,7 +24,6 @@
 		"kamisama/resque-status": ">=0.0.1"
 	},
 	"require-dev": {
-        "satooshi/php-coveralls": "dev-master",
         "mikey179/vfsStream": ">=1.2.0"
     },
 	"support": {
