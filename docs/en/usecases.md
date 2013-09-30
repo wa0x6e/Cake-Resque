@@ -80,7 +80,7 @@ class UsersController extends AppController
         $this->User->getEventManager()->attach(
             function($event) {
                 // In this case, $event->subject() == $this->User
-                CakeResque::enqueue('email', 'EmailSender', array('sendSignUpEmail', $event->subject()->id))
+                CakeResque::enqueue('email', 'EmailSenderShell', array('sendSignUpEmail', $event->subject()->id))
             },
             'Model.User.afterSignUp'
         );
@@ -159,7 +159,7 @@ class EmailSenderShell extends AppShell
             // Resend the email if fail
             // We're assuming here that the only possible SocketException is the one thrown
             // when the email fail to be sent
-            CakeResque::enqueue('email', 'EmailSender', array('sendSignUpEmail', $this->args[0]));
+            CakeResque::enqueue('email', 'EmailSenderShell', array('sendSignUpEmail', $this->args[0]));
         }
     }
 }
