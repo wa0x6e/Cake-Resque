@@ -44,7 +44,6 @@ if (!$found) {
 }
 
 array_push($argv, '--app', dirname(dirname(dirname(__DIR__))) . $ds);
-array_push($argv, '--app', dirname(dirname(dirname(__DIR__))) . $ds);
 
 unset($paths, $path, $found, $dispatcher, $root, $ds);
 
