@@ -35,13 +35,16 @@ foreach ($paths as $path) {
 }
 
 if (!$found) {
-	$root = dirname(dirname(dirname(dirname(__DIR__))));
+	$root = dirname(dirname(getenv('CAKE')));
 	if (!include $root . $ds . 'lib' . $ds . $dispatcher) {
 		trigger_error('Could not locate CakePHP core files.', E_USER_ERROR);
 	}
 } else {
 	include $found . $ds . $dispatcher;
 }
+
+array_push($argv, '--app', dirname(dirname(dirname(__DIR__))) . $ds);
+array_push($argv, '--app', dirname(dirname(dirname(__DIR__))) . $ds);
 
 unset($paths, $path, $found, $dispatcher, $root, $ds);
 
