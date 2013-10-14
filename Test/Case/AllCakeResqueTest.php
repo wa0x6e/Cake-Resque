@@ -23,8 +23,7 @@
  * @package 		CakeResque
  * @subpackage 	CakeResque.Test.Case
  */
-class AllCakeResqueTest extends CakeTestSuite
-{
+class AllCakeResqueTest extends CakeTestSuite {
 
 	public static function suite() {
 		$suite = new CakeTestSuite('All model tests');

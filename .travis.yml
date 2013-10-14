@@ -60,7 +60,7 @@ script:
       mkdir -p build/logs;
       ./cake test $REPO_NAME All$REPO_NAME --stderr --configuration ../Plugin/$REPO_NAME/Test/phpunit.xml;
     else
-      phpcs -p --ignore='Test/*,vendor/*' --extensions=php --standard=CakePHP ../Plugin/$REPO_NAME;
+      phpcs -p --ignore='vendor/*,node_modules/*' --extensions=php --standard=CakePHP ../Plugin/$REPO_NAME;
     fi"
 
 after_script:

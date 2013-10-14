@@ -24,8 +24,7 @@
  * @subpackage	CakeResque.Test.Case.Lib
  */
 
-class CakeResqueTest extends CakeTestCase
-{
+class CakeResqueTest extends CakeTestCase {
 
 	public function setUp() {
 		CakeResque::$resqueClass = $this->Resque = $this->getMockClass('Resque', array('enqueue'));
