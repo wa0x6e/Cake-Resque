@@ -54,42 +54,42 @@ class CakeResque {
 		self::loadConfig($config);
 
 		if (
-			!($Redis = Configure::read('CakeResque.Redis')) ||
-			!($ResqueLib = Configure::read('CakeResque.Resque.lib')) ||
-			!($SchedulerLib = Configure::read('CakeResque.Scheduler.lib'))
+			!($redis = Configure::read('CakeResque.Redis')) ||
+			!($resqueLib = Configure::read('CakeResque.Resque.lib')) ||
+			!($schedulerLib = Configure::read('CakeResque.Scheduler.lib'))
 		) {
 			throw new ConfigureException(__d('cake_resque', 'There is an error in the configuration file.'));
 		}
 
 		if (
-			empty($Redis['host']) ||
-			empty($Redis['port']) ||
-			(empty($Redis['database']) && !is_numeric($Redis['database'])) ||
-			empty($Redis['namespace'])
+			empty($redis['host']) ||
+			empty($redis['port']) ||
+			(empty($redis['database']) && !is_numeric($redis['database'])) ||
+			empty($redis['namespace'])
 		) {
 			throw new ConfigureException(__d('cake_resque', 'There is an error in the Redis configuration key.'));
 		}
 
 		$pluginVendorPath = CakePlugin::path('CakeResque') . 'vendor' . DS;
 
-		if (substr($ResqueLib, 0, 1) !== '/') {
-			$ResqueLib = $pluginVendorPath . $ResqueLib;
+		if (substr($resqueLib, 0, 1) !== '/') {
+			$resqueLib = $pluginVendorPath . $resqueLib;
 		}
-		$ResqueLib .= DS . 'lib' . DS;
+		$resqueLib .= DS . 'lib' . DS;
 
-		if (substr($SchedulerLib, 0, 1) !== '/') {
-			$SchedulerLib = $pluginVendorPath . $SchedulerLib;
+		if (substr($schedulerLib, 0, 1) !== '/') {
+			$schedulerLib = $pluginVendorPath . $schedulerLib;
 		}
-		$SchedulerLib .= DS . 'lib' . DS . 'ResqueScheduler' . DS;
+		$schedulerLib .= DS . 'lib' . DS . 'ResqueScheduler' . DS;
 
-		require_once realpath($ResqueLib . 'Resque.php');
-		require_once realpath($ResqueLib . 'Resque' . DS . 'Worker.php');
-		require_once realpath($SchedulerLib . 'ResqueScheduler.php');
-		require_once realpath($SchedulerLib . 'Stat.php');
-		require_once realpath($SchedulerLib . 'Job' . DS . 'Status.php');
+		require_once realpath($resqueLib . 'Resque.php');
+		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
+		require_once realpath($schedulerLib . 'ResqueScheduler.php');
+		require_once realpath($schedulerLib . 'Stat.php');
+		require_once realpath($schedulerLib . 'Job' . DS . 'Status.php');
 		require_once realpath($pluginVendorPath . 'kamisama' . DS . 'resque-status' . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
 
-		Resque::setBackend($Redis['host'] . ':' . $Redis['port'], $Redis['database'], $Redis['namespace']);
+		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace']);
 	}
 
 /**
