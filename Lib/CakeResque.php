@@ -18,34 +18,6 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-
-if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
-	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php';
-	require_once Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php';
-} else {
-	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque.php');
-	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib') . DS . 'lib' . DS . 'Resque' . DS . 'Worker.php');
-}
-
-
-if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
-	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'ResqueScheduler.php';
-	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Stat.php';
-	require_once Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php';
-} else {
-	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'ResqueScheduler.php');
-	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Stat.php');
-	require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib') . DS . 'lib' . DS . 'ResqueScheduler' . DS . 'Job' . DS . 'Status.php');
-}
-
-require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . 'kamisama' . DS . 'resque-status' . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
-
-Resque::setBackend(
-	Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'),
-	Configure::read('CakeResque.Redis.database'),
-	Configure::read('CakeResque.Redis.namespace')
-);
-
 /**
  * CakeResque Class
  *
@@ -70,6 +42,92 @@ class CakeResque {
  * @var string
  */
 	public static $resqueSchedulerClass = 'ResqueScheduler\ResqueScheduler';
+
+/**
+ * Initialization.
+ *
+ * @throws ConfigureException if needed configuration parameters are not found.
+ * @param array $config Configuration options.
+ * @return void
+ */
+	public static function init($config = null) {
+		self::loadConfig($config);
+
+		if (
+			!($redis = Configure::read('CakeResque.Redis')) ||
+			!($resqueLib = Configure::read('CakeResque.Resque.lib')) ||
+			!($schedulerLib = Configure::read('CakeResque.Scheduler.lib'))
+		) {
+			throw new ConfigureException(__d('cake_resque', 'There is an error in the configuration file.'));
+		}
+
+		if (
+			empty($redis['host']) ||
+			empty($redis['port']) ||
+			(empty($redis['database']) && !is_numeric($redis['database'])) ||
+			empty($redis['namespace'])
+		) {
+			throw new ConfigureException(__d('cake_resque', 'There is an error in the Redis configuration key.'));
+		}
+
+		$pluginVendorPath = CakePlugin::path('CakeResque') . 'vendor' . DS;
+
+		if (substr($resqueLib, 0, 1) !== '/') {
+			$resqueLib = $pluginVendorPath . $resqueLib;
+		}
+		$resqueLib .= DS . 'lib' . DS;
+
+		if (substr($schedulerLib, 0, 1) !== '/') {
+			$schedulerLib = $pluginVendorPath . $schedulerLib;
+		}
+		$schedulerLib .= DS . 'lib' . DS . 'ResqueScheduler' . DS;
+
+		require_once realpath($resqueLib . 'Resque.php');
+		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
+		require_once realpath($schedulerLib . 'ResqueScheduler.php');
+		require_once realpath($schedulerLib . 'Stat.php');
+		require_once realpath($schedulerLib . 'Job' . DS . 'Status.php');
+		require_once realpath($pluginVendorPath . 'kamisama' . DS . 'resque-status' . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
+
+		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace']);
+	}
+
+/**
+ * Load configuration.
+ *
+ * If 'CakeResque' configuration key is not set, the default configuration is loaded.
+ *
+ * @param array $config Configuration options.
+ * @return void
+ */
+	public static function loadConfig($config = null) {
+		if ($config !== null) {
+			Configure::write('CakeResque', $config);
+		}
+
+		if (
+			($hasCheck = method_exists('Configure', 'check')) && !Configure::check('CakeResque') ||
+			!$hasCheck && !self::checkConfig('CakeResque')
+		) {
+			Configure::load('CakeResque.config');
+		}
+	}
+
+/**
+ * Returns true if given variable is set in Configure.
+ *
+ * Note: This is a mere port of Configure::check() implemented since CakePHP 2.3.
+ *
+ * @param string $var Variable name to check for
+ * @return boolean True if variable is there
+ * @see Configure::check()
+ */
+	public static function checkConfig($var = null) {
+		if (empty($var)) {
+			return false;
+		}
+		return Configure::read($var) !== null;
+	}
 
 /**
  * Enqueue a Job
