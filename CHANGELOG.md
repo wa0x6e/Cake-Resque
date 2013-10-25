@@ -1,5 +1,12 @@
 ##Changelog
 
+###**v4.0.0** [2013-10-25]
+
+* [new] Fix #20: Ease personalized plugin configuration [@bar]
+* [fix] Fix #33: Don't use `sudo` when the current user is already the target user
+* [fix] Default process owner is the one running the webserver, and not the one owning the file
+* [fix] Fix #25: Workers now works with exotic directory structure
+
 ###**v3.3.8** [2013-08-22]
 
 * [fix] Handle custom cake `app` folder name
