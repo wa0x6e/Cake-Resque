@@ -488,7 +488,7 @@ class CakeResqueShell extends Shell {
 			$resqueBin = $scheduler ? './bin/resque-scheduler.php' : $this->_getResqueBinFile($this->_resqueLibrary);
 
 			$cmd = implode(' ', array(
-				sprintf("nohup sudo -u %s \\\n", $this->_runtime['user']),
+				sprintf("nohup %s \\\n", ($this->_runtime['user'] === $this->__getProcessOwner()) ? "" : "sudo -u " . $this->_runtime['user']),
 				sprintf("bash -c \"cd %s; \\\n", escapeshellarg($libraryPath)),
 				implode(' ', $envVars),
 				" \\\n",
@@ -1135,7 +1135,15 @@ class CakeResqueShell extends Shell {
 
 		$this->_runtime['queue'] = isset($this->_runtime['queue']) ? $this->_runtime['queue'] : Configure::read('CakeResque.Worker.queue');
 
-		$this->_runtime['user'] = isset($this->_runtime['user']) ? $this->_runtime['user'] : get_current_user();
+		// Validate user
+		if (isset($this->_runtime['user'])) {
+			$this->_runtime['user'] = $this->_runtime['user'];
+		} elseif (Configure::read('CakeResque.Worker.user')) {
+			$this->_runtime['user'] = Configure::read('CakeResque.Worker.user');
+		} else {
+			$user = $this->__getProcessOwner();
+			$this->_runtime['user'] = empty($user) ? get_current_user() : $user;
+		}
 
 		$this->_runtime['verbose'] = isset($this->params['verbose']) ? $this->params['verbose'] : Configure::read('CakeResque.Worker.verbose');
 
@@ -1248,6 +1256,26 @@ class CakeResqueShell extends Shell {
 			unlink($pidFile);
 			return (int)$pid;
 		}
+		return false;
+	}
+
+/**
+ * @since 4.0.0
+ * @codeCoverageIgnore
+ * @return string Username of the current process owner if found, else false
+ */
+	private function __getProcessOwner() {
+		if (function_exists('posix_getpwuid')) {
+			$a = posix_getpwuid(posix_getuid());
+			return $a['name'];
+		} else {
+			$user = trim(exec('whoami', $o, $code));
+			if ($code === 0) {
+				return $user;
+			}
+			return false;
+		}
+
 		return false;
 	}
 }
