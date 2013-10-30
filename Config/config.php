@@ -121,7 +121,10 @@ $config['CakeResque'] = array(
 		// this is the name of the vendor library
 		// Path is relative to the CakeResque/vendor
 		// Don't add trailing slash to path
-		'lib' => 'kamisama/php-resque-ex'
+		'lib' => 'kamisama/php-resque-ex',
+
+		// Path to the directory containing the worker PID files
+		'tmpdir' => App::pluginPath('CakeResque') . 'tmp' . DS
 	),
 
 	// Other usefull environment variable you wish to set

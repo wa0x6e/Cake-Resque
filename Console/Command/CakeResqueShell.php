@@ -476,7 +476,7 @@ class CakeResqueShell extends Shell {
 			}
 		}
 
-		$pidFile = App::pluginPath('CakeResque') . 'tmp' . DS . str_replace('.', '', microtime(true));
+		$pidFile = Configure::read('CakeResque.Resque.tmpdir') . str_replace('.', '', microtime(true));
 		$count = $this->_runtime['workers'];
 
 		$this->debug(__d('cake_resque', 'Will start ' . $count . ' workers'));
