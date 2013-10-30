@@ -843,7 +843,8 @@ class CakeResqueShell extends Shell {
 		// List of queues monitored by a worker
 		$activeQueues = array();
 		foreach ($workers as $worker) {
-			$activeQueues = array_merge($activeQueues, explode(',', array_pop(explode(':', $worker))));
+			$workerParams = explode(':', $worker);
+			$activeQueues = array_merge($activeQueues, explode(',', array_pop($workerParams)));
 		}
 
 		$this->out("\n");
