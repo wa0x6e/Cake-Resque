@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v4.0.1** [2013-10-29]
+
+* [new] Add setting to set a custom dir for the workers PID files
+
 ###**v4.0.0** [2013-10-25]
 
 * [new] Fix #20: Ease personalized plugin configuration [@bar]

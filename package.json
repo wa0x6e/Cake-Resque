@@ -1,6 +1,6 @@
 {
   "name": "CakeResque",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Resque plugin for CakePHP : for creating background jobs that can be processed offline later",
   "keywords": [
     "php-resque",
