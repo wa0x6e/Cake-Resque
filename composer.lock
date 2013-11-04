@@ -1,0 +1,395 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
+    ],
+    "hash": "dcbdb2e8f961381ee68c6e1a03d32a74",
+    "packages": [
+        {
+            "name": "composer/installers",
+            "version": "v1.0.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/composer/installers.git",
+                "reference": "b3bd071ea114a57212c75aa6a2eef5cfe0cc798f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/composer/installers/zipball/b3bd071ea114a57212c75aa6a2eef5cfe0cc798f",
+                "reference": "b3bd071ea114a57212c75aa6a2eef5cfe0cc798f",
+                "shasum": ""
+            },
+            "replace": {
+                "shama/baton": "*"
+            },
+            "require-dev": {
+                "composer/composer": "1.0.*@dev",
+                "phpunit/phpunit": "3.7.*"
+            },
+            "type": "composer-installer",
+            "extra": {
+                "class": "Composer\\Installers\\Installer",
+                "branch-alias": {
+                    "dev-master": "1.0-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Composer\\Installers\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kyle Robinson Young",
+                    "email": "kyle@dontkry.com",
+                    "homepage": "https://github.com/shama",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A multi-framework Composer library installer",
+            "homepage": "http://composer.github.com/installers/",
+            "keywords": [
+                "TYPO3 CMS",
+                "TYPO3 Flow",
+                "TYPO3 Neos",
+                "agl",
+                "cakephp",
+                "codeigniter",
+                "drupal",
+                "fuelphp",
+                "installer",
+                "joomla",
+                "kohana",
+                "laravel",
+                "li3",
+                "lithium",
+                "mako",
+                "modulework",
+                "phpbb",
+                "ppi",
+                "silverstripe",
+                "symfony",
+                "wordpress",
+                "zend"
+            ],
+            "time": "2013-08-20 04:37:09"
+        },
+        {
+            "name": "kamisama/monolog-init",
+            "version": "0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kamisama/Monolog-Init",
+                "reference": "0.1.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://github.com/kamisama/Monolog-Init/zipball/0.1.1",
+                "reference": "0.1.1",
+                "shasum": ""
+            },
+            "require": {
+                "monolog/monolog": ">=1.2.0",
+                "php": ">=5.3.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "MonologInit": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Wan Chen",
+                    "email": "kami@kamisama.me",
+                    "homepage": "http://www.kamisama.me",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Very basic and light Dependency Injector Container for Monolog",
+            "homepage": "http://www.github.com/kamisama/monolog-init/",
+            "keywords": [
+                "log"
+            ],
+            "time": "2012-09-27 12:17:01"
+        },
+        {
+            "name": "kamisama/php-resque-ex",
+            "version": "1.2.7",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kamisama/php-resque-ex.git",
+                "reference": "1fa1989ca1669b185ffd354ed0c574857545480d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kamisama/php-resque-ex/zipball/1fa1989ca1669b185ffd354ed0c574857545480d",
+                "reference": "1fa1989ca1669b185ffd354ed0c574857545480d",
+                "shasum": ""
+            },
+            "require": {
+                "ext-pcntl": "*",
+                "kamisama/monolog-init": ">=0.1.1",
+                "monolog/monolog": ">=1.2.0",
+                "php": ">=5.3.0"
+            },
+            "conflict": {
+                "chrisboulton/php-resque": "*"
+            },
+            "suggest": {
+                "fresque/fresque": "A command line tool to manage your workers"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Resque": "lib"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Wan Chen",
+                    "email": "kami@kamisama.me",
+                    "homepage": "http://www.kamisama.me",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Chris Boulton",
+                    "email": "chris@bigcommerce.com"
+                }
+            ],
+            "description": "Redis backed library for creating background jobs and processing them later. PHP port based on resque for Ruby.",
+            "homepage": "http://www.github.com/kamisama/php-resque-ex/",
+            "keywords": [
+                "background",
+                "job",
+                "php",
+                "queue",
+                "redis",
+                "resque"
+            ],
+            "time": "2013-10-15 15:35:49"
+        },
+        {
+            "name": "kamisama/php-resque-ex-scheduler",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kamisama/php-resque-ex-scheduler.git",
+                "reference": "1.1.1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kamisama/php-resque-ex-scheduler/zipball/1.1.1",
+                "reference": "1.1.1",
+                "shasum": ""
+            },
+            "require": {
+                "kamisama/php-resque-ex": ">=1.2.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "ResqueScheduler": "lib"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Wan Qi chen",
+                    "email": "kami@kamisama.me",
+                    "homepage": "http://www.kamisama.me",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Chris Boulton"
+                }
+            ],
+            "description": "php-resque-ex-scheduler is a PHP port of resque-scheduler, which adds support for scheduling jobs to PHP-Resque.",
+            "homepage": "http://www.github.com/kamisama/php-resque-ex-scheduler/",
+            "keywords": [
+                "background",
+                "cron",
+                "job",
+                "php",
+                "queue",
+                "redis",
+                "resque",
+                "schedule"
+            ],
+            "time": "2013-02-27 16:48:01"
+        },
+        {
+            "name": "kamisama/resque-status",
+            "version": "0.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/kamisama/ResqueStatus.git",
+                "reference": "0.0.2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/kamisama/ResqueStatus/zipball/0.0.2",
+                "reference": "0.0.2",
+                "shasum": ""
+            },
+            "require-dev": {
+                "satooshi/php-coveralls": "dev-master"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "ResqueStatus": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Wan Chen",
+                    "email": "kami@kamisama.me",
+                    "homepage": "http://www.kamisama.me",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A API for saving a php-resque worker settings and status",
+            "homepage": "http://github.com/kamisama/ResqueStatus",
+            "keywords": [
+                "php-resque",
+                "status",
+                "worker"
+            ],
+            "time": "2013-06-20 17:14:06"
+        },
+        {
+            "name": "monolog/monolog",
+            "version": "1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Seldaek/monolog.git",
+                "reference": "f72392d0e6eb855118f5a84e89ac2d257c704abd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Seldaek/monolog/zipball/f72392d0e6eb855118f5a84e89ac2d257c704abd",
+                "reference": "f72392d0e6eb855118f5a84e89ac2d257c704abd",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0",
+                "psr/log": "~1.0"
+            },
+            "require-dev": {
+                "doctrine/couchdb": "dev-master",
+                "mlehner/gelf-php": "1.0.*",
+                "raven/raven": "0.5.*"
+            },
+            "suggest": {
+                "doctrine/couchdb": "Allow sending log messages to a CouchDB server",
+                "ext-amqp": "Allow sending log messages to an AMQP server (1.0+ required)",
+                "ext-mongo": "Allow sending log messages to a MongoDB server",
+                "mlehner/gelf-php": "Allow sending log messages to a GrayLog2 server",
+                "raven/raven": "Allow sending log messages to a Sentry server"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "1.6.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "Monolog": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jordi Boggiano",
+                    "email": "j.boggiano@seld.be",
+                    "homepage": "http://seld.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Sends your logs to files, sockets, inboxes, databases and various web services",
+            "homepage": "http://github.com/Seldaek/monolog",
+            "keywords": [
+                "log",
+                "logging",
+                "psr-3"
+            ],
+            "time": "2013-07-28 22:38:30"
+        },
+        {
+            "name": "psr/log",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log",
+                "reference": "1.0.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://github.com/php-fig/log/archive/1.0.0.zip",
+                "reference": "1.0.0",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Psr\\Log\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "http://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "time": "2012-12-21 11:40:51"
+        }
+    ],
+    "packages-dev": null,
+    "aliases": [
+
+    ],
+    "minimum-stability": "stable",
+    "stability-flags": [
+
+    ],
+    "platform": {
+        "php": ">=5.3.0"
+    },
+    "platform-dev": [
+
+    ]
+}
