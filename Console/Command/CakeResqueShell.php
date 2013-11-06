@@ -49,7 +49,7 @@ class CakeResqueShell extends Shell {
 /**
  * Plugin version
  */
-	const VERSION = '4.0.0';
+	const VERSION = '4.0.2';
 
 /**
  * Startup callback.

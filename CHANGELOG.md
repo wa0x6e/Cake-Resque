@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v4.0.2** [2013-11-06]
+
+* [fix] Uses `App::uses` in CakeResqueBootstrap
+
 ###**v4.0.1** [2013-10-29]
 
 * [new] Add setting to set a custom dir for the workers PID files

@@ -50,4 +50,4 @@ unset($paths, $path, $found, $dispatcher, $root, $ds);
 new ShellDispatcher($argv);
 App::uses('Shell', 'Console');
 
-require_once 'Resque_Job_Creator.php';
+App::uses('Resque_Job_Creator', 'CakeResque.Lib');
