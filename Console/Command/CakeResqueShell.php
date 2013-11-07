@@ -57,17 +57,20 @@ class CakeResqueShell extends Shell {
  * Initializes defaults.
  */
 	public function startup() {
-		if (substr(Configure::read('CakeResque.Resque.lib'), 0, 1) === '/') {
-			$this->_resqueLibrary = Configure::read('CakeResque.Resque.lib') . DS;
-		} else {
-			$this->_resqueLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Resque.lib')) . DS;
-		}
+		$resqueLib = Configure::read('CakeResque.Resque.lib');
+		$schedulerLib = Configure::read('CakeResque.Scheduler.lib');
 
-		if (substr(Configure::read('CakeResque.Scheduler.lib'), 0, 1) === '/') {
-			$this->_ResqueSchedulerLibrary = Configure::read('CakeResque.Scheduler.lib') . DS;
-		} else {
-			$this->_ResqueSchedulerLibrary = realpath(App::pluginPath('CakeResque') . 'vendor' . DS . Configure::read('CakeResque.Scheduler.lib')) . DS;
+		$pluginVendorPath = CakePlugin::path('CakeResque') . 'vendor' . DS;
+
+		if (substr($resqueLib, 0, 1) !== '/') {
+			$resqueLib = $pluginVendorPath . $resqueLib;
 		}
+		$this->_resqueLibrary = realpath($resqueLib) . DS;
+
+		if (substr($schedulerLib, 0, 1) !== '/') {
+			$schedulerLib = $pluginVendorPath . $schedulerLib;
+		}
+		$this->_resqueSchedulerLibrary = realpath($schedulerLib) . DS;
 
 		$this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::Redis());
 
