@@ -469,8 +469,19 @@ class CakeResqueShell extends Shell {
 			$bootstrapPath = App::pluginPath('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
 		}
 
+		if ($scheduler) {
+			$libraryPath = $this->_resqueSchedulerLibrary;
+			$logFile = Configure::read('CakeResque.Scheduler.log');
+			$resqueBin = './bin/resque-scheduler.php';
+			$vars = Configure::read('CakeResque.Scheduler.Env');
+		} else {
+			$libraryPath = $this->_resqueLibrary;
+			$logFile = $this->_runtime['log'];
+			$resqueBin = $this->_getResqueBinFile($this->_resqueLibrary);
+			$vars = Configure::read('CakeResque.Env');
+		}
+
 		$envVars = array();
-		$vars = $scheduler ? Configure::read('CakeResque.Scheduler.Env') : Configure::read('CakeResque.Env');
 		foreach ($vars as $key => $val) {
 			if (is_int($key) && isset($_SERVER[$val])) {
 				$envVars[] = sprintf("%s=%s", $val, escapeshellarg($_SERVER[$val]));
@@ -480,40 +491,36 @@ class CakeResqueShell extends Shell {
 		}
 
 		$pidFile = Configure::read('CakeResque.Resque.tmpdir') . str_replace('.', '', microtime(true));
+
+		$cmd = implode(' ', array(
+			sprintf("nohup %s \\\n", ($this->_runtime['user'] === $this->__getProcessOwner()) ? "" : "sudo -u " . $this->_runtime['user']),
+			sprintf("bash -c \"cd %s; \\\n", escapeshellarg($libraryPath)),
+			implode(' ', $envVars),
+			" \\\n",
+			sprintf("%sVERBOSE=true \\\n", $this->_runtime['verbose'] ? 'V' : ''),
+			sprintf("QUEUE=%s \\\n", escapeshellarg($this->_runtime['queue'])),
+			sprintf("PIDFILE=%s \\\n", escapeshellarg($pidFile)),
+			sprintf("APP_INCLUDE=%s \\\n", escapeshellarg($bootstrapPath)),
+			sprintf("RESQUE_PHP=%s \\\n", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
+			sprintf("INTERVAL=%s \\\n", $this->_runtime['interval']),
+			sprintf("REDIS_BACKEND=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
+			sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
+			sprintf("REDIS_NAMESPACE=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
+			sprintf("CAKE=%s \\\n", escapeshellarg(CAKE)),
+			sprintf("APP=%s \\\n", escapeshellarg(APP)),
+			sprintf("COUNT=%s \\\n", 1),
+			sprintf("LOGHANDLER=%s \\\n", escapeshellarg($this->_runtime['Log']['handler'])),
+			sprintf("LOGHANDLERTARGET=%s \\\n", escapeshellarg($this->_runtime['Log']['target'])),
+			sprintf("php %s \\\n", escapeshellarg($resqueBin)),
+			sprintf(">> %s \\\n", escapeshellarg($logFile)),
+			"2>&1\" >/dev/null 2>&1 &"
+		));
+
 		$count = $this->_runtime['workers'];
 
 		$this->debug(__d('cake_resque', 'Will start ' . $count . ' workers'));
 
 		for ($i = 1; $i <= $count; $i++) {
-
-			$libraryPath = $scheduler ? $this->_ResqueSchedulerLibrary : $this->_resqueLibrary;
-			$logFile = $scheduler ? Configure::read('CakeResque.Scheduler.log') : $this->_runtime['log'];
-			$resqueBin = $scheduler ? './bin/resque-scheduler.php' : $this->_getResqueBinFile($this->_resqueLibrary);
-
-			$cmd = implode(' ', array(
-				sprintf("nohup %s \\\n", ($this->_runtime['user'] === $this->__getProcessOwner()) ? "" : "sudo -u " . $this->_runtime['user']),
-				sprintf("bash -c \"cd %s; \\\n", escapeshellarg($libraryPath)),
-				implode(' ', $envVars),
-				" \\\n",
-				sprintf("%sVERBOSE=true \\\n", $this->_runtime['verbose'] ? 'V' : ''),
-				sprintf("QUEUE=%s \\\n", escapeshellarg($this->_runtime['queue'])),
-				sprintf("PIDFILE=%s \\\n", escapeshellarg($pidFile)),
-				sprintf("APP_INCLUDE=%s \\\n", escapeshellarg($bootstrapPath)),
-				sprintf("RESQUE_PHP=%s \\\n", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
-				sprintf("INTERVAL=%s \\\n", $this->_runtime['interval']),
-				sprintf("REDIS_BACKEND=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
-				sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
-				sprintf("REDIS_NAMESPACE=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
-				sprintf("CAKE=%s \\\n", escapeshellarg(CAKE)),
-				sprintf("APP=%s \\\n", escapeshellarg(APP)),
-				sprintf("COUNT=%s \\\n", 1),
-				sprintf("LOGHANDLER=%s \\\n", escapeshellarg($this->_runtime['Log']['handler'])),
-				sprintf("LOGHANDLERTARGET=%s \\\n", escapeshellarg($this->_runtime['Log']['target'])),
-				sprintf("php %s \\\n", escapeshellarg($resqueBin)),
-				sprintf(">> %s \\\n", escapeshellarg($logFile)),
-				"2>&1\" >/dev/null 2>&1 &"
-			));
-
 			$this->debug(__d('cake_resque', 'Starting worker (' . $i . ')'));
 			$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
 
@@ -529,8 +536,8 @@ class CakeResqueShell extends Shell {
 					$this->out(".", 0);
 					usleep(self::$checkStartedWorkerBufferTime);
 				}
-				if (false !== $pid = $this->_checkStartedWorker($pidFile)) {
 
+				if (false !== $pid = $this->_checkStartedWorker($pidFile)) {
 					$success = true;
 					$this->out(' <success>' . __d('cake_resque', 'Done') . '</success>');
 
