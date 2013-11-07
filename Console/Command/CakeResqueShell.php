@@ -318,7 +318,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		$result = call_user_func_array(
-			self::$cakeResque . '::enqueue',
+			CakeResqueShell::$cakeResque . '::enqueue',
 			array($this->args[0], $this->args[1], explode(',', $this->args[2]))
 		);
 		$this->out('<success>' . __d('cake_resque', 'Succesfully enqueued Job #%s', $result) . '</success>');
@@ -340,7 +340,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		$result = call_user_func_array(
-			self::$cakeResque . '::enqueueIn',
+			CakeResqueShell::$cakeResque . '::enqueueIn',
 			array($this->args[0], $this->args[1], $this->args[2], explode(',', $this->args[3]), (isset($this->args[4]) ? (bool)$this->args[4] : false))
 		);
 
@@ -363,7 +363,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		$result = call_user_func_array(
-			self::$cakeResque . '::enqueueAt',
+			CakeResqueShell::$cakeResque . '::enqueueAt',
 			array($this->args[0], $this->args[1], $this->args[2], explode(',', $this->args[3]), (isset($this->args[4]) ? (bool)$this->args[4] : false))
 		);
 		$this->out('<success>' . __d('cake_resque', 'Succesfully scheduled Job #%s', $result) . '</success>');
