@@ -502,6 +502,7 @@ class CakeResqueShell extends Shell {
 				sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
 				sprintf("REDIS_NAMESPACE=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
 				sprintf("CAKE=%s \\\n", escapeshellarg(CAKE)),
+				sprintf("APP=%s \\\n", escapeshellarg(APP)),
 				sprintf("COUNT=%s \\\n", 1),
 				sprintf("LOGHANDLER=%s \\\n", escapeshellarg($this->_runtime['Log']['handler'])),
 				sprintf("LOGHANDLERTARGET=%s \\\n", escapeshellarg($this->_runtime['Log']['target'])),
