@@ -464,13 +464,15 @@ class CakeResqueShell extends Shell {
 			);
 		}
 
+		$ResqueStatus = $this->ResqueStatus;
+
 		if ($scheduler) {
 			if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
 				$this->out('<error>' . __d('cake_resque', 'Scheduler Worker is not enabled') . '</error>');
 				return false;
 			}
 
-			if ($this->ResqueStatus->isRunningSchedulerWorker()) {
+			if ($ResqueStatus->isRunningSchedulerWorker()) {
 				$this->out('<warning>' . __d('cake_resque', 'The scheduler worker is already running') . '</warning>');
 				return false;
 			}
@@ -566,10 +568,12 @@ class CakeResqueShell extends Shell {
 
 					$workerSettings['workers'] = 1;
 					unset($workerSettings['debug']);
+
 					if ($scheduler) {
-						$this->ResqueStatus->registerSchedulerWorker($pid);
+						$ResqueStatus->registerSchedulerWorker($pid);
 					}
-					$this->ResqueStatus->addWorker($pid, $workerSettings);
+
+					$ResqueStatus->addWorker($pid, $workerSettings);
 
 					break;
 				}
@@ -693,7 +697,7 @@ class CakeResqueShell extends Shell {
 		foreach ($activeWorkers as &$worker) {
 			$worker = (string)$worker;
 		}
-		$pausedWorkers = $this->ResqueStatus->getPausedWorker();
+		$pausedWorkers = $ResqueStatus->getPausedWorker();
 
 		return $this->_sendSignal(
 			__d('cake_resque', 'Pausing workers'),
@@ -734,7 +738,7 @@ class CakeResqueShell extends Shell {
 
 		return $this->_sendSignal(
 			__d('cake_resque', 'Resuming workers'),
-			$this->ResqueStatus->getPausedWorker(),
+			$ResqueStatus->getPausedWorker(),
 			__d('cake_resque', 'There is no paused workers to resume ...'),
 			__d('cake_resque', 'Paused workers list'),
 			__d('cake_resque', 'Resume all workers'),
@@ -760,8 +764,9 @@ class CakeResqueShell extends Shell {
 				__d('cake_resque', "This function requires the PCNTL extension") . '</error>');
 		}
 
+		$ResqueStatus = $this->ResqueStatus;
+
 		if ($formatListItem === null) {
-			$ResqueStatus = $this->ResqueStatus;
 			$formatListItem = function ($worker, $i) use ($ResqueStatus) {
 				return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 					CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker)));
@@ -773,8 +778,8 @@ class CakeResqueShell extends Shell {
 		if (empty($workers)) {
 			$this->out('   ' . $noWorkersMessage);
 		} else {
-
 			$workerIndex = array();
+
 			if (!$this->params['all'] && count($workers) > 1) {
 				$this->out($listTitle . ':');
 				$i = 1;
@@ -795,7 +800,6 @@ class CakeResqueShell extends Shell {
 				} else {
 					$workerIndex[] = $in;
 				}
-
 			} else {
 				$workerIndex = range(1, count($workers));
 			}
@@ -804,7 +808,7 @@ class CakeResqueShell extends Shell {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
-				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
+				if (Configure::read('CakeResque.Scheduler.enabled') === true && $ResqueStatus->isSchedulerWorker($worker)) {
 					if ($schedulerWorkerAction !== null) {
 						$schedulerWorkerAction($worker);
 					}
@@ -890,6 +894,8 @@ class CakeResqueShell extends Shell {
  * @return void
  */
 	public function stats() {
+		$ResqueStatus = $this->ResqueStatus;
+
 		$workers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
 
 		// List of all queues
@@ -935,13 +941,13 @@ class CakeResqueShell extends Shell {
 		$this->out('<info>' . __d('cake_resque', 'Workers Stats') . '</info>');
 		$this->out('   ' . __d('cake_resque', 'Workers count : %s', count($workers)));
 
-		$pausedWorkers = $this->ResqueStatus->getPausedWorker();
+		$pausedWorkers = $ResqueStatus->getPausedWorker();
 		$schedulerWorkers = array();
 
 		if (!empty($workers)) {
 			$this->out("\t<info>" . strtoupper(__d('cake_resque', 'regular workers')) . "</info>");
 			foreach ($workers as $worker) {
-				if (Configure::read('CakeResque.Scheduler.enabled') === true && $this->ResqueStatus->isSchedulerWorker($worker)) {
+				if (Configure::read('CakeResque.Scheduler.enabled') === true && $ResqueStatus->isSchedulerWorker($worker)) {
 					$schedulerWorkers[] = $worker;
 					continue;
 				}
@@ -1133,10 +1139,12 @@ class CakeResqueShell extends Shell {
  * @return void
  */
 	public function reset() {
+		$ResqueStatus = $this->ResqueStatus;
+
 		$this->debug(__d('cake_resque', 'Emptying the worker database'));
-		$this->ResqueStatus->clearWorkers();
+		$ResqueStatus->clearWorkers();
 		$this->debug(__d('cake_resque', 'Unregistering the scheduler worker'));
-		$this->ResqueStatus->unregisterSchedulerWorker();
+		$ResqueStatus->unregisterSchedulerWorker();
 		$this->out('<success>' . __d('cake_resque', 'CakeResque state has been reseted') . '</success>');
 	}
 
