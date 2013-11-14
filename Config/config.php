@@ -207,5 +207,9 @@ $config['CakeResque'] = array(
 			'handler' => 'RotatingFile',
 			'target' => TMP . 'logs' . DS . 'resque-scheduler.log'
 		)
+	),
+	'Status' => array(
+		// Path to the resque-status library
+		'lib' => 'kamisama/resque-status',
 	)
 );
