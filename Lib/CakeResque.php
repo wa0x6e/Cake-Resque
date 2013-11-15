@@ -56,7 +56,8 @@ class CakeResque {
 		if (
 			!($redis = Configure::read('CakeResque.Redis')) ||
 			!($resqueLib = Configure::read('CakeResque.Resque.lib')) ||
-			!($schedulerLib = Configure::read('CakeResque.Scheduler.lib'))
+			!($schedulerLib = Configure::read('CakeResque.Scheduler.lib')) ||
+			!($statusLib = Configure::read('CakeResque.Status.lib'))
 		) {
 			throw new ConfigureException(__d('cake_resque', 'There is an error in the configuration file.'));
 		}
@@ -82,12 +83,16 @@ class CakeResque {
 		}
 		$schedulerLib .= DS . 'lib' . DS . 'ResqueScheduler' . DS;
 
+		if (substr($statusLib, 0, 1) !== '/') {
+			$statusLib = $pluginVendorPath . $statusLib;
+		}
+
 		require_once realpath($resqueLib . 'Resque.php');
 		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
 		require_once realpath($schedulerLib . 'ResqueScheduler.php');
 		require_once realpath($schedulerLib . 'Stat.php');
 		require_once realpath($schedulerLib . 'Job' . DS . 'Status.php');
-		require_once realpath($pluginVendorPath . 'kamisama' . DS . 'resque-status' . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
+		require_once realpath($statusLib . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
 
 		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace']);
 	}
