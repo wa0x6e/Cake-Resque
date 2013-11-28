@@ -86,13 +86,14 @@ class CakeResque {
 		if (substr($statusLib, 0, 1) !== '/') {
 			$statusLib = $pluginVendorPath . $statusLib;
 		}
+		$statusLib .= DS . 'src' . DS . 'ResqueStatus' . DS;
 
 		require_once realpath($resqueLib . 'Resque.php');
 		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
 		require_once realpath($schedulerLib . 'ResqueScheduler.php');
 		require_once realpath($schedulerLib . 'Stat.php');
 		require_once realpath($schedulerLib . 'Job' . DS . 'Status.php');
-		require_once realpath($statusLib . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
+		require_once realpath($statusLib . 'ResqueStatus.php');
 
 		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace']);
 	}
