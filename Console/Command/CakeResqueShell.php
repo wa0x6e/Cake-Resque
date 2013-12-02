@@ -77,7 +77,7 @@ class CakeResqueShell extends Shell {
 		}
 		$this->_resqueSchedulerLibrary = realpath($schedulerLib) . DS;
 
-		$this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::Redis());
+		$this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::redis());
 
 		$this->stdout->styles('success', array('text' => 'green'));
 		$this->stdout->styles('bold', array('bold' => true));

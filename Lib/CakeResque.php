@@ -297,7 +297,7 @@ class CakeResque {
  * @return [type] [description]
  */
 	public static function getQueues() {
-		return Resque::Redis()->smembers('queues');
+		return Resque::redis()->smembers('queues');
 	}
 
 /**
@@ -308,7 +308,7 @@ class CakeResque {
  * @return bool 	False if clearing the queue fail
  */
 	public static function clearQueue($queue) {
-		return Resque::Redis()->ltrim('queue:' . $queue, 1, 0) !== false;
+		return Resque::redis()->ltrim('queue:' . $queue, 1, 0) !== false;
 	}
 
 /**
@@ -319,7 +319,7 @@ class CakeResque {
  * @return int 				Number of jobs
  */
 	public static function getQueueLength($queue) {
-		return Resque::Redis()->llen('queue:' . $queue);
+		return Resque::redis()->llen('queue:' . $queue);
 	}
 
 /**
@@ -328,6 +328,6 @@ class CakeResque {
  * @return [type]         [description]
  */
 	public static function getWorkerStartDate($worker) {
-		return Resque::Redis()->get('worker:' . $worker . ':started');
+		return Resque::redis()->get('worker:' . $worker . ':started');
 	}
 }
