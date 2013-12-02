@@ -34,14 +34,19 @@ class CakeResqueShell extends Shell {
 	protected $_runtime = array();
 
 /**
- * CakeResque class, proxying the Resque library
+ * CakeResque class, proxying the Resque library.
+ *
+ * Actually needed for testing purposes.
+ *
  * @var string
  */
 	public static $cakeResque = 'CakeResque';
 
 /**
- * Pause time before rechecking if a worker is started
- * in microseconds
+ * Pause time before rechecking if a worker is started in microseconds.
+ *
+ * Actually needed for testing purposes.
+ *
  * @var integer
  */
 	public static $checkStartedWorkerBufferTime = 100000;

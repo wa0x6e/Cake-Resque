@@ -26,19 +26,28 @@
 class CakeResque {
 
 /**
- * Array containing all the queuing activity
+ * Array containing all the queuing activity.
+ *
+ * Actually needed for testing purposes and DebugKitEx plugin.
+ *
  * @var array
  */
 	public static $logs = array();
 
 /**
- * Resque classname
+ * Resque classname.
+ *
+ * Actually needed for testing purposes.
+ *
  * @var string
  */
 	public static $resqueClass = 'Resque';
 
 /**
- * ResqueScheduler classname
+ * ResqueScheduler classname.
+ *
+ * Actually needed for testing purposes.
+ *
  * @var string
  */
 	public static $resqueSchedulerClass = 'ResqueScheduler\ResqueScheduler';
@@ -135,14 +144,13 @@ class CakeResque {
 	}
 
 /**
- * Enqueue a Job
- * and keep a log for debugging
+ * Enqueue a Job and keep a log for debugging.
  *
- * @param  string 	$queue       Name of the queue to enqueue the job to
- * @param  string  	$class       Class of the job
- * @param  array  	$args        Arguments passed to the job
- * @param  boolean 	$trackStatus Whether to track the status of the job
- * @return string 	Job Id
+ * @param string $queue Name of the queue to enqueue the job to.
+ * @param string $class Class of the job.
+ * @param array $args Arguments passed to the job.
+ * @param boolean $trackStatus Whether to track the status of the job.
+ * @return string Job Id.
  */
 	public static function enqueue($queue, $class, $args = array(), $trackStatus = null) {
 		if ($trackStatus === null) {
@@ -172,15 +180,15 @@ class CakeResque {
 	}
 
 /**
- * Enqueue a Job at a certain time
+ * Enqueue a Job at a certain time.
  *
- * @param  int|DateTime $at			timestamp or DateTime object giving the time when the job should be enqueued
- * @param  string 		$queue      Name of the queue to enqueue the job to
- * @param  string  		$class      Class of the job
- * @param  array  		$args       Arguments passed to the job
- *
- * @since  2.3.0
- * @return string 	Job Id
+ * @param int|DateTime $at Timestamp or DateTime object giving the time when the job should be enqueued.
+ * @param string $queue Name of the queue to enqueue the job to.
+ * @param string $class Class of the job.
+ * @param array $args Arguments passed to the job.
+ * @param boolean $trackStatus Whether to track the status of the job.
+ * @since 2.3.0
+ * @return string Job Id.
  */
 	public static function enqueueAt($at, $queue, $class, $args = array(), $trackStatus = null) {
 		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
@@ -215,15 +223,15 @@ class CakeResque {
 	}
 
 /**
- * Enqueue a Job after a certain time
+ * Enqueue a Job after a certain time.
  *
- * @param  int 		$in 		Number of second to wait from now before queueing the job
- * @param  string 	$queue      Name of the queue to enqueue the job to
- * @param  string  	$class      Class of the job
- * @param  array  	$args       Arguments passed to the job
- *
- * @since  2.3.0
- * @return string 	Job Id
+ * @param int $in Number of second to wait from now before queueing the job.
+ * @param string $queue Name of the queue to enqueue the job to.
+ * @param string $class Class of the job.
+ * @param array $args Arguments passed to the job.
+ * @param boolean $trackStatus Whether to track the status of the job.
+ * @since 2.3.0
+ * @return string Job Id.
  */
 	public static function enqueueIn($in, $queue, $class, $args = array(), $trackStatus = null) {
 		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
