@@ -1260,6 +1260,8 @@ class CakeResqueShellTest extends CakeTestCase {
 			array($out, $out, $in)
 		);
 
+		$this->Shell->ResqueStatus = $this->ResqueStatus;
+
 		$this->Shell->expects($this->at(0))->method('out')->with($this->stringContains('Creating workers'));
 		$this->Shell->expects($this->once())->method('_validate')->will($this->returnValue(false));
 		$this->Shell->expects($this->exactly(1))->method('out');
