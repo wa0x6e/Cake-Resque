@@ -293,11 +293,15 @@ class CakeResque {
 	}
 
 /**
+ * Get the queues's names.
+ *
+ * @return array Array containing the queues' names.
+ * @see CakeResqueShell::clear()
+ * @see CakeResqueShell::stats()
  * @codeCoverageIgnore
- * @return [type] [description]
  */
 	public static function getQueues() {
-		return Resque::redis()->smembers('queues');
+		return Resque::queues();
 	}
 
 /**
