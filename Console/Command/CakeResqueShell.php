@@ -599,7 +599,6 @@ class CakeResqueShell extends Shell {
  * @see CakeResqueShell::_sendSignal()
  */
 	public function stop() {
-		App::uses('CakeTime', 'Utility');
 		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
@@ -645,8 +644,6 @@ class CakeResqueShell extends Shell {
  * @see CakeResqueShell::_sendSignal()
  */
 	public function cleanup() {
-		App::uses('CakeTime', 'Utility');
-
 		$actionMessage = function ($pid) {
 			return __d('cake_resque', 'Cleaning up %s ... ', $pid);
 		};
@@ -680,7 +677,6 @@ class CakeResqueShell extends Shell {
  * @see CakeResqueShell::_sendSignal()
  */
 	public function pause() {
-		App::uses('CakeTime', 'Utility');
 		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
@@ -691,12 +687,14 @@ class CakeResqueShell extends Shell {
 			$ResqueStatus->setPausedWorker((string)$worker);
 		};
 
-		// Compute list of pause workers
+		// Active workers
 		$this->debug(__d('cake_resque', 'Fetching list of active workers'));
 		$activeWorkers = call_user_func(CakeResqueShell::$cakeResque . '::getWorkers');
-		foreach ($activeWorkers as &$worker) {
+		array_walk($activeWorkers, function (&$worker) {
 			$worker = (string)$worker;
-		}
+		});
+
+		// Paused workers
 		$pausedWorkers = $ResqueStatus->getPausedWorker();
 
 		return $this->_sendSignal(
@@ -725,7 +723,6 @@ class CakeResqueShell extends Shell {
  * @see CakeResqueShell::_sendSignal()
  */
 	public function resume() {
-		App::uses('CakeTime', 'Utility');
 		$ResqueStatus = $this->ResqueStatus;
 
 		$actionMessage = function ($pid) {
@@ -768,6 +765,7 @@ class CakeResqueShell extends Shell {
 
 		if ($formatListItem === null) {
 			$formatListItem = function ($worker, $i) use ($ResqueStatus) {
+				App::uses('CakeTime', 'Utility');
 				return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
 					CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker)));
 			};
