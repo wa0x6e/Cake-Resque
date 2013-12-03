@@ -55,6 +55,8 @@ class CakeResque {
 /**
  * Initialization.
  *
+ * It loads the required classes for web and cli environments.
+ *
  * @throws ConfigureException if needed configuration parameters are not found.
  * @param array $config Configuration options.
  * @return void
@@ -266,27 +268,39 @@ class CakeResque {
 	}
 
 /**
+ * Get the job status.
+ *
+ * @param string $jobId Job Id.
+ * @return int Job status.
+ * @see CakeResqueShell::track()
  * @codeCoverageIgnore
- * @param  [type] $jobId [description]
- * @return [type]        [description]
  */
 	public static function getJobStatus($jobId) {
-		$status = new Resque_Job_Status($jobId);
-		return $status->get();
+		$JobStatus = new Resque_Job_Status($jobId);
+		return $JobStatus->get();
 	}
 
 /**
+ * Get the failed job's log.
+ *
+ * @param string $jobId Job Id.
+ * @return array Array containint the failed job's log.
+ * @see CakeResqueShell::track()
  * @codeCoverageIgnore
- * @param  [type] $jobId [description]
- * @return [type]        [description]
  */
 	public static function getFailedJobLog($jobId) {
 		return Resque_Failure_Redis::get($jobId);
 	}
 
 /**
+ * Get all workers' instances.
+ *
+ * @return array Array of worker's instances.
+ * @see CakeResqueShell::cleanup()
+ * @see CakeResqueShell::pause()
+ * @see CakeResqueShell::stats()
+ * @see CakeResqueShell::stop()
  * @codeCoverageIgnore
- * @return [type] [description]
  */
 	public static function getWorkers() {
 		return (array)Resque_Worker::all();
@@ -339,9 +353,13 @@ class CakeResque {
 	}
 
 /**
+ * Get the worker start date.
+ *
+ * @param string $worker Worker name, e.g. 'localhost:30677:default'.
+ * @return string Worker start date, e.g. 'Tue Dec 03 10:07:35 ART 2013'.
+ * @see CakeResqueShell::_sendSignal()
+ * @see CakeResqueShell::stats()
  * @codeCoverageIgnore
- * @param  [type] $worker [description]
- * @return [type]         [description]
  */
 	public static function getWorkerStartDate($worker) {
 		return Resque::redis()->get('worker:' . $worker . ':started');
