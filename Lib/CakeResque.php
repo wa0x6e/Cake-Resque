@@ -322,14 +322,16 @@ class CakeResque {
 	}
 
 /**
- * Return the number of jobs inside a queue
+ * Get the number of jobs inside a queue.
  *
+ * @param string $queue Queue name, e.g. 'default'.
+ * @return int Number of jobs.
+ * @see CakeResqueShell::clear()
+ * @see CakeResqueShell::stats()
  * @codeCoverageIgnore
- * @param  String 	$queue 	Queue name
- * @return int 				Number of jobs
  */
-	public static function getQueueLength($queue) {
-		return Resque::redis()->llen('queue:' . $queue);
+	public static function getQueueSize($queue) {
+		return Resque::size($queue);
 	}
 
 /**
