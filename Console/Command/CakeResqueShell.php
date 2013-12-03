@@ -268,7 +268,7 @@ class CakeResqueShell extends Shell {
 		return parent::getOptionParser()
 			->description(
 				__d('cake_resque', "A Shell to manage PHP Resque") . "\n" .
-				__d('cake_resque', "Version " . self::VERSION) . "\n" .
+				__d('cake_resque', "Version " . CakeResqueShell::VERSION) . "\n" .
 				__d('cake_resque', "Wan Chen (2013)")
 				)
 			->addSubcommand('start', array(
@@ -555,7 +555,7 @@ class CakeResqueShell extends Shell {
 			while ($attempt-- > 0) {
 				for ($j = 0; $j < 3;$j++) {
 					$this->out(".", 0);
-					usleep(self::$checkStartedWorkerBufferTime);
+					usleep(CakeResqueShell::$checkStartedWorkerBufferTime);
 				}
 
 				if (false !== $pid = $this->_checkStartedWorker($pidFile)) {
