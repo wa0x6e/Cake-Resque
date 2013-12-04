@@ -18,6 +18,8 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+App::uses('Folder', 'Utility');
+
 /**
  * CakeResque Class
  *
@@ -73,17 +75,17 @@ class CakeResque {
 
 		$pluginVendorPath = CakePlugin::path('CakeResque') . 'vendor' . DS;
 
-		if (substr($resqueLib, 0, 1) !== '/') {
+		if (!Folder::isAbsolute($resqueLib)) {
 			$resqueLib = $pluginVendorPath . $resqueLib;
 		}
 		$resqueLib .= DS . 'lib' . DS;
 
-		if (substr($schedulerLib, 0, 1) !== '/') {
+		if (!Folder::isAbsolute($schedulerLib)) {
 			$schedulerLib = $pluginVendorPath . $schedulerLib;
 		}
 		$schedulerLib .= DS . 'lib' . DS . 'ResqueScheduler' . DS;
 
-		if (substr($statusLib, 0, 1) !== '/') {
+		if (!Folder::isAbsolute($statusLib)) {
 			$statusLib = $pluginVendorPath . $statusLib;
 		}
 
