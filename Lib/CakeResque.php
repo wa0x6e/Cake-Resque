@@ -321,22 +321,26 @@ class CakeResque {
 /**
  * Clear all the queue's jobs.
  *
- * Attempt to remove the queue from the queues set, to avoid pollution.
- *
  * @param string $queue Queue name, e.g. 'default'.
  * @return boolean True on success, false on failure.
  * @see CakeResqueShell::clear()
  * @codeCoverageIgnore
  */
 	public static function clearQueue($queue) {
-		$Redis = Resque::redis();
+		return Resque::redis()->ltrim('queue:' . $queue, 1, 0);
+	}
 
-		$cleared = $Redis->ltrim('queue:' . $queue, 1, 0);
-		if ($cleared !== false) {
-			$Redis->srem('queues', $queue);
-		}
-
-		return $cleared;
+/**
+ * Remove the queue from the queues.
+ *
+ * @param string $queue Queue name, e.g. 'default'.
+ * @return boolean True on success, false on failure.
+ * @see CakeResqueShell::clear()
+ * @see CakeResqueShell::stop()
+ * @codeCoverageIgnore
+ */
+	public static function removeQueue($queue) {
+		return Resque::redis()->srem('queues', $queue);
 	}
 
 /**

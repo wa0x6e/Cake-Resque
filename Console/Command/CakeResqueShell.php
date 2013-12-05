@@ -595,6 +595,8 @@ class CakeResqueShell extends Shell {
  * Will ask the user to choose the worker to stop, from a list of workers, if more
  * than one worker is running, or if --all is not passed.
  *
+ * If the queues a worker is pooling from are empty, they are removed from the queues list.
+ *
  * @return void
  * @see CakeResqueShell::_sendSignal()
  */
@@ -613,6 +615,14 @@ class CakeResqueShell extends Shell {
 			list($host, $pid, $queue) = explode(':', (string)$worker);
 			$ResqueStatus->setPausedWorker((string)$worker, false);
 			$ResqueStatus->removeWorker($pid);
+
+			$queues = $worker->queues(false);
+			foreach ($queues as $queue) {
+				$size = call_user_func_array(CakeResqueShell::$cakeResque . '::getQueueSize', array($queue));
+				if ($size === 0) {
+					call_user_func_array(CakeResqueShell::$cakeResque . '::removeQueue', array($queue));
+				}
+			}
 		};
 
 		return $this->_sendSignal(
@@ -1069,6 +1079,8 @@ class CakeResqueShell extends Shell {
  * Remove all jobs inside a queue. If more than one queue is present, it will prompt
  * the user which queue to clear via a menu.
  *
+ * If the queues are empty, they are removed from the queues list.
+ *
  * @since 3.3.0
  * @return bool False is clearing the queues fails.
  */
@@ -1115,12 +1127,14 @@ class CakeResqueShell extends Shell {
 		}
 
 		foreach ($queueIndex as $index) {
+			$queue = $queues[$index - 1];
 
-			$this->out(__d('cake_resque', 'Clearing %s ... ', $queues[$index - 1]), 0);
+			$this->out(__d('cake_resque', 'Clearing %s ... ', $queue), 0);
 
-			$code = call_user_func_array(CakeResqueShell::$cakeResque . '::clearQueue', array($queues[$index - 1]));
+			$cleared = call_user_func_array(CakeResqueShell::$cakeResque . '::clearQueue', array($queue));
 
-			if ($code) {
+			if ($cleared) {
+				call_user_func_array(CakeResqueShell::$cakeResque . '::removeQueue', array($queue));
 				$this->out('<success>' . __d('cake_resque', 'Done') . '</success>');
 			} else {
 				$this->out('<error>' . __d('cake_resque', 'Fail') . '</error>');
