@@ -1360,7 +1360,7 @@ class CakeResqueShell extends Shell {
  * @return void
  */
 	protected function _tail($path) {
-		$his->_exec('tail -f ' . escapeshellarg($path));
+		$this->_exec('tail -f ' . escapeshellarg($path));
 	}
 
 /**
