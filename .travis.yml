@@ -25,6 +25,9 @@ matrix:
       env:
         - CAKE_VERSION=master DB=mysql PHPCS=1
 
+services:
+  - redis-server
+
 before_script:
   - wget https://github.com/nicolasff/phpredis/archive/$PHPREDIS_VERSION.zip -O php-redis.zip
   - unzip php-redis.zip
