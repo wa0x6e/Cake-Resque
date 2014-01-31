@@ -28,25 +28,36 @@ App::uses('Folder', 'Utility');
 class CakeResque {
 
 /**
- * Array containing all the queuing activity
+ * Array containing all the queuing activity.
+ *
+ * Actually needed for testing purposes and DebugKitEx plugin.
+ *
  * @var array
  */
 	public static $logs = array();
 
 /**
- * Resque classname
+ * Resque classname.
+ *
+ * Actually needed for testing purposes.
+ *
  * @var string
  */
 	public static $resqueClass = 'Resque';
 
 /**
- * ResqueScheduler classname
+ * ResqueScheduler classname.
+ *
+ * Actually needed for testing purposes.
+ *
  * @var string
  */
 	public static $resqueSchedulerClass = 'ResqueScheduler\ResqueScheduler';
 
 /**
  * Initialization.
+ *
+ * It loads the required classes for web and cli environments.
  *
  * @throws ConfigureException if needed configuration parameters are not found.
  * @param array $config Configuration options.
@@ -137,14 +148,13 @@ class CakeResque {
 	}
 
 /**
- * Enqueue a Job
- * and keep a log for debugging
+ * Enqueue a Job and keep a log for debugging.
  *
- * @param  string 	$queue       Name of the queue to enqueue the job to
- * @param  string  	$class       Class of the job
- * @param  array  	$args        Arguments passed to the job
- * @param  boolean 	$trackStatus Whether to track the status of the job
- * @return string 	Job Id
+ * @param string $queue Name of the queue to enqueue the job to.
+ * @param string $class Class of the job.
+ * @param array $args Arguments passed to the job.
+ * @param boolean $trackStatus Whether to track the status of the job.
+ * @return string Job Id.
  */
 	public static function enqueue($queue, $class, $args = array(), $trackStatus = null) {
 		if ($trackStatus === null) {
@@ -174,15 +184,15 @@ class CakeResque {
 	}
 
 /**
- * Enqueue a Job at a certain time
+ * Enqueue a Job at a certain time.
  *
- * @param  int|DateTime $at			timestamp or DateTime object giving the time when the job should be enqueued
- * @param  string 		$queue      Name of the queue to enqueue the job to
- * @param  string  		$class      Class of the job
- * @param  array  		$args       Arguments passed to the job
- *
- * @since  2.3.0
- * @return string 	Job Id
+ * @param int|DateTime $at Timestamp or DateTime object giving the time when the job should be enqueued.
+ * @param string $queue Name of the queue to enqueue the job to.
+ * @param string $class Class of the job.
+ * @param array $args Arguments passed to the job.
+ * @param boolean $trackStatus Whether to track the status of the job.
+ * @since 2.3.0
+ * @return string Job Id.
  */
 	public static function enqueueAt($at, $queue, $class, $args = array(), $trackStatus = null) {
 		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
@@ -217,15 +227,15 @@ class CakeResque {
 	}
 
 /**
- * Enqueue a Job after a certain time
+ * Enqueue a Job after a certain time.
  *
- * @param  int 		$in 		Number of second to wait from now before queueing the job
- * @param  string 	$queue      Name of the queue to enqueue the job to
- * @param  string  	$class      Class of the job
- * @param  array  	$args       Arguments passed to the job
- *
- * @since  2.3.0
- * @return string 	Job Id
+ * @param int $in Number of second to wait from now before queueing the job.
+ * @param string $queue Name of the queue to enqueue the job to.
+ * @param string $class Class of the job.
+ * @param array $args Arguments passed to the job.
+ * @param boolean $trackStatus Whether to track the status of the job.
+ * @since 2.3.0
+ * @return string Job Id.
  */
 	public static function enqueueIn($in, $queue, $class, $args = array(), $trackStatus = null) {
 		if (Configure::read('CakeResque.Scheduler.enabled') !== true) {
@@ -260,68 +270,104 @@ class CakeResque {
 	}
 
 /**
+ * Get the job status.
+ *
+ * @param string $jobId Job Id.
+ * @return int Job status.
+ * @see CakeResqueShell::track()
  * @codeCoverageIgnore
- * @param  [type] $jobId [description]
- * @return [type]        [description]
  */
 	public static function getJobStatus($jobId) {
-		$status = new Resque_Job_Status($jobId);
-		return $status->get();
+		$JobStatus = new Resque_Job_Status($jobId);
+		return $JobStatus->get();
 	}
 
 /**
+ * Get the failed job's log.
+ *
+ * @param string $jobId Job Id.
+ * @return array Array containint the failed job's log.
+ * @see CakeResqueShell::track()
  * @codeCoverageIgnore
- * @param  [type] $jobId [description]
- * @return [type]        [description]
  */
 	public static function getFailedJobLog($jobId) {
 		return Resque_Failure_Redis::get($jobId);
 	}
 
 /**
+ * Get all workers' instances.
+ *
+ * @return array Array of worker's instances.
+ * @see CakeResqueShell::cleanup()
+ * @see CakeResqueShell::pause()
+ * @see CakeResqueShell::stats()
+ * @see CakeResqueShell::stop()
  * @codeCoverageIgnore
- * @return [type] [description]
  */
 	public static function getWorkers() {
 		return (array)Resque_Worker::all();
 	}
 
 /**
+ * Get the queues's names.
+ *
+ * @return array Array containing the queues' names.
+ * @see CakeResqueShell::clear()
+ * @see CakeResqueShell::stats()
  * @codeCoverageIgnore
- * @return [type] [description]
  */
 	public static function getQueues() {
-		return Resque::Redis()->smembers('queues');
+		return Resque::queues();
 	}
 
 /**
- * Clear all the queue jobs'
+ * Clear all the queue's jobs.
  *
+ * @param string $queue Queue name, e.g. 'default'.
+ * @return boolean True on success, false on failure.
+ * @see CakeResqueShell::clear()
  * @codeCoverageIgnore
- * @param  String 	$queue 	Name of the queue to empty
- * @return bool 	False if clearing the queue fail
  */
 	public static function clearQueue($queue) {
-		return Resque::Redis()->ltrim('queue:' . $queue, 1, 0) !== false;
+		return Resque::redis()->ltrim('queue:' . $queue, 1, 0);
 	}
 
 /**
- * Return the number of jobs inside a queue
+ * Remove the queue from the queues.
  *
+ * @param string $queue Queue name, e.g. 'default'.
+ * @return boolean True on success, false on failure.
+ * @see CakeResqueShell::clear()
+ * @see CakeResqueShell::stop()
  * @codeCoverageIgnore
- * @param  String 	$queue 	Queue name
- * @return int 				Number of jobs
  */
-	public static function getQueueLength($queue) {
-		return Resque::Redis()->llen('queue:' . $queue);
+	public static function removeQueue($queue) {
+		return Resque::redis()->srem('queues', $queue);
 	}
 
 /**
+ * Get the number of jobs inside a queue.
+ *
+ * @param string $queue Queue name, e.g. 'default'.
+ * @return int Number of jobs.
+ * @see CakeResqueShell::clear()
+ * @see CakeResqueShell::stats()
  * @codeCoverageIgnore
- * @param  [type] $worker [description]
- * @return [type]         [description]
+ */
+	public static function getQueueSize($queue) {
+		return Resque::size($queue);
+	}
+
+/**
+ * Get the worker start date.
+ *
+ * @param string $worker Worker name, e.g. 'localhost:30677:default'.
+ * @return string Worker start date, e.g. 'Tue Dec 03 10:07:35 ART 2013'.
+ * @see CakeResqueShell::_sendSignal()
+ * @see CakeResqueShell::stats()
+ * @codeCoverageIgnore
  */
 	public static function getWorkerStartDate($worker) {
-		return Resque::Redis()->get('worker:' . $worker . ':started');
+		return Resque::redis()->get('worker:' . $worker . ':started');
 	}
 }

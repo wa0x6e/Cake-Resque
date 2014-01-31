@@ -96,8 +96,8 @@ $config['CakeResque'] = array(
 		// Enabling this will allow you to track a job status by its ID
 		// Job status are purged after 24 hours
 		//
-		// You can also defined per-job tracking by passing true/false
-		// as fourth argument when calling CakeResque::enqueue();
+		// You can also define per-job tracking by passing true/false when calling
+		// CakeResque::enqueue(), CakeResque::enqueueAt() or CakeResque::enqueueIn()
 		'track' => false
 	),
 	/*
