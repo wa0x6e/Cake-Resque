@@ -405,14 +405,14 @@ class CakeResqueShell extends Shell {
 	public function tail() {
 		$logs = array();
 		$i = 1;
-		$workers = $this->ResqueStatus->getWorkers();
+		$workersArgs = $this->ResqueStatus->getWorkers();
 
-		foreach ($workers as $worker) {
-			if ($worker['log'] != '') {
-				$logs[] = $worker['log'];
+		foreach ($workersArgs as $workerArgs) {
+			if ($workerArgs['log'] != '') {
+				$logs[] = $workerArgs['log'];
 			}
-			if ($worker['Log']['handler'] == 'RotatingFile') {
-				$fileInfo = pathinfo($worker['Log']['target']);
+			if ($workerArgs['Log']['handler'] == 'RotatingFile') {
+				$fileInfo = pathinfo($workerArgs['Log']['target']);
 				$pattern = $fileInfo['dirname'] . DS . $fileInfo['filename'] . '-*' . (!empty($fileInfo['extension']) ? '.' . $fileInfo['extension'] : '');
 
 				$logs = array_merge($logs, glob($pattern));
@@ -874,14 +874,16 @@ class CakeResqueShell extends Shell {
  */
 	public function load() {
 		$this->out('<info>' . __d('cake_resque', 'Loading predefined workers') . '</info>');
-		$debug = isset($this->params['debug']) ? $this->params['debug'] : false;
 
-		if (Configure::read('CakeResque.Queues') == null) {
+		$debug = isset($this->params['debug']) ? $this->params['debug'] : false;
+		$queues = Configure::read('CakeResque.Queues');
+
+		if ($queues === null) {
 			$this->out('   ' . __d('cake_resque', 'You have no configured workers to load.'));
 		} else {
-			foreach (Configure::read('CakeResque.Queues') as $queue) {
-				$queue['debug'] = $debug;
-				$this->start($queue);
+			foreach ($queues as $workerArgs) {
+				$workerArgs['debug'] = $debug;
+				$this->start($workerArgs);
 			}
 		}
 
@@ -901,22 +903,22 @@ class CakeResqueShell extends Shell {
  * @see ResqueStatus\ResqueStatus::getWorkers()
  */
 	public function restart() {
-		$workers = $this->ResqueStatus->getWorkers();
+		$workersArgs = $this->ResqueStatus->getWorkers();
 
 		$this->params['all'] = true;
 		$this->stop();
 
 		$this->out('<info>' . __d('cake_resque', 'Restarting workers') . '</info>');
-		if (!empty($workers)) {
+		if (!empty($workersArgs)) {
 			$debug = $this->params['debug'];
-			$this->debug(__d('cake_resque', 'Found ' . count($workers) . ' workers to restart'));
+			$this->debug(__d('cake_resque', 'Found ' . count($workersArgs) . ' workers to restart'));
 
-			foreach ($workers as $worker) {
-				$worker['debug'] = $debug;
-				if (isset($worker['type']) && $worker['type'] === 'scheduler') {
-					$this->startScheduler($worker);
+			foreach ($workersArgs as $workerArgs) {
+				$workerArgs['debug'] = $debug;
+				if (isset($workerArgs['type']) && $workerArgs['type'] === 'scheduler') {
+					$this->startScheduler($workerArgs);
 				} else {
-					$this->start($worker);
+					$this->start($workerArgs);
 				}
 			}
 			$this->out('');
