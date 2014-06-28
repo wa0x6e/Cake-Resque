@@ -1,0 +1,11 @@
+{
+  "name": "CakeResque",
+  "description": "CakeResque Cascading style sheet builder",
+  "version": "2.0.333",
+  "author": "Kamisama",
+  "devDependencies": {
+    "grunt": "~0.4.0",
+    "grunt-bump": "0.0.2",
+    "grunt-replace": "~0.4.0"
+  }
+}

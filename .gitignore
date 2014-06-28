@@ -1,1 +1,3 @@
-/_site/
+/vendor/
+
+/src/CakeResque/webroot/css/node_modules/
