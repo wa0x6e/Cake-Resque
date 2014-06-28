@@ -8,11 +8,52 @@
 
 <url>
   <loc>http://cakeresque.kamisama.me/</loc>
+  <changefreq>weekly</changefreq>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/usage</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
 </url>
 <url>
   <loc>http://cakeresque.kamisama.me/install</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
 </url>
 <url>
-  <loc>http://cakeresque.kamisama.me/changelog</loc>
+  <loc>http://cakeresque.kamisama.me/usecases</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/fr/</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/fr/usage</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/commands</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/fr/install</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/fr/usecases</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.64</priority>
+</url>
+<url>
+  <loc>http://cakeresque.kamisama.me/fr/commands</loc>
+  <changefreq>weekly</changefreq>
+  <priority>0.64</priority>
 </url>
 </urlset>
