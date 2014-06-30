@@ -75,7 +75,7 @@ CakePlugin::load(array( # or CakePlugin::loadAll(array(
 ~~~ .language-php
 public function perform() {
 	$this->initialize();
-	$this->{array_shift($this->args)}();
+	return $this->runCommand($this->args[0], $this->args);
 }
 ~~~
 
