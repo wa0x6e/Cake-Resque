@@ -72,6 +72,7 @@ CakePlugin::load(array( # ou CakePlugin::loadAll(array(
 ~~~ .language-php
 public function perform() {
 	$this->initialize();
+	$this->loadTasks();
 	return $this->runCommand($this->args[0], $this->args);
 }
 ~~~
@@ -86,6 +87,7 @@ class AppShell extends Shell
 	public function perform()
 	{
 		$this->initialize();
+		$this->loadTasks();
 		$this->{array_shift($this->args)}();
 	}
 }
