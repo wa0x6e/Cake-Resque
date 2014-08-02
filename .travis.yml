@@ -45,6 +45,8 @@ before_script:
   - git clone -b master https://github.com/FriendsOfCake/travis.git --depth 1 ../travis
   - ../travis/before_script.sh
   - find ./ -type d -print
+  - locate php-resque-ex
+  - locate resque
 
 script:
   - ../travis/script.sh
