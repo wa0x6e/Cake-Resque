@@ -31,6 +31,7 @@ class Resque_Job_Creator {
  * Create and return a job instance
  *
  * @param string $className className of the job to instanciate
+ * @param array $args Array of method name and arguments used to build the job
  * @return object $args a job instance
  * @throws Resque_Exception when the class is not found, or does not follow the job file convention
  */

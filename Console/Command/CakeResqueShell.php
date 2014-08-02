@@ -64,6 +64,8 @@ class CakeResqueShell extends Shell {
  * Startup callback.
  *
  * Initializes defaults.
+ *
+ * @return void
  */
 	public function startup() {
 		$resqueLib = Configure::read('CakeResque.Resque.lib');
@@ -442,8 +444,8 @@ class CakeResqueShell extends Shell {
 /**
  * Start the scheduler worker.
  *
- * @since 2.3.0
  * @param array $args Command line arguments used to start the worker with.
+ * @since 2.3.0
  * @return bool False is starting the worker fails.
  */
 	public function startScheduler($args = null) {
@@ -784,6 +786,18 @@ class CakeResqueShell extends Shell {
  *
  * Note: The workers status is conveniently stored by ResqueStatus.
  *
+ * @param string $title Action title
+ * @param array $workers List of workers
+ * @param string $noWorkersMessage Message when there is not workers
+ * @param string $listTitle Title of the list of workers
+ * @param string $allActionMessage Message for executing the action on all workers
+ * @param string $promptMessage Prompt message
+ * @param string $schedulerWorkerActionMessage Message for executing the action on the scheduler worker
+ * @param string $workerActionMessage Mesage for executing the action on a regular worker
+ * @param function $formatListItem Function used to format each list item
+ * @param function $successCallback Action executed on success
+ * @param string $signal Signal to send to the worker process
+ * @param function $schedulerWorkerAction Action to execute on the scheduled worker
  * @return void
  * @see ResqueStatus\ResqueStatus::isSchedulerWorker()
  */
@@ -1205,8 +1219,8 @@ class CakeResqueShell extends Shell {
  *
  * Also, print the errors.
  *
- * @since 1.0
  * @param array $args Command line arguments used to start the worker with.
+ * @since 1.0
  * @return bool True if all options are valid, false otherwise.
  */
 	protected function _validate($args = null) {
@@ -1305,6 +1319,7 @@ class CakeResqueShell extends Shell {
 /**
  * Output debugging information.
  *
+ * @param string $string Debug message to display
  * @return void
  */
 	public function debug($string) {
@@ -1319,8 +1334,8 @@ class CakeResqueShell extends Shell {
  * Maintain backward compatibility, as newer version of php-resque has that file
  * in another location.
  *
- * @since 3.3.2
  * @param string $base Folder path for php-resque.
+ * @since 3.3.2
  * @return string Relative path to php-resque executable file.
  */
 	protected function _getResqueBinFile($base) {
@@ -1341,10 +1356,10 @@ class CakeResqueShell extends Shell {
 /**
  * Return kill command syntax, intended to be used with exec().
  *
+ * @param string $signal Kill Signal.
+ * @param string $pid Process id.
  * @since 3.3.4
  * @codeCoverageIgnore
- * @param string Kill Signal.
- * @param string Process id.
  * @return array
  */
 	protected function _kill($signal, $pid) {
@@ -1356,9 +1371,9 @@ class CakeResqueShell extends Shell {
 /**
  * Outputs the last part of a log file.
  *
+ * @param string $path Path to the file to tail.
  * @since 3.3.6
  * @codeCoverageIgnore
- * @param string $path Path to the file to tail.
  * @return void
  */
 	protected function _tail($path) {
@@ -1368,9 +1383,9 @@ class CakeResqueShell extends Shell {
 /**
  * Execute a shell command.
  *
+ * @param string $cmd Command to execute.
  * @since 3.3.6
  * @codeCoverageIgnore
- * @param string $cmd Command to execute.
  * @return void
  */
 	protected function _exec($cmd) {
@@ -1380,9 +1395,9 @@ class CakeResqueShell extends Shell {
 /**
  * Check if the worker has started.
  *
+ * @param string $pidFile Path to the file containing the worker PID.
  * @since 3.3.6
  * @codeCoverageIgnore
- * @param string $pidFile Path to the file containing the worker PID.
  * @return mixed Worker PID if worker is started, false otherwise.
  */
 	protected function _checkStartedWorker($pidFile) {

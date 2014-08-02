@@ -59,8 +59,8 @@ class CakeResque {
  *
  * It loads the required classes for web and cli environments.
  *
- * @throws ConfigureException if needed configuration parameters are not found.
  * @param array $config Configuration options.
+ * @throws ConfigureException if needed configuration parameters are not found.
  * @return void
  */
 	public static function init($config = null) {
