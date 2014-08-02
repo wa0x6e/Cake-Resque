@@ -66,6 +66,29 @@ class CakeResque {
 	public static function init($config = null) {
 		self::loadConfig($config);
 
+		// Find and initialize Composer
+		$files = array(
+			__DIR__ . '/../../vendor/autoload.php',
+			__DIR__ . '/../../../autoload.php',
+			__DIR__ . '/../../../../autoload.php',
+			__DIR__ . '/../vendor/autoload.php',
+		);
+
+		foreach ($files as $file) {
+			if (file_exists($file)) {
+				require_once $file;
+				break;
+			}
+		}
+
+		if (!class_exists('Composer\Autoload\ClassLoader', false)) {
+			throw new ConfigureException(
+				'You need to set up the project dependencies using the following commands:' . PHP_EOL .
+				'curl -s http://getcomposer.org/installer | php' . PHP_EOL .
+				'php composer.phar install' . PHP_EOL
+			);
+		}
+
 		if (
 			!($redis = Configure::read('CakeResque.Redis')) ||
 			!($resqueLib = Configure::read('CakeResque.Resque.lib')) ||
@@ -83,29 +106,6 @@ class CakeResque {
 		) {
 			throw new ConfigureException(__d('cake_resque', 'There is an error in the Redis configuration key.'));
 		}
-
-		$pluginVendorPath = CakePlugin::path('CakeResque') . 'vendor' . DS;
-
-		if (!Folder::isAbsolute($resqueLib)) {
-			$resqueLib = $pluginVendorPath . $resqueLib;
-		}
-		$resqueLib .= DS . 'lib' . DS;
-
-		if (!Folder::isAbsolute($schedulerLib)) {
-			$schedulerLib = $pluginVendorPath . $schedulerLib;
-		}
-		$schedulerLib .= DS . 'lib' . DS . 'ResqueScheduler' . DS;
-
-		if (!Folder::isAbsolute($statusLib)) {
-			$statusLib = $pluginVendorPath . $statusLib;
-		}
-
-		require_once realpath($resqueLib . 'Resque.php');
-		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
-		require_once realpath($schedulerLib . 'ResqueScheduler.php');
-		require_once realpath($schedulerLib . 'Stat.php');
-		require_once realpath($schedulerLib . 'Job' . DS . 'Status.php');
-		require_once realpath($statusLib . DS . 'src' . DS . 'ResqueStatus' . DS . 'ResqueStatus.php');
 
 		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace']);
 	}
