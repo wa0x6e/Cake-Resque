@@ -10,12 +10,12 @@ env:
     - PLUGIN_NAME=CakeResque
     - REQUIRE=""
     - PHPREDIS_VERSION=2.2.4
+    - DB=mysql CAKE_VERSION=2.4
   matrix:
-    - CAKE_VERSION=2.2.0 DB=mysql
-    - CAKE_VERSION=2.3.0 DB=mysql
-    - CAKE_VERSION=2.4.0 DB=mysql
-    - CAKE_VERSION=2.5 DB=mysql
-    - CAKE_VERSION=master DB=mysql
+    - DB=mysql CAKE_VERSION=2.2
+    - DB=mysql CAKE_VERSION=2.3
+    - DB=mysql CAKE_VERSION=2.4
+    - DB=mysql CAKE_VERSION=2.5
 
 matrix:
   include:
