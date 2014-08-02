@@ -44,10 +44,6 @@ before_script:
   - rm -R phpredis-$PHPREDIS_VERSION/
   - git clone -b master https://github.com/FriendsOfCake/travis.git --depth 1 ../travis
   - ../travis/before_script.sh
-  - find ./ -type d -print
-  - composer self-update
-  - composer install --prefer-source --dev --no-interaction
-  - find ./ -type d -print
 
 script:
   - ../travis/script.sh
