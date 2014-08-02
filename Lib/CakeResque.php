@@ -99,7 +99,7 @@ class CakeResque {
 		if (!Folder::isAbsolute($statusLib)) {
 			$statusLib = $pluginVendorPath . $statusLib;
 		}
-
+		echo $resqueLib;
 		require_once realpath($resqueLib . 'Resque.php');
 		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
 		require_once realpath($schedulerLib . 'ResqueScheduler.php');
