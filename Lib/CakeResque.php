@@ -100,6 +100,7 @@ class CakeResque {
 			$statusLib = $pluginVendorPath . $statusLib;
 		}
 		echo $resqueLib;
+		print_r(glob($pluginVendorPath . '*'));
 		echo realpath($resqueLib);
 		print_r(glob($resqueLib . '*'));
 
