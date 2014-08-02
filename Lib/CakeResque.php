@@ -100,6 +100,9 @@ class CakeResque {
 			$statusLib = $pluginVendorPath . $statusLib;
 		}
 		echo $resqueLib;
+		echo realpath($resqueLib);
+		print_r(glob($resqueLib . '*'));
+
 		require_once realpath($resqueLib . 'Resque.php');
 		require_once realpath($resqueLib . 'Resque' . DS . 'Worker.php');
 		require_once realpath($schedulerLib . 'ResqueScheduler.php');
