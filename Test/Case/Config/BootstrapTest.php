@@ -43,8 +43,6 @@ class BootstrapTest extends CakeTestCase {
 		$this->assertArrayHasKey('interval', $s['Worker']);
 		$this->assertArrayHasKey('workers', $s['Worker']);
 
-		$this->assertArrayHasKey('lib', $s['Resque']);
-
 		$this->assertArrayHasKey('handler', $s['Log']);
 		$this->assertArrayHasKey('target', $s['Log']);
 
