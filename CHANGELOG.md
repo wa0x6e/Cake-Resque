@@ -1,5 +1,21 @@
 ##Changelog
 
+###**v4.1.0** [2014-08-03]
+
+* [new] Fix#57: Add Redis auth
+* [fix] Fix#63: CakeResque should now be installed as a dependency to your main app.
+* [fix] Fix#62: Optimize `AppShell::perform()`. Update the `perform()` method inside your AppShell class to
+
+		public function perform() {
+			$this->initialize();
+			return $this->runCommand($this->args[0], $this->args);
+		}
+
+* [fix] Stopping a worker should also removed all empty queues associated to it
+* Various improvement and bugfixes
+
+> **NOTE**: All CakeResque dependencies are now installed inside your app `Vendor` dir, and not inside `Plugin/CakeResque/vendor` anymore.
+
 ###**v4.0.2** [2013-11-06]
 
 * [fix] Uses `App::uses` in CakeResqueBootstrap
