@@ -66,12 +66,7 @@ class CakeResque {
 	public static function init($config = null) {
 		self::loadConfig($config);
 
-		if (
-			!($redis = Configure::read('CakeResque.Redis')) ||
-			!($resqueLib = Configure::read('CakeResque.Resque.lib')) ||
-			!($schedulerLib = Configure::read('CakeResque.Scheduler.lib')) ||
-			!($statusLib = Configure::read('CakeResque.Status.lib'))
-		) {
+		if (!($redis = Configure::read('CakeResque.Redis'))) {
 			throw new ConfigureException(__d('cake_resque', 'There is an error in the configuration file.'));
 		}
 

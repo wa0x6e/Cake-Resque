@@ -113,16 +113,6 @@ $config['CakeResque'] = array(
 	)
 	*/
 	'Resque' => array(
-
-		// Path to the php-resque library
-		//
-		// Relative or absolute path to the php-resque library
-		// If you are using Composer to install dependencies,
-		// this is the name of the vendor library
-		// Path is relative to the CakeResque/vendor
-		// Don't add trailing slash to path
-		'lib' => 'kamisama/php-resque-ex',
-
 		// Path to the directory containing the worker PID files
 		'tmpdir' => App::pluginPath('CakeResque') . 'tmp' . DS
 	),
@@ -184,8 +174,6 @@ $config['CakeResque'] = array(
 		// Enable or disable delayed job
 		'enabled' => false,
 
-		// Path to the php-resque-ex-scheduler's library
-		'lib' => 'kamisama/php-resque-ex-scheduler',
 		// Path to the log file
 		'log' => TMP . 'logs' . DS . 'resque-scheduler-error.log',
 
