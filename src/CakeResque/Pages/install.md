@@ -14,49 +14,35 @@ Installing PhpRedis is strongly recommended, but if you can't, it will fallback 
 
 ## Installation {#install}
 
+Add *CakeResque* as a dependency in your composer.json
 
-### Download the plugin {#install-plugin}
-
-In the command line :
-
-~~~ .language-bash
-cd your-application/app/Plugin
-git clone git://github.com/kamisama/Cake-Resque.git CakeResque
-
-# OR install as a submodule
-git submodule add git://github.com/kamisama/Cake-Resque.git CakeResque
+~~~ .language-json
+{
+	"require": {
+		... your other dependency
+		"kamisama/cake-resque": ">=4.1.0"
+	}
+}
 ~~~
 
-Or you can just download the [latest release archive](https://github.com/kamisama/Cake-Resque/zipball/master), and extract it in your <code><i class="icon-folder-open for-code"></i> app/Plugin</code> folder. Make sure that the plugin folder is named <b>CakeResque</b>.
+then run `composer install`.
 
-### Install dependencies {#install-dependencies}
+If your application does not contain a composer.json yet, run the following command in your shell
 
-This plugin uses some external libraries, that you have to install via [Composer](http://getcomposer.org/doc/00-intro.md).
+~~~ .language-bash
+cd path/to/your/app
+curl -s https://getcomposer.org/installer | php
+php composer.phar require --no-update kamisama/cake-resque:4.1.0
+php composer.phar config vendor-dir Vendor
+php composer.phar install
+~~~
 
-1. 	With the command line, go inside the CakeResque folder
-	~~~ .language-bash
-	cd your/application/Plugin/CakeResque
-	~~~
-
-2. 	Download Composer, if not already done
-
-	~~~ .language-bash
-	curl -s https://getcomposer.org/installer | php
-	~~~
-
-3. 	Install dependencies
-
-	~~~ .language-bash
-	php composer.phar install
-	~~~
-
-
+That will take care of installing composer, generating the composer.json, and installing the plugin.
 
 <hr/>
 
 
 ## Configuration {#config}
-
 
 ### Load the plugin into CakePHP {#config-cakephp}
 
@@ -97,6 +83,14 @@ class AppShell extends Shell
 ~~~
 </div></div>
 
+<br>
+
+* If not already done, load composer autoloader into your application, by adding the following line at the end of <code><i class="icon-file for-code"></i> app/Config/core.php</code>
+
+~~~ .language-php
+require_once dirname(__DIR__) . '/Vendor/autoload.php';
+~~~
+
 ### Configure CakeResque {#config-cakeresque}
 
 All settings are well documented inside the plugin <code><i class="icon-file for-code"></i> <a href="https://github.com/kamisama/Cake-Resque/blob/master/Config/config.php">config.php</a></code> file.
@@ -122,42 +116,21 @@ CakePlugin::load(array( # or CakePlugin::loadAll(array(
 ));
 ~~~
 
-Keeping your own setting in your own file, outside of the plugin directory is a good pratice, as it allows the smoothest plugin upgrade experience.
+In this example, the config file is <code><i class="icon-file for-code"></i> app/Config/cakeresque_config.php</code>. You don't have to `include` or `require` the original Config file.<br>
+Keeping your own setting in your own file, outside of the plugin directory is a good pratice, as it allows the smoothest plugin update experience.
 
 <hr/>
 
 ## Update {#update}
 
-### Updating CakeResque
-
-#### The classic way
-
-1. Backup any files in <code><i class="icon-folder-open for-code"></i> CakeResque/Config/</code> that you may have edited
-2. Download the new version of CakeResque and replace the *CakeResque* folder with the new one
-3. Restore your backup files.
-4. <a href="install#install-dependencies">Re-install all Composer dependencies</a>
-
-#### The pro way
-
-**Only if you have installed CakeResque with git, and placed your config file outside of the plugin directory**
-
-1. Update CakeResque
+Just run
 
 ~~~ .language-bash
-cd Plugin/CakeResque
-git pull
+cd path/to/your/app
 
-# OR, if installed as a submodule
-cd Plugin
-git submodule update --init
-~~~
-
-2. <a href="install#update-dependencies">Update all Composer dependencies</a>
-
-~~~ .language-bash
-cd Plugin/CakeResque
 php composer.phar update
-# Or composer update
+# Or
+composer update
 ~~~
 
 
