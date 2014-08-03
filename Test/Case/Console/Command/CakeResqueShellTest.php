@@ -9,8 +9,6 @@ App::uses('ShellDispatcher', 'Console');
 App::uses('Shell', 'Console');
 App::uses('CakeResqueShell', 'CakeResque.Console/Command');
 
-require_once realpath(App::pluginPath('CakeResque') . 'vendor' . DS . 'autoload.php');
-
 class CakeResqueShellTest extends CakeTestCase {
 
 	public function setUp() {
