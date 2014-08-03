@@ -523,7 +523,7 @@ class CakeResqueShell extends Shell {
 			sprintf("QUEUE=%s \\\n", escapeshellarg($this->_runtime['queue'])),
 			sprintf("PIDFILE=%s \\\n", escapeshellarg($pidFile)),
 			sprintf("APP_INCLUDE=%s \\\n", escapeshellarg($bootstrapPath)),
-			sprintf("RESQUE_PHP=%s \\\n", escapeshellarg($this->_resqueLibrary . 'lib' . DS . 'Resque.php')),
+			sprintf("RESQUE_PHP=%s \\\n", escapeshellarg($this->_resqueLibrary . DS . 'lib' . DS . 'Resque.php')),
 			sprintf("INTERVAL=%s \\\n", $this->_runtime['interval']),
 			sprintf("REDIS_BACKEND=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
 			sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
