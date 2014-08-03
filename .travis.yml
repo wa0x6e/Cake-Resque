@@ -34,15 +34,7 @@ services:
   - redis-server
 
 before_script:
-  - wget https://github.com/nicolasff/phpredis/archive/$PHPREDIS_VERSION.zip -O php-redis.zip
-  - unzip php-redis.zip
-  - cd phpredis-$PHPREDIS_VERSION/
-  - phpize
-  - ./configure
-  - make && make install
   - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - cd ../
-  - rm -R phpredis-$PHPREDIS_VERSION/
   - git clone -b master https://github.com/FriendsOfCake/travis.git --depth 1 ../travis
   - ../travis/before_script.sh
   - if [[ $PHPCS != '1' ]]; then echo "
