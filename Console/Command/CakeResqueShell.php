@@ -262,7 +262,7 @@ class CakeResqueShell extends Shell {
 			->description(
 				__d('cake_resque', "A Shell to manage PHP Resque") . "\n" .
 				__d('cake_resque', "Version " . CakeResqueShell::VERSION) . "\n" .
-				__d('cake_resque', "Wan Chen (2013)")
+				"Wan Chen (" . date('Y') . ")"
 				)
 			->addSubcommand('start', array(
 				'help' => __d('cake_resque', 'Start a new worker.'),
