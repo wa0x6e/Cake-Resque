@@ -79,7 +79,7 @@ class CakeResque {
 			throw new ConfigureException(__d('cake_resque', 'There is an error in the Redis configuration key.'));
 		}
 
-		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace']);
+		Resque::setBackend($redis['host'] . ':' . $redis['port'], $redis['database'], $redis['namespace'], $redis['password']);
 	}
 
 /**

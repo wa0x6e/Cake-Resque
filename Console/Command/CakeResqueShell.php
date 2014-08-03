@@ -528,6 +528,7 @@ class CakeResqueShell extends Shell {
 			sprintf("REDIS_BACKEND=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.host') . ':' . Configure::read('CakeResque.Redis.port'))),
 			sprintf("REDIS_DATABASE=%s \\\n", Configure::read('CakeResque.Redis.database')),
 			sprintf("REDIS_NAMESPACE=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.namespace'))),
+			sprintf("REDIS_PASSWORD=%s \\\n", escapeshellarg(Configure::read('CakeResque.Redis.password'))),
 			sprintf("CAKE=%s \\\n", escapeshellarg(CAKE)),
 			sprintf("APP=%s \\\n", escapeshellarg(APP)),
 			sprintf("COUNT=%s \\\n", 1),

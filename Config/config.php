@@ -69,7 +69,8 @@ $config['CakeResque'] = array(
 		'host' => 'localhost',		// Redis server hostname
 		'port' => 6379,				// Redis server port
 		'database' => 0,			// Redis database number
-		'namespace' => 'resque'		// Redis keys namespace
+		'namespace' => 'resque',	// Redis keys namespace
+		'password' => null			// Redis password
 	),
 
 	'Worker' => array(
