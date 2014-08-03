@@ -68,20 +68,11 @@ class CakeResqueShell extends Shell {
  * @return void
  */
 	public function startup() {
-		$resqueLib = Configure::read('CakeResque.Resque.lib');
-		$schedulerLib = Configure::read('CakeResque.Scheduler.lib');
+		$reflector = new ReflectionClass('Resque');
+		$this->_resqueLibrary = dirname(dirname($reflector->getFileName()));
 
-		$pluginVendorPath = CakePlugin::path('CakeResque') . 'vendor' . DS;
-
-		if (substr($resqueLib, 0, 1) !== '/') {
-			$resqueLib = $pluginVendorPath . $resqueLib;
-		}
-		$this->_resqueLibrary = realpath($resqueLib) . DS;
-
-		if (substr($schedulerLib, 0, 1) !== '/') {
-			$schedulerLib = $pluginVendorPath . $schedulerLib;
-		}
-		$this->_resqueSchedulerLibrary = realpath($schedulerLib) . DS;
+		$reflector = new ReflectionClass('ResqueScheduler\ResqueScheduler');
+		$this->_resqueSchedulerLibrary = dirname(dirname(dirname($reflector->getFileName())));
 
 		$this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::redis());
 
