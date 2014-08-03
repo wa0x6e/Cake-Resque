@@ -45,7 +45,7 @@ before_script:
   - git clone -b master https://github.com/FriendsOfCake/travis.git --depth 1 ../travis
   - echo "
 
-  require dirname(__DIR__) . '/Vendor/autoload.php';" >> ../cakephp/app/Config/core.php
+    require dirname(__DIR__) . '/Vendor/autoload.php';" >> ../cakephp/app/Config/core.php
   - ../travis/before_script.sh
 
 script:
