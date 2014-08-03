@@ -47,7 +47,7 @@ before_script:
   - find ../ -print
   - echo "
 
-    require dirname(__DIR__) . '/Vendor/autoload.php';" >> ../cakephp/app/Config/core.php
+    require dirname(__DIR__) . '/vendor/autoload.php';" >> ../cakephp/app/Config/core.php
 
 script:
   - ../travis/script.sh
