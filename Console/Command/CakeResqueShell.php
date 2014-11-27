@@ -60,6 +60,11 @@ class CakeResqueShell extends Shell {
  */
 	const VERSION = '4.1.0';
 
+	public function __construct() {
+		App::uses('CakeResqueEchoConsoleOutput', 'CakeResque.Console');
+		parent::__construct(new CakeResqueEchoConsoleOutput());
+	}
+
 /**
  * Startup callback.
  *
