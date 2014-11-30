@@ -40,7 +40,7 @@
           "reference": "46a20c70e111bee7999eb7c3591e20cd823363e4"
         },
         "extra": {
-          "installer-name": "PHP-Resque-Ex"
+          "installer-name": "php-resque-ex-scheduler"
         }
       }
     }
