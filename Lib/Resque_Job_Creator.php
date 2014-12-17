@@ -38,13 +38,6 @@ class Resque_Job_Creator {
 	public static function createJob($className, $args) {
 		list($plugin, $model) = pluginSplit($className);
 
-		/*
-		if (self::$rootFolder === null) {
-			self::$rootFolder = dirname(dirname(dirname(__DIR__))) . DS;
-		}
-
-		$classpath = self::$rootFolder . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Console' . DS . 'Command' . DS . $model . '.php';
-		*/
 		$classpath = 'Console' . DS . 'Command' . DS . $model . '.php';
 		if(!empty($plugin)){
 			$classpath = CakePlugin::path($plugin) . $classpath;
