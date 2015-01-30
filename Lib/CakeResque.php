@@ -21,6 +21,12 @@
 App::uses('Folder', 'Utility');
 
 /**
+ * Fix for PHP pre 5.3.6
+ */
+if (!defined ('DEBUG_BACKTRACE_IGNORE_ARGS')) {
+    define('DEBUG_BACKTRACE_IGNORE_ARGS', 2);
+}
+/**
  * CakeResque Class
  *
  * Proxy to Resque, enabling logging function
