@@ -45,6 +45,18 @@ class CakeResqueTest extends CakeTestCase {
 		parent::tearDown();
 	}
 
+	public function testCheckConfigReturnFalseWithoutArgs() {
+		$this->assertFalse(CakeResque::checkConfig(null));
+	}
+
+	public function testCheckConfigReturnFalseWithArgsWhenConfigureReadIsNull() {
+		$this->assertFalse(CakeResque::checkConfig('dummy'));
+	}
+
+	public function testCheckConfigReturnTrueWithArgsWhenConfigureReadIsNotNull() {
+		$this->assertTrue(CakeResque::checkConfig('CakeResque.Redis'));
+	}
+
 	public function testEnqueueWithSuccess() {
 		$id = md5(time());
 
