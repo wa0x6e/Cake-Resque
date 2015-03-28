@@ -185,9 +185,13 @@ class CakeResque {
 
 		$r = call_user_func_array(self::$resqueSchedulerClass . '::enqueueAt', array_merge(array($at), array($queue), array($class), array($args), array($trackStatus)));
 
-		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
-			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
-			: debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		if (defined('DEBUG_BACKTRACE_IGNORE_ARGS')) {
+			$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
+				? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
+				: debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		} else {
+			$caller = debug_backtrace();
+		}
 
 		self::$logs[$queue][] = array(
 			'queue' => $queue,
@@ -228,9 +232,13 @@ class CakeResque {
 
 		$r = call_user_func_array(self::$resqueSchedulerClass . '::enqueueIn', array_merge(array($in), array($queue), array($class), array($args), array($trackStatus)));
 
-		$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
-			? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
-			: debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		if (defined('DEBUG_BACKTRACE_IGNORE_ARGS')) {
+			$caller = version_compare(PHP_VERSION, '5.4.0') >= 0
+				? debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 1)
+				: debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+		} else {
+			$caller = debug_backtrace();
+		}
 
 		self::$logs[$queue][] = array(
 			'queue' => $queue,
