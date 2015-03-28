@@ -1,5 +1,9 @@
 ##Changelog
 
+###**v4.1.2** [2015-03-28]
+
+* [fix] Fix#80: Only use DEBUG_BACKTRACE_IGNORE_ARGS for PHP_VERSION >= 5.3.6 (bis)
+
 ###**v4.1.1** [2015-01-28]
 
 * [fix] Fix#80: Only use DEBUG_BACKTRACE_IGNORE_ARGS for PHP_VERSION >= 5.3.6
