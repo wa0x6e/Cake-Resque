@@ -18,6 +18,6 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
-require_once dirname(__DIR__) . DS . 'CakeResque.php';
+require_once dirname(__DIR__) . DS . 'src' . DS . 'CakeResque.php';
 
 CakeResque::init();
