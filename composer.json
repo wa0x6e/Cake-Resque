@@ -8,9 +8,6 @@
 	"extra": {
 		"installer-name": "CakeResque"
 	},
-	"config": {
-		"vendor-dir": "Vendor"
-	},
 	"authors": [
 		{
 			"name": "Wan Chen",
