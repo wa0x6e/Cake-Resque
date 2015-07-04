@@ -1,6 +1,7 @@
 <?php
-namespace Resque\shell\Command;
+namespace Resque\shell;
 
+use Cake\Console\Shell;
 
 /**
  * CakeResque Shell File

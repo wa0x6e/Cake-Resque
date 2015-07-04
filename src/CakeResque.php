@@ -1,5 +1,5 @@
 <?php
-namespace Resque\Lib;
+namespace Resque;
 
 /**
  * CakeResque Lib File

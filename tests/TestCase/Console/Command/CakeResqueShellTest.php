@@ -2,6 +2,7 @@
 
 // Used to mock the filesystem
 use org\bovigo\vfs\vfsStream;
+use Cake\TestSuite\TestCase;
 
 App::uses('ConsoleOutput', 'Console');
 App::uses('ConsoleInput', 'Console');
@@ -9,7 +10,7 @@ App::uses('ShellDispatcher', 'Console');
 App::uses('Shell', 'Console');
 App::uses('CakeResqueShell', 'CakeResque.Console/Command');
 
-class CakeResqueShellTest extends CakeTestCase
+class CakeResqueShellTest extends TestCase
 {
 
 	public function setUp()
