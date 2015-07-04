@@ -1,5 +1,5 @@
 <?php
-namespace Resque;
+namespace Resque\Lib;
 
 
 /**

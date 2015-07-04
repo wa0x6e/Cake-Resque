@@ -13,7 +13,7 @@
  * @copyright     Copyright 2012, Wan Qi Chen <kami@kamisama.me>
  * @link          http://cakeresque.kamisama.me
  * @package       CakeResque
- * @subpackage	  CakeResque.Config
+ * @subpackage      CakeResque.Config
  * @since         0.5
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */

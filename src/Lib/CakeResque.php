@@ -1,5 +1,5 @@
 <?php
-namespace Resque;
+namespace Resque\Lib;
 
 /**
  * CakeResque Lib File
@@ -20,9 +20,9 @@ namespace Resque;
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
 
+use Cake\Core\Configure;
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
-use Cake\Core\Configure;
 use Resque;
 use Resque_Failure_Redis;
 use Resque_Job_Status;

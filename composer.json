@@ -42,7 +42,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Resque\\": "lib/"
+      "Resque\\": "src/"
     }
   }
 }
