@@ -1,4 +1,6 @@
 <?php
+namespace Resque;
+
 
 /**
  * Resque Job Creator Class
@@ -18,50 +20,52 @@
  * @author kamisama
  *
  */
-class Resque_Job_Creator {
+class Resque_Job_Creator
+{
 
-/**
- * Application Root Folder path
- *
- * @var String
- */
-	public static $rootFolder = null;
+    /**
+     * Application Root Folder path
+     *
+     * @var String
+     */
+    public static $rootFolder = null;
 
-/**
- * Create and return a job instance
- *
- * @param string $className className of the job to instanciate
- * @param array $args Array of method name and arguments used to build the job
- * @return object $args a job instance
- * @throws Resque_Exception when the class is not found, or does not follow the job file convention
- */
-	public static function createJob($className, $args) {
-		list($plugin, $model) = pluginSplit($className);
+    /**
+     * Create and return a job instance
+     *
+     * @param string $className className of the job to instanciate
+     * @param array $args Array of method name and arguments used to build the job
+     * @return object $args a job instance
+     * @throws Resque_Exception when the class is not found, or does not follow the job file convention
+     */
+    public static function createJob($className, $args)
+    {
+        list($plugin, $model) = pluginSplit($className);
 
-		if (self::$rootFolder === null) {
-			self::$rootFolder = dirname(dirname(dirname(__DIR__))) . DS;
-		}
+        if (self::$rootFolder === null) {
+            self::$rootFolder = dirname(dirname(dirname(__DIR__))) . DS;
+        }
 
-		$classpath = self::$rootFolder . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Console' . DS . 'Command' . DS . $model . '.php';
+        $classpath = self::$rootFolder . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Console' . DS . 'Command' . DS . $model . '.php';
 
-		if (file_exists($classpath)) {
-			require_once $classpath;
-		} else {
-			throw new Resque_Exception('Could not find job class ' . $className . '.');
-		}
+        if (file_exists($classpath)) {
+            require_once $classpath;
+        } else {
+            throw new Resque_Exception('Could not find job class ' . $className . '.');
+        }
 
-		if (!class_exists($model)) {
-			throw new Resque_Exception('Could not find job class ' . $className . '.');
-		}
+        if (!class_exists($model)) {
+            throw new Resque_Exception('Could not find job class ' . $className . '.');
+        }
 
-		if (!method_exists($model, 'perform')) {
-			throw new Resque_Exception('Job class ' . $className . ' does not contain a perform method.');
-		}
+        if (!method_exists($model, 'perform')) {
+            throw new Resque_Exception('Job class ' . $className . ' does not contain a perform method.');
+        }
 
-		if (!isset($args[0]) || !method_exists($model, $args[0])) {
-			throw new Resque_Exception('Job class ' . $className . ' does not contain ' . $args[0] . ' method.');
-		}
+        if (!isset($args[0]) || !method_exists($model, $args[0])) {
+            throw new Resque_Exception('Job class ' . $className . ' does not contain ' . $args[0] . ' method.');
+        }
 
-		return new $model();
-	}
+        return new $model();
+    }
 }
