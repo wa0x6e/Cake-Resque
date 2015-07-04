@@ -22,6 +22,12 @@ namespace Resque;
 
 use Cake\Filesystem\File;
 use Cake\Filesystem\Folder;
+use Cake\Core\Configure;
+use Resque;
+use Resque_Failure_Redis;
+use Resque_Job_Status;
+use Resque_Worker;
+
 
 /**
  * CakeResque Class
