@@ -6,6 +6,7 @@ use Cake\I18n\Time;
 use ReflectionClass;
 use Cake\Core\Configure;
 use Cake\Core\Plugin;
+use Resque;
 use Resque_Job_Status;
 use ResqueScheduler\Job\Status;
 use ResqueScheduler\ResqueScheduler;
