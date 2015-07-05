@@ -87,8 +87,8 @@ class CakeResqueShell extends Shell
 
         $this->ResqueStatus = new ResqueStatus(Resque::redis());
 
-        $this->stdout->styles('success', ['text' => 'green']);
-        $this->stdout->styles('bold', ['bold' => true]);
+        $this->_io->styles('success', ['text' => 'green']);
+        $this->_io->styles('bold', ['bold' => true]);
     }
 
     /**
