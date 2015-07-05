@@ -8,8 +8,10 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Resque;
 use Resque_Job_Status;
+use Resque_Stat;
 use ResqueScheduler\Job\Status;
 use ResqueScheduler\ResqueScheduler;
+use ResqueScheduler\Stat;
 use ResqueStatus\ResqueStatus;
 
 
@@ -1230,7 +1232,7 @@ class CakeResqueShell extends Shell
         $this->out('   <warning>' . __d('cake_resque', 'Failed Jobs    : %12s', number_format(Resque_Stat::get('failed'))) . '</warning>');
 
         if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-            $this->out('   ' . __d('cake_resque', 'Scheduled Jobs : %12s', number_format(\ResqueScheduler\Stat::get())));
+            $this->out('   ' . __d('cake_resque', 'Scheduled Jobs : %12s', number_format(Stat::get())));
         }
 
         $this->out("\n");
