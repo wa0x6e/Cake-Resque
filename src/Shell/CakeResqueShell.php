@@ -2,6 +2,15 @@
 namespace CakeResque\shell;
 
 use Cake\Console\Shell;
+use Cake\I18n\Time;
+use ReflectionClass;
+use Cake\Core\Configure;
+use Cake\Core\Plugin;
+use Resque_Job_Status;
+use ResqueScheduler\Job\Status;
+use ResqueScheduler\ResqueScheduler;
+use ResqueStatus\ResqueStatus;
+
 
 /**
  * CakeResque Shell File
@@ -73,7 +82,7 @@ class CakeResqueShell extends Shell
         $reflector = new ReflectionClass('ResqueScheduler\ResqueScheduler');
         $this->_resqueSchedulerLibrary = dirname(dirname(dirname($reflector->getFileName())));
 
-        $this->ResqueStatus = new ResqueStatus\ResqueStatus(Resque::redis());
+        $this->ResqueStatus = new ResqueStatus(Resque::redis());
 
         $this->stdout->styles('success', ['text' => 'green']);
         $this->stdout->styles('bold', ['bold' => true]);
@@ -535,10 +544,9 @@ class CakeResqueShell extends Shell
 
         if ($formatListItem === null) {
             $formatListItem = function ($worker, $i) use ($ResqueStatus) {
-                App::uses('CakeTime', 'Utility');
-
+                $now = Time::parse($worker);
                 return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-                    CakeTime::timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker)));
+                    $now->timeAgoInWords(call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate')));
             };
         }
 
@@ -802,7 +810,7 @@ class CakeResqueShell extends Shell
         if (file_exists(APP . 'Lib' . DS . 'CakeResqueBootstrap.php')) {
             $bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
         } else {
-            $bootstrapPath = App::pluginPath('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
+            $bootstrapPath = Plugin::path('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
         }
 
         if ($scheduler) {
@@ -1221,7 +1229,7 @@ class CakeResqueShell extends Shell
         $this->out('   <warning>' . __d('cake_resque', 'Failed Jobs    : %12s', number_format(Resque_Stat::get('failed'))) . '</warning>');
 
         if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-            $this->out('   ' . __d('cake_resque', 'Scheduled Jobs : %12s', number_format(ResqueScheduler\Stat::get())));
+            $this->out('   ' . __d('cake_resque', 'Scheduled Jobs : %12s', number_format(\ResqueScheduler\Stat::get())));
         }
 
         $this->out("\n");
@@ -1268,7 +1276,7 @@ class CakeResqueShell extends Shell
         if (!empty($schedulerWorkers)) {
             $this->out("\t<info>" . strtoupper(__d('cake_resque', 'scheduler worker')) . "</info>" . (in_array((string)$schedulerWorkers[0], $pausedWorkers) ? ' <warning>(' . __d('cake_resque', 'paused') . ')</warning>' : ''));
             foreach ($schedulerWorkers as $worker) {
-                $schedulerWorker = new ResqueScheduler\ResqueScheduler();
+                $schedulerWorker = new ResqueScheduler();
                 $delayedJobCount = $schedulerWorker->getDelayedQueueScheduleSize();
                 $this->out("\t   - " . __d('cake_resque', 'Started on') . "     : " . call_user_func(CakeResqueShell::$cakeResque . '::getWorkerStartDate', $worker));
                 $this->out("\t   - " . __d('cake_resque', 'Delayed Jobs') . "   : " . $delayedJobCount);
@@ -1279,7 +1287,7 @@ class CakeResqueShell extends Shell
             }
             $this->out("\n");
         } elseif (Configure::read('CakeResque.Scheduler.enabled') === true) {
-            $jobsCount = ResqueScheduler\ResqueScheduler::getDelayedQueueScheduleSize();
+            $jobsCount = ResqueScheduler::getDelayedQueueScheduleSize();
             if ($jobsCount > 0) {
                 $this->out("\t<error>************ " . __d('cake_resque', 'Alert') . " ************</error>");
                 $this->out("\t<bold>" . __d('cake_resque', 'The Scheduler Worker is not running') . "</bold>");
@@ -1329,8 +1337,8 @@ class CakeResqueShell extends Shell
             ];
 
             if (Configure::read('CakeResque.Scheduler.enabled') === true) {
-                $statusClass[ ResqueScheduler\Job\Status::STATUS_SCHEDULED ] = 'info';
-                $statusName[ ResqueScheduler\Job\Status::STATUS_SCHEDULED ] = __d('cake_resque', 'scheduled');
+                $statusClass[ Status::STATUS_SCHEDULED ] = 'info';
+                $statusName[ Status::STATUS_SCHEDULED ] = __d('cake_resque', 'scheduled');
             }
 
             $this->out(
