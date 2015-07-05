@@ -87,14 +87,14 @@ $config['CakeResque'] = [
         // - an relative path, that will be relative to
         // 	 app/tmp/logs folder
         // - a simple filename, file will be created inside app/tmp/logs
-        'log'      => TMP . 'logs' . DS . 'resque-worker-error.log',
+        'log'      => LOGS . 'resque-worker-error.log',
 
         // Log Verbose mode
         // true to log more debugging informations
         // Can also be enabled per worker, by starting with --verbose
-        'verbose'  => false,
+        'verbose'  => true,
     ],
-    'Job'       => [
+    'Job' => [
         // Whether to track job status
         // Enabling this will allow you to track a job status by its ID
         // Job status are purged after 24 hours
@@ -103,18 +103,9 @@ $config['CakeResque'] = [
         // CakeResque::enqueue(), CakeResque::enqueueAt() or CakeResque::enqueueIn()
         'track' => false,
     ],
-    /*
-    'Queues' => array(
-        array(
-            'queue' => 'default',	// Use default values from above for missing interval and count indexes
-            'user' => 'www-data'	// If PHP is running as a different user on you webserver
-        ),
-        array(
-            'queue' => 'my-second-queue',
-            'interval' => 10
-        )
-    )
-    */
+    'Queues' => [
+        ['queue' => 'notify', 'workers' => 3]
+    ],
     'Resque'    => [
         // Path to the directory containing the worker PID files
         'tmpdir' => Plugin::path('CakeResque') . 'src' . DS . 'tmp' . DS,
@@ -155,7 +146,7 @@ $config['CakeResque'] = [
     // MongoDB 			MongoDB server address  (e.g: mongodb://localhost:27017)
     'Log'       => [
         'handler' => 'RotatingFile',
-        'target'  => TMP . 'logs' . DS . 'resque.log',
+        'target'  => LOGS . 'resque.log',
     ],
 
     // Scheduler Worker
@@ -178,7 +169,7 @@ $config['CakeResque'] = [
         'enabled' => false,
 
         // Path to the log file
-        'log'     => TMP . 'logs' . DS . 'resque-scheduler-error.log',
+        'log'     => LOGS . 'resque-scheduler-error.log',
 
         // Optional
         // Will not default to settings defined in the global scope above
@@ -196,7 +187,7 @@ $config['CakeResque'] = [
         // Will default to settings defined in the global scope above
         'Log'     => [
             'handler' => 'RotatingFile',
-            'target'  => TMP . 'logs' . DS . 'resque-scheduler.log',
+            'target'  => LOGS . 'resque-scheduler.log',
         ],
     ],
 ];

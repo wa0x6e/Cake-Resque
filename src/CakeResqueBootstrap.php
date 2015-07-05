@@ -18,36 +18,15 @@
  * @since         0.5
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-
-/**
- * Copy/Paste from lib/Cake/Console/cake.php, except /lib path calculation.
- */
-$ds = DIRECTORY_SEPARATOR;
-$dispatcher = 'Cake' . $ds . 'Console' . $ds . 'ShellDispatcher.php';
-$found = false;
-$paths = explode(PATH_SEPARATOR, ini_get('include_path'));
-
-foreach ($paths as $path) {
-    if (file_exists($path . $ds . $dispatcher)) {
-        $found = $path;
-        break;
-    }
-}
-
-if (!$found) {
-    $root = dirname(dirname(getenv('CAKE')));
-    if (!include $root . $ds . 'lib' . $ds . $dispatcher) {
-        trigger_error('Could not locate CakePHP core files.', E_USER_ERROR);
-    }
-} else {
-    include $found . $ds . $dispatcher;
-}
+use Cake\Console\ShellDispatcher;
+use Cake\Console\Shell;
+use CakeResque\Resque_Job_Creator;
 
 array_push($argv, '--app', getenv('APP'));
+file_put_contents('/home/vagrant/Apps/Resque.dev/logs/test.log',print_r($argv, true), FILE_APPEND);
+file_put_contents('/home/vagrant/Apps/Resque.dev/logs/test.log', getenv('COUNT'), FILE_APPEND);
 
-unset($paths, $path, $found, $dispatcher, $root, $ds);
+
+
 
 new ShellDispatcher($argv);
-App::uses('Shell', 'Console');
-
-App::uses('Resque_Job_Creator', 'CakeResque.Lib');

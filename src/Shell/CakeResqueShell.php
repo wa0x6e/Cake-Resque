@@ -532,9 +532,9 @@ class CakeResqueShell extends Shell
 
         if ($formatListItem === null) {
             $formatListItem = function ($worker, $i) use ($ResqueStatus) {
-                $now = Time::parse($worker);
+                $now = Time::parse(CakeResque::getWorkerStartDate($worker));
                 return sprintf("    [%3d] - %s, started %s", $i, $ResqueStatus->isSchedulerWorker($worker) ? '<comment>**Scheduler Worker**</comment>' : $worker,
-                    $now->timeAgoInWords(CakeResque::getWorkerStartDate()));
+                    $now->timeAgoInWords());
             };
         }
 
@@ -795,10 +795,10 @@ class CakeResqueShell extends Shell
             return false;
         }
 
-        if (file_exists(APP . 'Lib' . DS . 'CakeResqueBootstrap.php')) {
-            $bootstrapPath = APP . 'Lib' . DS . 'CakeResqueBootstrap.php';
+        if (file_exists(APP . 'src' . DS . 'CakeResqueBootstrap.php')) {
+            $bootstrapPath = APP . 'src' . DS . 'CakeResqueBootstrap.php';
         } else {
-            $bootstrapPath = Plugin::path('CakeResque') . 'Lib' . DS . 'CakeResqueBootstrap.php';
+            $bootstrapPath = Plugin::path('CakeResque') . 'src' . DS . 'CakeResqueBootstrap.php';
         }
 
         if ($scheduler) {
@@ -932,9 +932,9 @@ class CakeResqueShell extends Shell
                 : Configure::read('CakeResque.Worker.log')
             );
         if (substr($this->_runtime['log'], 0, 2) == './') {
-            $this->_runtime['log'] = TMP . 'logs' . DS . substr($this->_runtime['log'], 2);
+            $this->_runtime['log'] = LOGS . substr($this->_runtime['log'], 2);
         } elseif (substr($this->_runtime['log'], 0, 1) != '/') {
-            $this->_runtime['log'] = TMP . 'logs' . DS . $this->_runtime['log'];
+            $this->_runtime['log'] = LOGS . $this->_runtime['log'];
         }
 
         // Validate Interval
