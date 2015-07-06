@@ -94,7 +94,7 @@ $config['CakeResque'] = [
         // Can also be enabled per worker, by starting with --verbose
         'verbose'  => true,
     ],
-    'Job' => [
+    'Job'       => [
         // Whether to track job status
         // Enabling this will allow you to track a job status by its ID
         // Job status are purged after 24 hours
@@ -103,8 +103,8 @@ $config['CakeResque'] = [
         // CakeResque::enqueue(), CakeResque::enqueueAt() or CakeResque::enqueueIn()
         'track' => false,
     ],
-    'Queues' => [
-        ['queue' => 'notify', 'workers' => 3]
+    'Queues'    => [
+        ['queue' => 'notify', 'workers' => 3],
     ],
     'Resque'    => [
         // Path to the directory containing the worker PID files

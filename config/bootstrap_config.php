@@ -1,4 +1,6 @@
 <?php
+use Cake\Core\Configure;
+
 /**
  * CakeResque bootstrap configuration file.
  *

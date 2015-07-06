@@ -22,11 +22,6 @@ use Cake\Console\ShellDispatcher;
 use Cake\Console\Shell;
 use CakeResque\Resque_Job_Creator;
 
-array_push($argv, '--app', getenv('APP'));
-file_put_contents('/home/vagrant/Apps/Resque.dev/logs/test.log',print_r($argv, true), FILE_APPEND);
-file_put_contents('/home/vagrant/Apps/Resque.dev/logs/test.log', getenv('COUNT'), FILE_APPEND);
-
-
-
+define('APP', getenv('APP'));
 
 new ShellDispatcher($argv);
