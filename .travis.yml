@@ -12,6 +12,7 @@ env:
     - REQUIRE=""
     - DB=mysql CAKE_VERSION=3.0
   matrix:
+    - DB=mysql CAKE_VERSION=3.0
     - DB=mysql CAKE_VERSION=master
 
 matrix:
@@ -33,9 +34,6 @@ before_script:
   - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - git clone -b master https://github.com/FriendsOfCake/travis.git --depth 1 ../travis
   - ../travis/before_script.sh
-  - if [[ $PHPCS != '1' ]]; then echo "
-
-    require dirname(__DIR__) . '/Vendor/autoload.php';" >> ../cakephp/app/Config/core.php; fi
 
 script:
   - ../travis/script.sh
