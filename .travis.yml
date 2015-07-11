@@ -1,21 +1,17 @@
 language: php
 
 php:
-  - 5.3
   - 5.4
   - 5.5
+  - 5.6
+  - 7.0
 
 env:
   global:
     - PLUGIN_NAME=CakeResque
     - REQUIRE=""
-    - DB=mysql CAKE_VERSION=2.5
+    - DB=mysql CAKE_VERSION=3.0
   matrix:
-    - DB=mysql CAKE_VERSION=2.2
-    - DB=mysql CAKE_VERSION=2.3
-    - DB=mysql CAKE_VERSION=2.4
-    - DB=mysql CAKE_VERSION=2.5
-    - DB=mysql CAKE_VERSION=2.6
     - DB=mysql CAKE_VERSION=master
 
 matrix:
@@ -23,7 +19,7 @@ matrix:
     - php: 5.4
       env:
         - COVERALLS=1
-    - php: 5.4
+    - php: 7.0
       env:
         - PHPCS=1
     - php: 5.4
