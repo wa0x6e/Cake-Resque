@@ -1,4 +1,6 @@
 <?php
+use Cake\Core\Configure;
+
 /**
  * CakeResque bootstrap configuration file.
  *
@@ -13,7 +15,7 @@
  * @copyright     Copyright 2012, Ber Clausen <ber.clausen [at] gmail.com>
  * @link          http://cakeresque.kamisama.me
  * @package       CakeResque
- * @subpackage	  CakeResque.Config
+ * @subpackage      CakeResque.Config
  * @since         3.4.0
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */

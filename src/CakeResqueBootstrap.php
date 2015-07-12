@@ -1,8 +1,9 @@
 <?php
 /**
- * CakeResque bootstrap file.
+ * Bootstrap file
  *
- * Used to load CakeResque class and initialize it.
+ * Use to bootstrap the job classes
+ * All code is from CakePHP bootstrap files
  *
  * PHP version 5
  *
@@ -13,11 +14,14 @@
  * @copyright     Copyright 2012, Wan Qi Chen <kami@kamisama.me>
  * @link          http://cakeresque.kamisama.me
  * @package       CakeResque
- * @subpackage	  CakeResque.Config
+ * @subpackage      CakeResque.lib
  * @since         0.5
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
+use Cake\Console\ShellDispatcher;
+use Cake\Console\Shell;
+use CakeResque\Resque_Job_Creator;
 
-require_once dirname(__DIR__) . DS . 'Lib' . DS . 'CakeResque.php';
+define('APP', getenv('APP'));
 
-CakeResque::init();
+new ShellDispatcher($argv);
