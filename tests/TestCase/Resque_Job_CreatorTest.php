@@ -16,6 +16,13 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  **/
 
+namespace CakeResque\Test\TestCase;
+
+use Cake\Core\App;
+use Cake\Filesystem\Folder;
+use Cake\Filesystem\File;
+use Cake\TestSuite\TestCase;
+
 /**
  * Resque_Job_CreatorTest class
  *
@@ -23,11 +30,9 @@
  * @subpackage   CakeResque.Test.Case.Lib
  */
 
-App::uses('Folder', 'Utility');
-App::uses('File', 'Utility');
-App::uses('Resque_Job_Creator', 'CakeResque.Lib');
+// App::uses('Resque_Job_Creator', 'CakeResque.Lib');
 
-class Resque_Job_CreatorTest extends CakeTestCase
+class Resque_Job_CreatorTest extends TestCase
 {
 
 	/**

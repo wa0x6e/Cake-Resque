@@ -1,14 +1,16 @@
 <?php
 
+namespace CakeResque\Test\TestCase;
+
 // Used to mock the filesystem
 use org\bovigo\vfs\vfsStream;
+use Cake\Console\Shell;
 use Cake\TestSuite\TestCase;
 
-App::uses('ConsoleOutput', 'Console');
-App::uses('ConsoleInput', 'Console');
-App::uses('ShellDispatcher', 'Console');
-App::uses('Shell', 'Console');
-App::uses('CakeResqueShell', 'CakeResque.Console/Command');
+// App::uses('ConsoleOutput', 'Console');
+// App::uses('ConsoleInput', 'Console');
+// App::uses('ShellDispatcher', 'Console');
+// App::uses('CakeResqueShell', 'CakeResque.Console/Command');
 
 class CakeResqueShellTest extends TestCase
 {
@@ -24,7 +26,7 @@ class CakeResqueShellTest extends TestCase
 			['enqueue', 'enqueueIn', 'enqueueAt', 'getJobStatus', 'getFailedJobLog', 'getWorkers', 'getQueues', 'clearQueue', 'getQueueSize', 'removeQueue']
 		);
 
-		$this->ResqueStatus = $this->getMock('ResqueStatus\ResqueStatus', [], [new stdClass()]);
+		$this->ResqueStatus = $this->getMock('ResqueStatus\ResqueStatus', [], [new \stdClass()]);
 
 		$this->Shell = $this->getMock(
 			'CakeResqueShell',
@@ -2050,17 +2052,17 @@ class CakeResqueShellTest extends TestCase
 
 }
 
-class TestWorker extends Resque_Worker
-{
+// class TestWorker extends Resque_Worker
+// {
 
-	/**
-	 * Constructor.
-	 */
-	public function __construct($queues, $workerPid, $hostname = 'host')
-	{
-		parent::__construct($queues);
+// 	/**
+// 	 * Constructor.
+// 	 */
+// 	public function __construct($queues, $workerPid, $hostname = 'host')
+// 	{
+// 		parent::__construct($queues);
 
-		$this->hostname = $hostname;
-		$this->id = $hostname . ':' . (string)$workerPid . ':' . implode(',', $this->queues);
-	}
-}
+// 		$this->hostname = $hostname;
+// 		$this->id = $hostname . ':' . (string)$workerPid . ':' . implode(',', $this->queues);
+// 	}
+// }

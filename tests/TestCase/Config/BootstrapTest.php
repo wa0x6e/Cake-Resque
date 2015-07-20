@@ -16,13 +16,18 @@
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  **/
 
+namespace CakeResque\Test\TestCase;
+
+use Cake\Core\Configure;
+use Cake\TestSuite\TestCase;
+
 /**
  * BootstrapTest class
  *
  * @package      CakeResque
  * @subpackage   CakeResque.Test.Case.Lib
  */
-class BootstrapTest extends CakeTestCase
+class BootstrapTest extends TestCase
 {
 
     public function testBootstrapContainsAllMandatorySettings()

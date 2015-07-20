@@ -10,6 +10,7 @@ use Cake\Core\Configure;
 use Cake\Core\Plugin;
 use Cake\Datasource\ConnectionManager;
 use Cake\I18n\I18n;
+
 require_once 'vendor/autoload.php';
 // Path constants to a few helpful things.
 define('ROOT', dirname(__DIR__) . DS);

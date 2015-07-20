@@ -23,15 +23,15 @@
  * @package        CakeResque
  * @subpackage    CakeResque.Test.Case
  */
-class AllCakeResqueTest extends CakeTestSuite
-{
+// class AllCakeResqueTest extends CakeTestSuite
+// {
 
-    public static function suite()
-    {
-        $suite = new CakeTestSuite('CakeResque test');
-        $path = CakePlugin::path('CakeResque') . 'Test' . DS . 'Case' . DS;
-        $suite->addTestDirectoryRecursive($path);
+//     public static function suite()
+//     {
+//         $suite = new CakeTestSuite('CakeResque test');
+//         $path = CakePlugin::path('CakeResque') . 'Test' . DS . 'Case' . DS;
+//         $suite->addTestDirectoryRecursive($path);
 
-        return $suite;
-    }
-}
+//         return $suite;
+//     }
+// }
