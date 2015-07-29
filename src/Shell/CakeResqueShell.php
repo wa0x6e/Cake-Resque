@@ -316,6 +316,9 @@ class CakeResqueShell extends Shell
             ])
             ->addSubcommand('load', [
                 'help' => __d('cake_resque', 'Load a set of predefined workers.'),
+            ])
+            ->addSubcommand('enqueue', [
+                'help' => __d('cake_resque', 'Enqueue a job.'),
             ]);
     }
 
