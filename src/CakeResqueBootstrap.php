@@ -20,7 +20,7 @@
  */
 use Cake\Console\ShellDispatcher;
 use Cake\Console\Shell;
-use CakeResque\Resque_Job_Creator;
+REQUIRE 'Resque_Job_Creator.php';
 
 define('APP', getenv('APP'));
 

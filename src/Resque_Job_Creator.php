@@ -1,7 +1,4 @@
 <?php
-namespace CakeResque;
-
-
 /**
  * Resque Job Creator Class
  *
@@ -43,7 +40,7 @@ class Resque_Job_Creator
         list($plugin, $model) = pluginSplit($className);
 
         if (self::$rootFolder === null) {
-            self::$rootFolder = dirname(dirname(dirname(__DIR__))) . DS;
+            self::$rootFolder = dirname(dirname(dirname(dirname(__DIR__)))) . DS . 'src' . DS;
         }
 
         $classpath = self::$rootFolder . (empty($plugin) ? '' : 'Plugin' . DS . $plugin . DS) . 'Shell' . DS . $model . '.php';
@@ -51,21 +48,18 @@ class Resque_Job_Creator
         if (file_exists($classpath)) {
             require_once $classpath;
         } else {
-            throw new Resque_Exception('Could not find job class ' . $className . '.');
+            throw new Resque_Exception('Resque_Job_Creator could not find file '.$classpath.' for job class ' . $className . '.');
         }
+        $model = 'App\\Shell\\' . $model;
 
         if (!class_exists($model)) {
-            throw new Resque_Exception('Could not find job class ' . $className . '.');
-        }
-
-        if (!method_exists($model, 'perform')) {
-            throw new Resque_Exception('Job class ' . $className . ' does not contain a perform method.');
+            throw new Resque_Exception('Resque_Job_Creator could not find job class ' . $className . ' in file '.$classpath.'.');
         }
 
         if (!isset($args[0]) || !method_exists($model, $args[0])) {
-            throw new Resque_Exception('Job class ' . $className . ' does not contain ' . $args[0] . ' method.');
+           throw new Resque_Exception('Resque_Job_Creator. Job class ' . $className . ' does not contain ' . $args[0] . ' method.');
         }
 
-        return new $model();
+        return [new $model(),'runCommand',$args];
     }
 }
