@@ -3,3 +3,5 @@
 /node_modules/
 /build/
 /.idea/
+src/tmp/*
+!src/tmp/empty

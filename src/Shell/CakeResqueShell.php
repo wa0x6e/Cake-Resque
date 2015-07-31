@@ -316,6 +316,9 @@ class CakeResqueShell extends Shell
             ])
             ->addSubcommand('load', [
                 'help' => __d('cake_resque', 'Load a set of predefined workers.'),
+            ])
+            ->addSubcommand('enqueue', [
+                'help' => __d('cake_resque', 'Enqueue a job.'),
             ]);
     }
 
@@ -1270,7 +1273,7 @@ class CakeResqueShell extends Shell
                 $this->out("\t   - " . __d('cake_resque', 'Delayed Jobs') . "   : " . $delayedJobCount);
 
                 if ($delayedJobCount > 0) {
-                    $this->out("\t   - " . __d('cake_resque', 'Next Job on') . "    : " . strftime('%a %b %d %H:%M:%S %Z %Y', $schedulerWorker->nextDelayedTimestamp()));
+                    $this->out("\t   - " . __d('cake_resque', 'Next Job on') . "    : " . strftime('%a %b %d %H:%M:%S %Z %Y', $schedulerWorker->nextDelayedTimestamp(null,true)));
                 }
             }
             $this->out("\n");
