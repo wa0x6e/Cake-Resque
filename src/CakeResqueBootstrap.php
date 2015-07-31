@@ -18,8 +18,7 @@
  * @since         0.5
  * @license       MIT License (http://www.opensource.org/licenses/mit-license.php)
  */
-define('APP', getenv('APP'));
-include APP . '../config/bootstrap.php';
+include getenv('APP') . '../config/bootstrap.php';
 use Cake\Console\ShellDispatcher;
 
 class Resque_Job_Creator
@@ -40,6 +39,7 @@ class Resque_Job_Creator
         }
 
         array_unshift($args, 'void', $className);
+        $args[] = '-q';
 
         return [new Cake\Console\ShellDispatcher($args),'dispatch'];
 
