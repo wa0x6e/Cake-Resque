@@ -513,8 +513,7 @@ class CakeResqueShell extends Shell {
 		}
 
 		$pidFile = Configure::read('CakeResque.Resque.tmpdir') . str_replace('.', '', microtime(true));
-
-		$cmd = implode(' ', array(
+		$cmdArray = array(
 			sprintf("nohup %s \\\n", ($this->_runtime['user'] === $this->__getProcessOwner()) ? "" : "sudo -u " . $this->_runtime['user']),
 			sprintf("bash -c \"cd %s; \\\n", escapeshellarg($libraryPath)),
 			implode(' ', $envVars),
@@ -535,9 +534,17 @@ class CakeResqueShell extends Shell {
 			sprintf("LOGHANDLER=%s \\\n", escapeshellarg($this->_runtime['Log']['handler'])),
 			sprintf("LOGHANDLERTARGET=%s \\\n", escapeshellarg($this->_runtime['Log']['target'])),
 			sprintf("php %s \\\n", escapeshellarg($resqueBin)),
-			sprintf(">> %s \\\n", escapeshellarg($logFile)),
-			"2>&1\" >/dev/null 2>&1 &"
-		));
+			//sprintf(">> %s \\\n", escapeshellarg($logFile)),
+			//"2>&1\" >/dev/null 2>&1"
+			//"2>&1\""
+		);
+		if ($this->_runtime['Log']['handler'] !== 'Console') {
+			$cmdArray[] = sprintf(">> %s \\\n", escapeshellarg($logFile));
+			$cmdArray[] = "2>&1\" >/dev/null 2>&1";
+		} else {
+			$cmdArray[] = "\" 2>&1 &";
+		}
+		$cmd = implode(' ', $cmdArray);
 
 		$count = $this->_runtime['workers'];
 
@@ -548,7 +555,6 @@ class CakeResqueShell extends Shell {
 			$this->debug(__d('cake_resque', 'Running command : ' . "\n\t " . str_replace("\n", "\n\t", $cmd)));
 
 			$this->_exec($cmd);
-
 			$success = false;
 			$attempt = 7;
 
