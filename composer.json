@@ -1,7 +1,7 @@
 {
 	"name": "jeremymcjunkin/cake-resque",
 	"description" : "A CakePHP plugin for creating background jobs with Resque",
-	"version": "4.1.2",
+	"version": "4.1.22",
 	"keywords": ["php-resque", "resque", "cli", "cakephp", "background jobs", "scheduled jobs"],
 	"homepage": "http://cakeresque.kamisama.me",
 	"type": "cakephp-plugin",
@@ -32,7 +32,7 @@
     },
 	"support": {
 		"email": "kami@kamisama.me",
-		"issues": "https://github.com/kamisama/Cake-Resque/issues",
-		"source": "https://github.com/kamisama/Cake-Resque"
+		"issues": "https://github.com/jeremymcjunkin/Cake-Resque/issues",
+		"source": "https://github.com/jeremymcjunkin/Cake-Resque"
 	}
 }
