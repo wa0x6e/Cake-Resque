@@ -842,10 +842,21 @@ class CakeResqueShell extends Shell {
 				$workerIndex = range(1, count($workers));
 			}
 
+			if (function_exists('gethostname')) {
+				$thisHostname = gethostname();
+			} else {
+				$thisHostname = php_uname('n');
+			}
+
 			foreach ($workerIndex as $index) {
 				$worker = $workers[$index - 1];
 
 				list($hostname, $pid, $queue) = explode(':', (string)$worker);
+
+				if ($hostname !== $thisHostname) {
+					continue;
+				}
+
 				if (Configure::read('CakeResque.Scheduler.enabled') === true && $ResqueStatus->isSchedulerWorker($worker)) {
 					if ($schedulerWorkerAction !== null) {
 						$schedulerWorkerAction($worker);
