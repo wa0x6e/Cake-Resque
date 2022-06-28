@@ -25,7 +25,6 @@
   "require": {
     "php": ">=5.4.0",
     "composer/installers": "*",
-    "cakephp/cakephp": "3.0.*",
     "kamisama/php-resque-ex": ">=1.2.4",
     "kamisama/php-resque-ex-scheduler": ">=1.1.1",
     "kamisama/resque-status": ">=0.0.1"
